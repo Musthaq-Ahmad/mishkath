@@ -111,7 +111,7 @@ export default async function ProgramsPage() {
         <CardHeader className="flex flex-row items-center justify-between border-b px-6 py-4">
           <CardTitle className="text-base">Live Schedule</CardTitle>
         </CardHeader>
-        <CardContent className="px-0">
+        <CardContent className="overflow-x-auto px-0">
           <Table>
             <TableHeader>
               <TableRow className="bg-primary hover:bg-primary">

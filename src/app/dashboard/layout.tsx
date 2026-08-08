@@ -32,16 +32,16 @@ export default async function DashboardLayout({
               className="w-full rounded-full border-none bg-muted py-2 pr-4 pl-10 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring/50"
             />
           </div>
-          <div className="ml-auto flex items-center gap-3">
+          <div className="ml-auto flex items-center gap-1.5 sm:gap-3">
             <ThemeToggle />
-            <span className="material-symbols-outlined text-muted-foreground">
+            <span className="material-symbols-outlined hidden text-muted-foreground sm:inline">
               notifications
             </span>
-            <span className="material-symbols-outlined text-muted-foreground">
+            <span className="material-symbols-outlined hidden text-muted-foreground sm:inline">
               help
             </span>
-            <div className="flex items-center gap-2 border-l border-border pl-3">
-              <div className="flex flex-col text-right leading-tight">
+            <div className="flex items-center gap-2 border-l border-border pl-1.5 sm:pl-3">
+              <div className="hidden flex-col text-right leading-tight md:flex">
                 <span className="text-sm font-medium">{profile.full_name}</span>
                 <span className="text-xs text-muted-foreground capitalize">
                   {profile.role}

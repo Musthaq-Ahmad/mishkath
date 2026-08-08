@@ -60,17 +60,17 @@ function InfoCard({
   return (
     <div
       className={cn(
-        "animate-fade-in-up flex items-start gap-3.5 rounded-xl border bg-white/5 p-4",
+        "animate-fade-in-up flex items-start gap-2.5 rounded-xl border bg-white/5 p-3 sm:gap-3.5 sm:p-4",
         borderColor,
       )}
     >
       <span
         className={cn(
-          "flex size-12 shrink-0 items-center justify-center rounded-full ring-2",
+          "flex size-9 shrink-0 items-center justify-center rounded-full ring-2 sm:size-12",
           iconColor,
         )}
       >
-        <span className="material-symbols-outlined text-[24px]">{icon}</span>
+        <span className="material-symbols-outlined text-[18px] sm:text-[24px]">{icon}</span>
       </span>
       <div className="min-w-0">
         <p

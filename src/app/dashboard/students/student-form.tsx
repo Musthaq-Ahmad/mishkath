@@ -157,7 +157,7 @@ export function StudentForm({
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-2">
               <Label htmlFor="group_id">Group</Label>
               <input type="hidden" name="group_id" value={selectedGroupId} />
@@ -212,7 +212,7 @@ export function StudentForm({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-2">
               <Label htmlFor="class">Class</Label>
               <Input
@@ -253,7 +253,7 @@ export function StudentForm({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-2">
               <Label htmlFor="guardian_name">Guardian name</Label>
               <Input
@@ -277,7 +277,7 @@ export function StudentForm({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-2">
               <Label htmlFor="date_of_birth">Date of birth</Label>
               <Input

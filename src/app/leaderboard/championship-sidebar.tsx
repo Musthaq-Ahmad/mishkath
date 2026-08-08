@@ -60,7 +60,7 @@ export function ChampionshipSidebar({
   const maxPoints = Math.max(1, ...rows.map((row) => row.points));
 
   return (
-    <aside className="flex min-h-0 w-full flex-col gap-4 overflow-hidden rounded-2xl border border-gold/25 bg-primary-container/30 p-5 backdrop-blur-md">
+    <aside className="flex w-full flex-col gap-4 rounded-2xl border border-gold/25 bg-primary-container/30 p-4 backdrop-blur-md sm:p-5 md:min-h-0 md:overflow-hidden">
       <div className="flex shrink-0 flex-col items-center gap-1.5">
         <span className="flex size-11 items-center justify-center rounded-full bg-gold/15 ring-2 ring-gold/40">
           <span className="material-symbols-outlined text-[22px] text-gold">emoji_events</span>
@@ -74,7 +74,7 @@ export function ChampionshipSidebar({
         </div>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
+      <div className="flex flex-col gap-3 md:min-h-0 md:flex-1 md:overflow-y-auto">
         {rows.map((row, index) => {
           const ring = groupRingColor(row.group_id);
           const barColor = index === 0 ? "bg-gold" : "bg-primary-foreground/60";

@@ -72,7 +72,7 @@ export default async function ResultsPage() {
         </Link>
       </div>
 
-      <div className="overflow-hidden rounded-xl bg-card shadow-sm ring-1 ring-border">
+      <div className="overflow-x-auto rounded-xl bg-card shadow-sm ring-1 ring-border">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="bg-primary text-xs font-semibold tracking-wider text-primary-foreground uppercase">

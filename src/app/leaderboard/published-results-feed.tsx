@@ -161,8 +161,8 @@ export function PublishedResultsFeed({
     podiumColumns.length === 1 ? "sm:grid-cols-1" : podiumColumns.length === 2 ? "sm:grid-cols-2" : "sm:grid-cols-3";
 
   return (
-    <div className="flex h-full min-h-0 flex-col items-center justify-center overflow-hidden">
-      <div className="relative w-full min-h-0 overflow-hidden">
+    <div className="flex flex-col items-center justify-center md:h-full md:min-h-0 md:overflow-hidden">
+      <div className="relative w-full overflow-visible md:min-h-0 md:overflow-hidden">
         <div className="pointer-events-none absolute inset-x-0 -top-10 mx-auto h-64 w-64 rounded-full bg-gold/20 blur-3xl" />
         <Confetti />
 

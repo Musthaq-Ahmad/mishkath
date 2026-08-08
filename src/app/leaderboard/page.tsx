@@ -49,12 +49,12 @@ export default async function LeaderboardPage() {
   );
 
   return (
-    <div className="h-screen overflow-hidden bg-[#0a0e27] p-3 xl:p-5">
+    <div className="min-h-screen overflow-y-auto bg-[#0a0e27] p-2 sm:p-3 md:h-screen md:overflow-hidden xl:p-5">
       <div
-        className="h-full rounded-[2rem] p-0.75"
+        className="min-h-full rounded-2xl p-0.75 md:h-full md:rounded-[2rem]"
         style={{ background: "linear-gradient(135deg, var(--gold) 0%, transparent 35%, transparent 65%, var(--primary) 100%)" }}
       >
-        <div className="relative flex h-full flex-col overflow-hidden rounded-[calc(2rem-3px)] bg-[#0a0e27] px-6 py-3 font-bold text-primary-foreground xl:px-10 xl:py-4">
+        <div className="relative flex min-h-full flex-col overflow-visible rounded-[calc(1rem-3px)] bg-[#0a0e27] px-3 py-3 font-bold text-primary-foreground sm:px-6 md:h-full md:overflow-hidden md:rounded-[calc(2rem-3px)] md:px-10 md:py-4">
           {/* Islamic geometric lattice motif — diagonal diamond grid, gold on emerald. */}
           <div
             className="pointer-events-none absolute inset-0 opacity-50"
@@ -67,12 +67,12 @@ export default async function LeaderboardPage() {
           <div className="pointer-events-none absolute -top-32 -left-20 size-[28rem] rounded-full bg-primary/25 blur-[120px]" />
           <div className="pointer-events-none absolute -right-24 -bottom-32 size-[28rem] rounded-full bg-gold/15 blur-[120px]" />
 
-          <CornerOrnament className="pointer-events-none absolute top-3 left-3 size-24" />
-          <CornerOrnament className="pointer-events-none absolute top-3 right-3 size-24 -scale-x-100" />
-          <CornerOrnament className="pointer-events-none absolute bottom-3 left-3 size-24 -scale-y-100" />
-          <CornerOrnament className="pointer-events-none absolute right-3 bottom-3 size-24 -scale-x-100 -scale-y-100" />
+          <CornerOrnament className="pointer-events-none absolute top-3 left-3 hidden size-24 md:block" />
+          <CornerOrnament className="pointer-events-none absolute top-3 right-3 hidden size-24 -scale-x-100 md:block" />
+          <CornerOrnament className="pointer-events-none absolute bottom-3 left-3 hidden size-24 -scale-y-100 md:block" />
+          <CornerOrnament className="pointer-events-none absolute right-3 bottom-3 hidden size-24 -scale-x-100 -scale-y-100 md:block" />
 
-          <div className="relative mx-auto flex h-full w-full max-w-[1700px] min-h-0 flex-col gap-2">
+          <div className="relative mx-auto flex w-full max-w-[1700px] flex-col gap-3 md:h-full md:min-h-0 md:gap-2">
             <div className="flex shrink-0 flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <div className="relative flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/10 ring-2 ring-gold/40">
@@ -85,13 +85,13 @@ export default async function LeaderboardPage() {
                   />
                 </div>
                 <div>
-                  <h1 className="font-heading text-2xl font-bold tracking-tight xl:text-3xl">
+                  <h1 className="font-heading text-lg font-bold tracking-tight sm:text-2xl xl:text-3xl">
                     <span className="bg-linear-to-r from-gold to-primary bg-clip-text text-transparent">
                       മിഷ്കാത്ത്
                     </span>{" "}
                     തത്സമയ ഫലങ്ങൾ
                   </h1>
-                  <p className="flex items-center gap-2 text-base text-gold/80">
+                  <p className="hidden items-center gap-2 text-base text-gold/80 sm:flex">
                     <span aria-hidden>✥</span>
                     മേള നടത്തിപ്പും മികവ് നിരീക്ഷണവും
                     <span aria-hidden>✥</span>
@@ -126,11 +126,13 @@ export default async function LeaderboardPage() {
                 )}
 
                 <ClockCard />
-                <ResultsQrCode />
+                <div className="hidden sm:block">
+                  <ResultsQrCode />
+                </div>
               </div>
             </div>
 
-            <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[1fr_280px]">
+            <div className="grid grid-cols-1 gap-4 md:min-h-0 md:flex-1 lg:grid-cols-[1fr_280px]">
               <PublishedResultsFeed initialPlacements={placements} groupNames={groupNames} />
               <ChampionshipSidebar initialGroupRows={groupRows ?? []} />
             </div>

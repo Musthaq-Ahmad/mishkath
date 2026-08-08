@@ -104,13 +104,13 @@ export function LeaderboardFooter({
 
   return (
     <div className="flex shrink-0 items-stretch overflow-hidden rounded-2xl border border-gold/20 bg-white/6 backdrop-blur-md">
-      <div className="flex shrink-0 items-center gap-2.5 border-r border-gold/15 px-6 py-3.5">
-        <span className="material-symbols-outlined text-[22px] text-gold">campaign</span>
+      <div className="flex shrink-0 items-center gap-2.5 border-r border-gold/15 px-3 py-2.5 sm:px-6 sm:py-3.5">
+        <span className="material-symbols-outlined text-[18px] text-gold sm:text-[22px]">campaign</span>
         <span className="hidden text-sm font-bold tracking-widest text-gold uppercase sm:inline">
           പ്രഖ്യാപനങ്ങൾ
         </span>
       </div>
-      <div className="min-w-0 flex-1 overflow-hidden py-3.5">
+      <div className="min-w-0 flex-1 overflow-hidden py-2.5 sm:py-3.5">
         {history.length > 0 ? (
           <div
             className="animate-marquee flex w-max items-center"

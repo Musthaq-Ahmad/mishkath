@@ -164,20 +164,22 @@ export default async function ProgramDetailPage({
       </Card>
 
       <Tabs defaultValue="participants">
-        <TabsList className="h-auto gap-1 rounded-xl bg-muted p-1">
-          <TabsTrigger value="participants" className="gap-1.5 rounded-lg py-2">
-            <span className="material-symbols-outlined text-[18px]">groups</span>
-            Participants
-          </TabsTrigger>
-          <TabsTrigger value="codes" className="gap-1.5 rounded-lg py-2">
-            <span className="material-symbols-outlined text-[18px]">tag</span>
-            Codes
-          </TabsTrigger>
-          <TabsTrigger value="scores" className="gap-1.5 rounded-lg py-2">
-            <span className="material-symbols-outlined text-[18px]">edit_note</span>
-            Enter Scores
-          </TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto">
+          <TabsList className="h-auto gap-1 rounded-xl bg-muted p-1">
+            <TabsTrigger value="participants" className="gap-1.5 rounded-lg py-2">
+              <span className="material-symbols-outlined text-[18px]">groups</span>
+              Participants
+            </TabsTrigger>
+            <TabsTrigger value="codes" className="gap-1.5 rounded-lg py-2">
+              <span className="material-symbols-outlined text-[18px]">tag</span>
+              Codes
+            </TabsTrigger>
+            <TabsTrigger value="scores" className="gap-1.5 rounded-lg py-2">
+              <span className="material-symbols-outlined text-[18px]">edit_note</span>
+              Enter Scores
+            </TabsTrigger>
+          </TabsList>
+        </div>
         <TabsContent value="participants" className="mt-4">
           <Card>
             <CardHeader>
@@ -233,6 +235,7 @@ export default async function ProgramDetailPage({
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
               <CodesPanel programId={id} hasCodes={hasCodes} locked={locked} />
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -282,6 +285,7 @@ export default async function ProgramDetailPage({
                       )}
                 </TableBody>
               </Table>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
