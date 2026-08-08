@@ -2,6 +2,16 @@ import Link from "next/link";
 import { verifySession } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
 import { publishResults, unpublishResults } from "@/app/dashboard/programs/actions";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { PROGRAM_STATUS_LABELS } from "@/lib/validations/program";
 import { STUDENT_DIVISION_LABELS } from "@/lib/validations/student";
 import { PublishToggle } from "./publish-toggle";
@@ -72,19 +82,31 @@ export default async function ResultsPage() {
         </Link>
       </div>
 
-      <div className="overflow-x-auto rounded-xl bg-card shadow-sm ring-1 ring-border">
-        <table className="w-full text-left text-sm">
-          <thead>
-            <tr className="bg-primary text-xs font-semibold tracking-wider text-primary-foreground uppercase">
-              <th className="px-5 py-3">Program</th>
-              <th className="px-5 py-3">Category</th>
-              <th className="px-5 py-3">Scored</th>
-              <th className="px-5 py-3">Evaluation</th>
-              <th className="px-5 py-3">Published</th>
-              <th className="px-5 py-3 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
+      <div className="card-elevated overflow-hidden rounded-xl bg-card">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-primary hover:bg-primary">
+              <TableHead className="py-3 text-xs font-semibold tracking-wider text-primary-foreground uppercase">
+                Program
+              </TableHead>
+              <TableHead className="py-3 text-xs font-semibold tracking-wider text-primary-foreground uppercase">
+                Category
+              </TableHead>
+              <TableHead className="py-3 text-xs font-semibold tracking-wider text-primary-foreground uppercase">
+                Scored
+              </TableHead>
+              <TableHead className="py-3 text-xs font-semibold tracking-wider text-primary-foreground uppercase">
+                Evaluation
+              </TableHead>
+              <TableHead className="py-3 text-xs font-semibold tracking-wider text-primary-foreground uppercase">
+                Published
+              </TableHead>
+              <TableHead className="py-3 text-right text-xs font-semibold tracking-wider text-primary-foreground uppercase">
+                Actions
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {programs?.map((program) => {
               const isCompleted = program.status === "completed";
               const isGroup = program.program_type === "group";
@@ -96,60 +118,50 @@ export default async function ResultsPage() {
                 : (scoreCounts.get(program.id) ?? 0);
               const fullyScored = total > 0 && scored === total;
               return (
-                <tr key={program.id} className="border-b border-border last:border-none">
-                  <td className="px-5 py-4">
+                <TableRow key={program.id}>
+                  <TableCell className="py-4">
                     <Link
                       href={`/leaderboard/program/${program.id}`}
                       className="font-medium hover:text-primary"
                     >
                       {program.name}
                     </Link>
-                  </td>
-                  <td className="px-5 py-4 text-muted-foreground">
+                  </TableCell>
+                  <TableCell className="py-4 text-muted-foreground">
                     {STUDENT_DIVISION_LABELS[program.category]}
-                  </td>
-                  <td className="px-5 py-4">
-                    <span
-                      className={
-                        "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold " +
-                        (fullyScored
-                          ? "bg-success/10 text-success"
-                          : "bg-muted text-muted-foreground")
-                      }
-                    >
+                  </TableCell>
+                  <TableCell className="py-4">
+                    <Badge variant="status" className="gap-1">
                       {fullyScored && (
-                        <span className="material-symbols-outlined text-[14px]">
+                        <span className="material-symbols-outlined text-[14px] text-success">
                           check_circle
                         </span>
                       )}
-                      {scored}/{total}
-                    </span>
-                  </td>
-                  <td className="px-5 py-4">
-                    <span
-                      className={
-                        "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold " +
-                        (isCompleted
-                          ? "bg-success/10 text-success"
-                          : "bg-muted text-muted-foreground")
-                      }
-                    >
-                      {PROGRAM_STATUS_LABELS[program.status]}
-                    </span>
-                  </td>
-                  <td className="px-5 py-4">
-                    {program.published ? (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-1 text-xs font-semibold text-success">
-                        <span className="material-symbols-outlined text-[14px]">check_circle</span>
-                        Published
+                      <span className={cn(fullyScored ? "text-success" : "text-muted-foreground")}>
+                        {scored}/{total}
                       </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-muted-foreground">
-                        Unpublished
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="py-4">
+                    <Badge variant="status">
+                      <span className={isCompleted ? "text-success" : "text-muted-foreground"}>
+                        {PROGRAM_STATUS_LABELS[program.status]}
                       </span>
-                    )}
-                  </td>
-                  <td className="px-5 py-4 text-right">
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="py-4">
+                    <Badge variant="status" className="gap-1">
+                      {program.published && (
+                        <span className="material-symbols-outlined text-[14px] text-success">
+                          check_circle
+                        </span>
+                      )}
+                      <span className={program.published ? "text-success" : "text-muted-foreground"}>
+                        {program.published ? "Published" : "Unpublished"}
+                      </span>
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="py-4 text-right">
                     {isCompleted || program.published ? (
                       <PublishToggle
                         published={program.published}
@@ -161,19 +173,19 @@ export default async function ResultsPage() {
                         Awaiting completion
                       </span>
                     )}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               );
             })}
             {!programs?.length && (
-              <tr>
-                <td colSpan={6} className="px-5 py-10 text-center text-muted-foreground">
+              <TableRow>
+                <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
                   No programs yet.
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     </div>
   );

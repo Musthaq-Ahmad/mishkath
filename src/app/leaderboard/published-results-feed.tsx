@@ -6,66 +6,79 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { groupPlacements } from "@/lib/leaderboard";
 import type { EventPlacementRow, ProgramPlacements } from "@/lib/types";
-import { ML_DIVISION_LABELS, ML_MEDAL_LABEL, ML_RANK_LABEL } from "./malayalam";
+import { DIVISION_LABELS, MEDAL_LABEL, RANK_LABEL } from "./labels";
 import { cn } from "@/lib/utils";
-import { groupRingColor } from "@/lib/group-color";
+import { groupTextColor } from "@/lib/group-color";
+
+const DOME_CLIP = "ellipse(62% 58% at 50% 42%)";
+
+// On mobile the podium stacks in a single column — show the champion
+// first (natural reading order), then reorder back to silver/gold/bronze
+// left-to-right once there's room to sit side by side.
+const MOBILE_ORDER: Record<number, string> = {
+  1: "order-1 sm:order-2",
+  2: "order-2 sm:order-1",
+  3: "order-3",
+};
 
 const PODIUM_STYLE: Record<
   number,
   {
-    badge: string;
+    chip: string;
+    chipSize: string;
     border: string;
-    archBg: string;
-    ribbon: string;
-    ribbonText: string;
-    archHeight: string;
-    archWidth: string;
-    avatarSize: string;
+    photoHeight: string;
+    nameSize: string;
+    plaque: string;
+    lift: string;
+    medalColor: string;
     label: string;
   }
 > = {
   1: {
-    badge: "bg-gold text-[#251a00]",
-    border: "border-gold/70",
-    archBg: "bg-linear-to-b from-gold/35 via-gold/10 to-transparent",
-    ribbon: "bg-gold",
-    ribbonText: "text-[#251a00]",
-    archHeight: "h-[clamp(88px,17vh,240px)]",
-    archWidth: "w-[clamp(104px,15vw,220px)]",
-    avatarSize: "size-[clamp(58px,10vh,144px)]",
+    chip: "bg-gold text-[#251a00]",
+    chipSize: "size-10 text-lg sm:size-12 sm:text-xl",
+    border: "border-2 border-gold shadow-[0_0_36px_-8px_var(--gold)]",
+    photoHeight: "clamp(200px,28vh,340px)",
+    nameSize: "text-[clamp(1.5rem,3.6vh,2.6rem)]",
+    plaque: "from-gold/20",
+    lift: "sm:-translate-y-6",
+    medalColor: "text-gold",
     label: "FIRST PRIZE",
   },
   2: {
-    badge: "bg-silver text-[#1b1c19]",
-    border: "border-white/50",
-    archBg: "bg-linear-to-b from-white/25 via-white/8 to-transparent",
-    ribbon: "bg-silver",
-    ribbonText: "text-[#1b1c19]",
-    archHeight: "h-[clamp(68px,13vh,188px)]",
-    archWidth: "w-[clamp(88px,12vw,180px)]",
-    avatarSize: "size-[clamp(44px,7.5vh,108px)]",
+    chip: "bg-silver text-[#1b1c19]",
+    chipSize: "size-9 text-base sm:size-10 sm:text-lg",
+    border: "border-2 border-silver/50",
+    photoHeight: "clamp(168px,23vh,280px)",
+    nameSize: "text-[clamp(1.25rem,2.9vh,1.95rem)]",
+    plaque: "from-white/15",
+    lift: "",
+    medalColor: "text-silver",
     label: "SECOND PRIZE",
   },
   3: {
-    badge: "bg-bronze text-[#251a00]",
-    border: "border-bronze/60",
-    archBg: "bg-linear-to-b from-bronze/30 via-bronze/10 to-transparent",
-    ribbon: "bg-bronze",
-    ribbonText: "text-[#251a00]",
-    archHeight: "h-[clamp(56px,11vh,156px)]",
-    archWidth: "w-[clamp(80px,11vw,156px)]",
-    avatarSize: "size-[clamp(38px,6.5vh,88px)]",
+    chip: "bg-bronze text-[#251a00]",
+    chipSize: "size-9 text-base sm:size-10 sm:text-lg",
+    border: "border-2 border-bronze/50",
+    photoHeight: "clamp(168px,23vh,280px)",
+    nameSize: "text-[clamp(1.25rem,2.9vh,1.95rem)]",
+    plaque: "from-bronze/20",
+    lift: "",
+    medalColor: "text-bronze",
     label: "THIRD PRIZE",
   },
 };
 
-const CONFETTI_COLORS = ["bg-gold/70", "bg-silver/60", "bg-white/60"];
-const CONFETTI = Array.from({ length: 16 }, (_, i) => ({
-  left: `${(i * 61) % 100}%`,
-  delay: `${(i % 8) * 0.5}s`,
-  duration: `${3.4 + (i % 5) * 0.5}s`,
+const CONFETTI_COLORS = ["bg-gold", "bg-fuchsia-400", "bg-sky-400", "bg-violet-400", "bg-emerald-400"];
+const CONFETTI_SHAPES = ["rounded-[2px] rotate-45", "rounded-full", "rounded-[1px]"];
+const CONFETTI = Array.from({ length: 20 }, (_, i) => ({
+  left: `${(i * 53) % 100}%`,
+  delay: `${(i % 10) * 0.4}s`,
+  duration: `${4 + (i % 5) * 0.6}s`,
   color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
-  size: i % 3 === 0 ? "size-2" : "size-1.5",
+  shape: CONFETTI_SHAPES[i % CONFETTI_SHAPES.length],
+  size: i % 3 === 0 ? "size-2" : i % 3 === 1 ? "size-1.5" : "size-2.5 w-1",
 }));
 
 function Confetti() {
@@ -74,11 +87,22 @@ function Confetti() {
       {CONFETTI.map((piece, i) => (
         <span
           key={i}
-          className={cn("animate-confetti-fall absolute top-0 rounded-sm", piece.color, piece.size)}
+          className={cn("animate-confetti-fall absolute top-0", piece.color, piece.shape, piece.size)}
           style={{ left: piece.left, animationDelay: piece.delay, animationDuration: piece.duration }}
         />
       ))}
     </div>
+  );
+}
+
+function LaurelBranch({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 40 60" className={className} aria-hidden fill="currentColor">
+      <path d="M20 58 C 20 40 20 20 20 2" stroke="currentColor" strokeWidth="1.5" fill="none" />
+      {[8, 18, 28, 38, 48].map((y) => (
+        <ellipse key={y} cx={y % 16 === 8 ? 12 : 28} cy={y} rx="7" ry="3.5" transform={`rotate(${y % 16 === 8 ? -35 : 35} ${y % 16 === 8 ? 12 : 28} ${y})`} />
+      ))}
+    </svg>
   );
 }
 
@@ -97,7 +121,7 @@ function PlaceAvatar({
     return <Image src={photoUrl} alt="" fill sizes={imageSizes} className="object-cover" />;
   }
   return (
-    <span className={cn("material-symbols-outlined text-primary-foreground/70", iconSize)}>
+    <span className={cn("material-symbols-outlined text-muted-foreground", iconSize)}>
       {isGroup ? "groups" : "person"}
     </span>
   );
@@ -146,9 +170,9 @@ export function PublishedResultsFeed({
 
   if (!hero) {
     return (
-      <div className="flex flex-1 items-center justify-center rounded-2xl bg-white/5 p-16 text-center ring-1 ring-white/10">
-        <p className="font-heading text-2xl text-primary-foreground/80">
-          ഫലങ്ങൾ പ്രസിദ്ധീകരിച്ചാൽ ഇവിടെ കാണാം.
+      <div className="card-elevated flex flex-1 items-center justify-center rounded-lg border border-border bg-card p-16 text-center">
+        <p className="font-heading text-xl text-muted-foreground">
+          Results will appear here once published.
         </p>
       </div>
     );
@@ -161,131 +185,131 @@ export function PublishedResultsFeed({
     podiumColumns.length === 1 ? "sm:grid-cols-1" : podiumColumns.length === 2 ? "sm:grid-cols-2" : "sm:grid-cols-3";
 
   return (
-    <div className="flex flex-col items-center justify-center md:h-full md:min-h-0 md:overflow-hidden">
-      <div className="relative w-full overflow-visible md:min-h-0 md:overflow-hidden">
-        <div className="pointer-events-none absolute inset-x-0 -top-10 mx-auto h-64 w-64 rounded-full bg-gold/20 blur-3xl" />
-        <Confetti />
-
-        <div className="relative mb-1 flex items-center justify-center gap-3">
-          <span className="size-3 animate-pulse rounded-full bg-gold" />
-          <span className="text-[clamp(0.75rem,1.3vh,1.05rem)] font-bold tracking-[0.3em] text-gold uppercase">
-            ഇപ്പോൾ പ്രസിദ്ധീകരിച്ചു
+    <div className="relative flex flex-col items-center justify-center gap-8 md:h-full md:min-h-0 md:overflow-hidden">
+      <Confetti />
+      <div className="relative flex flex-col items-center gap-2 text-center">
+        <div className="flex items-center gap-2 rounded-full border border-border bg-card px-3.5 py-1.5">
+          <span className="relative flex size-1.5">
+            <span className="absolute inline-flex size-full animate-ping rounded-full bg-primary opacity-75" />
+            <span className="relative inline-flex size-1.5 rounded-full bg-primary" />
+          </span>
+          <span className="text-sm font-semibold tracking-[0.2em] text-muted-foreground uppercase">
+            Just Published
           </span>
         </div>
         <Link
           href={`/leaderboard/program/${hero.program_id}`}
-          className="relative mb-2 block text-center font-heading font-black tracking-tight text-[clamp(1.6rem,4.4vh,4.2rem)] text-transparent bg-clip-text bg-linear-to-b from-white to-white/70 hover:from-gold hover:to-gold"
+          className="font-heading text-[clamp(2.1rem,5.5vh,3.9rem)] font-extrabold tracking-tight text-foreground transition-colors hover:text-primary"
         >
           {hero.program_name}
-          <span className="mt-1 block text-[clamp(0.9rem,1.9vh,1.6rem)] font-bold text-primary-foreground/85">
-            {ML_DIVISION_LABELS[hero.category]}
-          </span>
         </Link>
+        <div className="flex items-center gap-3 text-lg font-medium text-muted-foreground">
+          <span aria-hidden className="h-px w-8 bg-border sm:w-12" />
+          <span className="flex items-center gap-1.5 text-gold">
+            <span className="material-symbols-outlined text-[18px]">emoji_events</span>
+          </span>
+          <span>{DIVISION_LABELS[hero.category]}</span>
+          <span aria-hidden className="h-px w-8 bg-border sm:w-12" />
+        </div>
+      </div>
 
-        <div className={cn("relative mx-auto grid max-w-4xl grid-cols-1 items-end gap-4 sm:gap-6", podiumGridCols)}>
-          {podiumColumns.map((column) => {
-            const style = PODIUM_STYLE[column.rank];
-            const isChampion = column.rank === 1;
-            const riseDelay = (3 - column.rank) * 220;
-            return (
-              <div key={column.rank} className="flex flex-col items-center">
-                {column.items.map((place) => (
-                  <div key={place.id} className="flex flex-col items-center">
-                    {/* rank badge, sits atop the arch's peak */}
+      <div
+        className={cn(
+          "grid w-full max-w-5xl grid-cols-1 items-end gap-8 sm:gap-10",
+          podiumGridCols,
+        )}
+      >
+        {podiumColumns.map((column) => {
+          const style = PODIUM_STYLE[column.rank];
+          const isChampion = column.rank === 1;
+          return (
+            <div
+              key={column.rank}
+              className={cn("flex flex-col items-center gap-4", MOBILE_ORDER[column.rank])}
+            >
+              {column.items.map((place) => (
+                <div
+                  key={place.id}
+                  style={{ animationDelay: `${(3 - column.rank) * 90}ms` }}
+                  className={cn(
+                    "card-elevated animate-fade-in-up relative flex w-full flex-col items-center overflow-hidden rounded-2xl bg-card",
+                    style?.border,
+                    style?.lift,
+                  )}
+                >
+                  {isChampion && (
                     <span
-                      style={{ animationDelay: `${riseDelay + 200}ms` }}
-                      className={cn(
-                        "animate-avatar-pop relative z-10 -mb-4 flex size-[clamp(26px,4.2vh,52px)] items-center justify-center rounded-full ring-4 ring-primary",
-                        style?.badge,
-                      )}
-                    >
-                      <span className="font-heading text-[clamp(0.85rem,2vh,1.5rem)] font-black">
-                        {column.rank}
-                      </span>
-                    </span>
+                      aria-hidden
+                      className="pointer-events-none absolute top-0 left-1/2 z-0 size-56 -translate-x-1/2 -translate-y-1/3 rounded-full bg-gold/25 blur-3xl"
+                    />
+                  )}
 
-                    {/* mihrab niche */}
+                  <div className="relative z-10 flex w-full flex-col items-center">
                     <div
-                      style={{ animationDelay: `${riseDelay}ms` }}
-                      className={cn(
-                        "animate-podium-rise relative flex items-start justify-center overflow-hidden rounded-t-full border-2",
-                        style?.archWidth,
-                        style?.archHeight,
-                        style?.archBg,
-                        style?.border,
-                      )}
+                      className="relative w-full overflow-hidden bg-muted"
+                      style={{ height: style?.photoHeight, clipPath: DOME_CLIP }}
                     >
-                      {isChampion && (
-                        <span
-                          aria-hidden
-                          className="pointer-events-none absolute top-1/3 left-1/2 size-24 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold/40 blur-2xl"
-                        />
-                      )}
+                      <PlaceAvatar
+                        photoUrl={place.photoUrl}
+                        isGroup={hero.program_type === "group"}
+                        iconSize={isChampion ? "text-7xl" : "text-6xl"}
+                        imageSizes={isChampion ? "340px" : "280px"}
+                      />
+                    </div>
+
+                    {isChampion && (
                       <span
-                        style={{ animationDelay: `${riseDelay + 250}ms` }}
-                        className={cn(
-                          "animate-avatar-pop relative mt-2 flex shrink-0 items-center justify-center rounded-full bg-white/10 ring-4",
-                          style?.avatarSize,
-                          isChampion && "animate-pulse-glow",
-                          groupRingColor(place.groupId),
-                        )}
+                        aria-hidden
+                        className="absolute left-1/2 z-20 -translate-x-1/2 text-gold drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]"
+                        style={{ top: `calc(${style?.photoHeight} - 30px)` }}
                       >
-                        <PlaceAvatar
-                          photoUrl={place.photoUrl}
-                          isGroup={hero.program_type === "group"}
-                          iconSize={isChampion ? "text-[clamp(26px,4.5vh,56px)]" : "text-[clamp(18px,3vh,36px)]"}
-                          imageSizes={isChampion ? "144px" : "108px"}
-                        />
+                        <span className="material-symbols-outlined text-[26px]">emoji_events</span>
                       </span>
-                    </div>
+                    )}
 
-                    {/* name plaque */}
-                    <div
-                      style={{ animationDelay: `${riseDelay + 320}ms` }}
+                    <span
                       className={cn(
-                        "animate-fade-in-up -mt-2 w-full min-w-0 rounded-lg border bg-primary/90 px-2.5 py-1.5 text-center",
-                        style?.border,
+                        "absolute left-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full font-heading font-extrabold ring-4 ring-card",
+                        style?.chip,
+                        style?.chipSize,
                       )}
+                      style={{ top: style?.photoHeight }}
                     >
-                      <p
-                        className={cn(
-                          "truncate font-heading font-black",
-                          isChampion
-                            ? "text-[clamp(1rem,2.3vh,1.9rem)]"
-                            : "text-[clamp(0.85rem,1.8vh,1.5rem)]",
-                        )}
-                      >
-                        {place.name}
+                      {column.rank}
+                    </span>
+                  </div>
+
+                  <div
+                    className={cn(
+                      "relative z-10 flex w-full flex-col items-center gap-1.5 bg-linear-to-b to-card px-5 pt-8 pb-6 text-center",
+                      style?.plaque,
+                    )}
+                  >
+                    <p className={cn("truncate font-heading font-extrabold text-foreground", style?.nameSize)}>
+                      {place.name}
+                    </p>
+                    {hero.program_type === "individual" && groupNames[place.groupId] && (
+                      <p className={cn("truncate text-base font-medium sm:text-lg", groupTextColor(place.groupId))}>
+                        {groupNames[place.groupId]}
                       </p>
-                      {hero.program_type === "individual" && groupNames[place.groupId] && (
-                        <p className="truncate text-[clamp(0.65rem,1.1vh,0.9rem)] font-semibold text-primary-foreground/60">
-                          {groupNames[place.groupId]}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* prize ribbon */}
-                    <div
-                      style={{ animationDelay: `${riseDelay + 380}ms` }}
-                      className={cn(
-                        "animate-fade-in-up mt-1.5 flex w-full items-center justify-center gap-1.5 rounded-md px-2 py-1 text-center text-[clamp(0.6rem,1.1vh,0.9rem)] font-black tracking-widest uppercase",
-                        style?.ribbon,
-                        style?.ribbonText,
-                      )}
-                    >
-                      <span aria-hidden>✥</span>
-                      <span className="truncate">
-                        {ML_RANK_LABEL[column.rank] ?? style?.label}
-                        {ML_MEDAL_LABEL[column.rank] ? ` • ${ML_MEDAL_LABEL[column.rank]}` : ""}
-                      </span>
-                      <span aria-hidden>✥</span>
+                    )}
+                    <div className="mt-1 flex items-center gap-2">
+                      {isChampion && <LaurelBranch className={cn("size-5 scale-x-[-1]", style?.medalColor)} />}
+                      <p className="flex items-center gap-1.5 text-sm font-semibold tracking-widest text-muted-foreground uppercase sm:text-base">
+                        <span className={cn("material-symbols-outlined text-[16px]", style?.medalColor)}>
+                          military_tech
+                        </span>
+                        {RANK_LABEL[column.rank] ?? style?.label}
+                        {MEDAL_LABEL[column.rank] ? ` · ${MEDAL_LABEL[column.rank]}` : ""}
+                      </p>
+                      {isChampion && <LaurelBranch className={cn("size-5", style?.medalColor)} />}
                     </div>
                   </div>
-                ))}
-              </div>
-            );
-          })}
-        </div>
+                </div>
+              ))}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

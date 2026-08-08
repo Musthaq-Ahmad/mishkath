@@ -14,26 +14,14 @@ export function ClockCard() {
   }, []);
 
   return (
-    <div className="flex flex-col items-center gap-1 rounded-xl border border-gold/25 bg-white/5 px-4 py-1.5">
-      <span className="text-xs font-bold tracking-widest text-gold uppercase">സമയം</span>
-      <div className="flex items-center gap-2">
-        <span className="material-symbols-outlined text-[22px] text-gold">schedule</span>
-        <div className="leading-tight">
-          <p className="font-heading text-lg font-black tabular-nums">
-            {now
-              ? now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
-              : "--:--"}
-          </p>
-          <p className="text-xs text-primary-foreground/60">
-            {now
-              ? now.toLocaleDateString("en-US", {
-                  weekday: "short",
-                  day: "numeric",
-                  month: "short",
-                })
-              : ""}
-          </p>
-        </div>
+    <div className="flex items-center gap-2 text-muted-foreground">
+      <span className="material-symbols-outlined text-[20px]">schedule</span>
+      <div className="leading-tight">
+        <p className="font-heading text-lg font-semibold tabular-nums text-foreground">
+          {now
+            ? now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+            : "--:--"}
+        </p>
       </div>
     </div>
   );

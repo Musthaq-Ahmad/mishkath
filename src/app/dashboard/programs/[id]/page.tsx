@@ -181,7 +181,7 @@ export default async function ProgramDetailPage({
           </TabsList>
         </div>
         <TabsContent value="participants" className="mt-4">
-          <Card>
+          <Card className="card-elevated">
             <CardHeader>
               <CardTitle>Participants</CardTitle>
               <CardDescription>
@@ -226,7 +226,7 @@ export default async function ProgramDetailPage({
           </Card>
         </TabsContent>
         <TabsContent value="codes" className="mt-4">
-          <Card>
+          <Card className="card-elevated">
             <CardHeader>
               <CardTitle>Codes</CardTitle>
               <CardDescription>
@@ -290,7 +290,7 @@ export default async function ProgramDetailPage({
           </Card>
         </TabsContent>
         <TabsContent value="scores" className="mt-4">
-          <Card>
+          <Card className="card-elevated">
             <CardHeader>
               <CardTitle>Enter Scores</CardTitle>
               <CardDescription>

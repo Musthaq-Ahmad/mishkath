@@ -10,6 +10,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { DeleteButton } from "@/components/delete-button";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import type { Group, Student } from "@/lib/types";
 import { STUDENT_CATEGORY_LABELS, STUDENT_DIVISION_LABELS } from "@/lib/validations/student";
 import { StudentForm } from "./student-form";
@@ -57,7 +59,7 @@ export default async function StudentsPage() {
 
       {/* Filters & stats */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-        <div className="flex flex-col gap-4 rounded-2xl border border-border/50 bg-card p-4 shadow-sm sm:flex-row sm:items-end lg:col-span-8">
+        <div className="card-elevated flex flex-col gap-4 rounded-xl bg-card p-4 sm:flex-row sm:items-end lg:col-span-8">
           <div className="flex-1">
             <label className="mb-1 block text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
               Filter by Group
@@ -101,7 +103,7 @@ export default async function StudentsPage() {
         </div>
 
         <div className="lg:col-span-4">
-          <div className="relative h-full overflow-hidden rounded-2xl bg-primary p-4 text-primary-foreground shadow-sm">
+          <div className="card-elevated relative h-full overflow-hidden rounded-xl bg-primary p-4 text-primary-foreground">
             <p className="text-[11px] font-medium uppercase tracking-wide opacity-80">
               Total Students
             </p>
@@ -114,7 +116,7 @@ export default async function StudentsPage() {
       </div>
 
       {/* Data table */}
-      <div className="card-elevated animate-fade-in-up overflow-hidden rounded-2xl border border-border/50 bg-card shadow-sm">
+      <div className="card-elevated animate-fade-in-up overflow-hidden rounded-xl bg-card">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
@@ -183,15 +185,17 @@ export default async function StudentsPage() {
                     {student.chest_number ?? "—"}
                   </TableCell>
                   <TableCell className="py-3">
-                    {student.is_active ? (
-                      <span className="inline-flex items-center rounded-full bg-success/10 px-2.5 py-1 text-xs font-semibold text-success">
-                        Active
+                    <Badge variant="status" className="gap-1.5">
+                      <span
+                        className={cn(
+                          "size-1.5 rounded-full",
+                          student.is_active ? "bg-success" : "bg-muted-foreground",
+                        )}
+                      />
+                      <span className={student.is_active ? "text-success" : "text-muted-foreground"}>
+                        {student.is_active ? "Active" : "Inactive"}
                       </span>
-                    ) : (
-                      <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-muted-foreground">
-                        Inactive
-                      </span>
-                    )}
+                    </Badge>
                   </TableCell>
                   <TableCell className="py-3">
                     <div className="flex justify-end gap-1">

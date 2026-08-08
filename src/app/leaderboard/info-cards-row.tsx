@@ -6,7 +6,7 @@ import { groupPlacements } from "@/lib/leaderboard";
 import { getUpcomingPrograms, formatScheduleTime } from "@/lib/schedule";
 import type { EventPlacementRow, Program, ProgramPlacements } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { ML_DIVISION_LABELS } from "./malayalam";
+import { DIVISION_LABELS } from "./labels";
 
 async function fetchPlacements(): Promise<ProgramPlacements[]> {
   const supabase = createClient();
@@ -34,57 +34,43 @@ function formatCountdown(targetIso: string, nowMs: number): string | null {
   const diffMs = new Date(targetIso).getTime() - nowMs;
   if (diffMs <= 0) return null;
   const totalMinutes = Math.ceil(diffMs / 60_000);
-  if (totalMinutes < 60) return `${totalMinutes} മിനിറ്റിൽ`;
+  if (totalMinutes < 60) return `${totalMinutes} min`;
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
-  return `${hours}മ ${minutes}മി`;
+  return `${hours}h ${minutes}m`;
 }
 
 function InfoCard({
   icon,
-  iconColor,
-  borderColor,
-  labelColor,
+  accent,
   label,
   title,
   subtitle,
 }: {
   icon: string;
-  iconColor: string;
-  borderColor: string;
-  labelColor: string;
+  accent?: boolean;
   label: string;
   title: string;
   subtitle?: string;
 }) {
   return (
-    <div
-      className={cn(
-        "animate-fade-in-up flex items-start gap-2.5 rounded-xl border bg-white/5 p-3 sm:gap-3.5 sm:p-4",
-        borderColor,
-      )}
-    >
+    <div className="flex items-center gap-3 px-4 py-3.5 sm:gap-3.5">
       <span
         className={cn(
-          "flex size-9 shrink-0 items-center justify-center rounded-full ring-2 sm:size-12",
-          iconColor,
+          "flex size-11 shrink-0 items-center justify-center rounded-full bg-muted sm:size-12",
+          accent ? "text-primary" : "text-muted-foreground",
         )}
       >
-        <span className="material-symbols-outlined text-[18px] sm:text-[24px]">{icon}</span>
+        <span className="material-symbols-outlined text-[20px] sm:text-[24px]">{icon}</span>
       </span>
       <div className="min-w-0">
-        <p
-          className={cn(
-            "truncate text-xs font-bold tracking-widest uppercase",
-            labelColor,
-          )}
-        >
+        <p className="truncate text-sm font-semibold tracking-widest text-muted-foreground uppercase">
           {label}
         </p>
-        <p className="truncate font-heading text-lg font-bold sm:text-xl">{title}</p>
-        {subtitle && (
-          <p className="truncate text-sm text-primary-foreground/60">{subtitle}</p>
-        )}
+        <p className="truncate font-heading text-lg font-bold text-foreground sm:text-xl">
+          {title}
+        </p>
+        {subtitle && <p className="truncate text-base text-muted-foreground">{subtitle}</p>}
       </div>
     </div>
   );
@@ -136,46 +122,35 @@ export function InfoCardsRow({
   const countdown = nextProgram?.scheduled_start && now ? formatCountdown(nextProgram.scheduled_start, now) : null;
 
   return (
-    <div className="grid shrink-0 grid-cols-2 gap-3 lg:grid-cols-4">
+    <div className="card-elevated grid shrink-0 grid-cols-1 divide-y divide-border rounded-lg border border-border bg-card md:grid-cols-4 md:divide-x md:divide-y-0">
       <InfoCard
         icon="emoji_events"
-        iconColor="bg-success/15 ring-success/40 text-success"
-        borderColor="border-success/25"
-        labelColor="text-success"
-        label="മുൻ വിജയി"
+        label="Previous Winner"
         title={previous ? previous.program_name : "—"}
         subtitle={previous?.places.find((p) => p.rank === 1)?.name}
       />
       <InfoCard
         icon="mic"
-        iconColor="bg-gold/15 ring-gold/40 text-gold"
-        borderColor="border-gold/30"
-        labelColor="text-gold"
-        label="നിലവിലെ ഇനം"
+        accent
+        label="Current Program"
         title={current ? current.program_name : "—"}
-        subtitle={current ? ML_DIVISION_LABELS[current.category] : undefined}
+        subtitle={current ? DIVISION_LABELS[current.category] : undefined}
       />
       <InfoCard
         icon="menu_book"
-        iconColor="bg-sky-500/20 ring-sky-400/50 text-sky-300"
-        borderColor="border-sky-400/25"
-        labelColor="text-sky-300"
-        label="അടുത്ത ഇനം"
+        label="Next Program"
         title={nextProgram ? nextProgram.name : "—"}
         subtitle={
           nextProgram
             ? countdown
-              ? `${countdown} ആരംഭിക്കും`
+              ? `Starts in ${countdown}`
               : formatScheduleTime(nextProgram.scheduled_start!)
-            : "ഷെഡ്യൂൾ ചെയ്തിട്ടില്ല"
+            : "Not scheduled"
         }
       />
       <InfoCard
         icon="campaign"
-        iconColor="bg-destructive/20 ring-destructive/50 text-destructive"
-        borderColor="border-destructive/25"
-        labelColor="text-destructive"
-        label="അറിയിപ്പ്"
+        label="Announcement"
         title={announcement ? announcement.program_name : "—"}
         subtitle={announcement?.places.find((p) => p.rank === 1)?.name}
       />

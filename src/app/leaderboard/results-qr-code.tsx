@@ -22,11 +22,19 @@ export function ResultsQrCode() {
   if (!src) return null;
 
   return (
-    <div className="flex flex-col items-center gap-1.5 rounded-2xl bg-white/8 p-3 ring-1 ring-gold/25 backdrop-blur-md">
+    <div className="flex items-center gap-2">
       {/* eslint-disable-next-line @next/next/no-img-element -- external, non-optimizable QR image */}
-      <img src={src} alt="Scan to view results on your phone" width={104} height={104} className="rounded-md" />
-      <span className="text-xs font-semibold tracking-wide text-primary-foreground/70 uppercase">
-        Scan for results
+      <img
+        src={src}
+        alt="Scan to view results on your phone"
+        width={40}
+        height={40}
+        className="rounded-sm border border-border"
+      />
+      <span className="hidden text-xs font-medium text-muted-foreground lg:block">
+        Scan for
+        <br />
+        results
       </span>
     </div>
   );
