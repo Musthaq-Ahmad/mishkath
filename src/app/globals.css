@@ -1,26 +1,380 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-sans);
+  --color-gold: var(--gold);
+  --color-gold-foreground: var(--gold-foreground);
+  --color-silver: var(--silver);
+  --color-bronze: var(--bronze);
+  --color-surface-container-low: var(--surface-container-low);
+  --color-surface-container: var(--surface-container);
+  --color-surface-container-high: var(--surface-container-high);
+  --color-surface-container-highest: var(--surface-container-highest);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-outline: var(--outline);
+  --color-outline-variant: var(--outline-variant);
+  --color-primary-container: var(--primary-container);
+  --color-on-primary-container: var(--on-primary-container);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root {
+  /* MISHKAT design tokens — see DESIGN.md ("Modern SaaS": slate + indigo) */
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #4f46e5;
+  --primary-foreground: #ffffff;
+  --secondary: #eef2ff;
+  --secondary-foreground: #3730a3;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #eef2ff;
+  --accent-foreground: #0f172a;
+  --destructive: #dc2626;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #4f46e5;
+  --chart-1: #4f46e5;
+  --chart-2: #c7a24a;
+  --chart-3: #6366f1;
+  --chart-4: #64748b;
+  --chart-5: #94a3b8;
+  --radius: 0.75rem;
+  --sidebar: #111827;
+  --sidebar-foreground: #f1f5f9;
+  --sidebar-primary: #818cf8;
+  --sidebar-primary-foreground: #111827;
+  --sidebar-accent: #1f2937;
+  --sidebar-accent-foreground: #f1f5f9;
+  --sidebar-border: #1f2937;
+  --sidebar-ring: #818cf8;
+  --gold: #c7a24a;
+  --gold-foreground: #251a00;
+  --silver: #c8c6c2;
+  --bronze: #c8a97e;
+  --surface-container-low: #f8fafc;
+  --surface-container: #f1f5f9;
+  --surface-container-high: #eef2ff;
+  --surface-container-highest: #e2e8f0;
+  --success: #16a34a;
+  --success-foreground: #ffffff;
+  --warning: #d97706;
+  --warning-foreground: #ffffff;
+  --outline: #64748b;
+  --outline-variant: #e2e8f0;
+  --primary-container: #eef2ff;
+  --on-primary-container: #3730a3;
+}
+
+.dark {
+  --background: #0b0f19;
+  --foreground: #f1f5f9;
+  --card: #131a29;
+  --card-foreground: #f1f5f9;
+  --popover: #131a29;
+  --popover-foreground: #f1f5f9;
+  --primary: #818cf8;
+  --primary-foreground: #0b0f19;
+  --secondary: #1e1b4b;
+  --secondary-foreground: #c7d2fe;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --accent: #1e1b4b;
+  --accent-foreground: #f1f5f9;
+  --destructive: #f87171;
+  --border: #1f2937;
+  --input: #1f2937;
+  --ring: #818cf8;
+  --chart-1: #818cf8;
+  --chart-2: #e9c266;
+  --chart-3: #6366f1;
+  --chart-4: #94a3b8;
+  --chart-5: #64748b;
+  --sidebar: #0b0f19;
+  --sidebar-foreground: #f1f5f9;
+  --sidebar-primary: #818cf8;
+  --sidebar-primary-foreground: #0b0f19;
+  --sidebar-accent: #1e293b;
+  --sidebar-accent-foreground: #f1f5f9;
+  --sidebar-border: #1f2937;
+  --sidebar-ring: #818cf8;
+  --gold: #e9c266;
+  --gold-foreground: #251a00;
+  --silver: #c8c6c2;
+  --bronze: #c8a97e;
+  --surface-container-low: #0f1420;
+  --surface-container: #131a29;
+  --surface-container-high: #1e293b;
+  --surface-container-highest: #263143;
+  --success: #4ade80;
+  --success-foreground: #0b0f19;
+  --warning: #e9c266;
+  --warning-foreground: #251a00;
+  --outline: #94a3b8;
+  --outline-variant: #1f2937;
+  --primary-container: #1e1b4b;
+  --on-primary-container: #c7d2fe;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  /* Shared elevated-card treatment — neutral single shadow per DESIGN.md,
+     lifts slightly on hover. Use on any card-like surface site-wide. */
+  .card-elevated {
+    box-shadow:
+      0 1px 2px rgba(15, 23, 42, 0.04),
+      0 8px 24px rgba(15, 23, 42, 0.06);
+    transition:
+      box-shadow 0.2s ease,
+      transform 0.2s ease;
+  }
+  .card-elevated:hover {
+    box-shadow:
+      0 2px 4px rgba(15, 23, 42, 0.06),
+      0 12px 32px rgba(15, 23, 42, 0.1);
+    transform: translateY(-2px);
+  }
+  .dark .card-elevated {
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.3),
+      0 8px 24px rgba(0, 0, 0, 0.25);
+  }
+  .dark .card-elevated:hover {
+    box-shadow:
+      0 2px 4px rgba(0, 0, 0, 0.35),
+      0 12px 32px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Glass panel for headers/overlays over colored backgrounds. */
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+}
+
+@layer utilities {
+  @media (prefers-reduced-motion: no-preference) {
+    .animate-fade-in-up {
+      animation: fade-in-up 0.4s ease-out both;
+    }
+    .animate-pulse-glow {
+      animation:
+        fade-in-up 0.4s ease-out both,
+        pulse-glow 2.4s ease-in-out 0.9s infinite;
+    }
+    .animate-float {
+      animation: float 6s ease-in-out infinite;
+    }
+    .animate-twinkle {
+      animation: twinkle 3s ease-in-out infinite;
+    }
+    .animate-confetti-fall {
+      animation: confetti-fall linear infinite;
+    }
+    .animate-sunburst {
+      animation: sunburst-spin 14s linear infinite;
+    }
+    .animate-shimmer-sweep {
+      animation: shimmer-sweep 3.2s linear infinite;
+    }
+    .animate-podium-rise {
+      transform-origin: bottom;
+      animation: podium-rise 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+    .animate-avatar-pop {
+      animation: avatar-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+    .animate-trophy-drop {
+      animation: trophy-drop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+    .animate-marquee {
+      animation: marquee-scroll linear infinite;
+    }
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--gold) 35%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 16px color-mix(in srgb, var(--gold) 0%, transparent);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-14px) rotate(6deg);
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-10%) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(420%) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes podium-rise {
+  from {
+    transform: translateY(70px) scaleY(0.5);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scaleY(1);
+    opacity: 1;
+  }
+}
+
+@keyframes avatar-pop {
+  from {
+    transform: translateY(-30px) scale(0.5);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes trophy-drop {
+  0% {
+    transform: translateY(-40px) rotate(-8deg) scale(0.6);
+    opacity: 0;
+  }
+  70% {
+    transform: translateY(4px) rotate(3deg) scale(1.05);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes sunburst-spin {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes shimmer-sweep {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
