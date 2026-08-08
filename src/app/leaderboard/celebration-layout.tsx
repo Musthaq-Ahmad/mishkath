@@ -6,7 +6,7 @@ import { groupPlacements } from "@/lib/leaderboard";
 import type { EventPlacementRow, ProgramPlacements } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-const CELEBRATION_MS = 15_000;
+const CELEBRATION_MS = 35_000;
 
 async function fetchLatestHeroId(): Promise<string | null> {
   const supabase = createClient();
