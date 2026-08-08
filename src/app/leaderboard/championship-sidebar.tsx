@@ -61,16 +61,16 @@ export function ChampionshipSidebar({
 
   return (
     <aside className="flex min-h-0 w-full flex-col gap-4 overflow-hidden rounded-2xl border border-gold/25 bg-primary-container/30 p-5 backdrop-blur-md">
-      <div className="flex shrink-0 flex-col items-center gap-2">
-        <span className="flex size-12 items-center justify-center rounded-full bg-gold/15 ring-2 ring-gold/40">
-          <span className="material-symbols-outlined text-[24px] text-gold">emoji_events</span>
+      <div className="flex shrink-0 flex-col items-center gap-1.5">
+        <span className="flex size-11 items-center justify-center rounded-full bg-gold/15 ring-2 ring-gold/40">
+          <span className="material-symbols-outlined text-[22px] text-gold">emoji_events</span>
         </span>
-        <div className="flex items-center gap-2 text-gold">
-          <span className="text-sm">✦</span>
-          <h2 className="font-heading text-base font-bold tracking-[0.15em] uppercase">
+        <div className="flex items-center gap-1.5 text-gold">
+          <span className="text-xs">✦</span>
+          <h2 className="font-heading text-sm font-bold tracking-widest whitespace-nowrap uppercase">
             ഓവറോൾ ചാമ്പ്യൻഷിപ്പ്
           </h2>
-          <span className="text-sm">✦</span>
+          <span className="text-xs">✦</span>
         </div>
       </div>
 

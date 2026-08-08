@@ -14,7 +14,7 @@ export function ClockCard() {
   }, []);
 
   return (
-    <div className="flex flex-col items-center gap-1 rounded-xl border border-gold/25 bg-white/5 px-5 py-2">
+    <div className="flex flex-col items-center gap-1 rounded-xl border border-gold/25 bg-white/5 px-4 py-1.5">
       <span className="text-xs font-bold tracking-widest text-gold uppercase">സമയം</span>
       <div className="flex items-center gap-2">
         <span className="material-symbols-outlined text-[22px] text-gold">schedule</span>

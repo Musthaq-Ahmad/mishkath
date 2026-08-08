@@ -30,9 +30,9 @@ const PODIUM_STYLE: Record<
     archBg: "bg-linear-to-b from-gold/35 via-gold/10 to-transparent",
     ribbon: "bg-gold",
     ribbonText: "text-[#251a00]",
-    archHeight: "h-[clamp(110px,20vh,240px)]",
-    archWidth: "w-[clamp(120px,17vw,220px)]",
-    avatarSize: "size-[clamp(72px,12vh,144px)]",
+    archHeight: "h-[clamp(88px,17vh,240px)]",
+    archWidth: "w-[clamp(104px,15vw,220px)]",
+    avatarSize: "size-[clamp(58px,10vh,144px)]",
     label: "FIRST PRIZE",
   },
   2: {
@@ -41,9 +41,9 @@ const PODIUM_STYLE: Record<
     archBg: "bg-linear-to-b from-white/25 via-white/8 to-transparent",
     ribbon: "bg-silver",
     ribbonText: "text-[#1b1c19]",
-    archHeight: "h-[clamp(86px,15vh,188px)]",
-    archWidth: "w-[clamp(100px,14vw,180px)]",
-    avatarSize: "size-[clamp(56px,9vh,108px)]",
+    archHeight: "h-[clamp(68px,13vh,188px)]",
+    archWidth: "w-[clamp(88px,12vw,180px)]",
+    avatarSize: "size-[clamp(44px,7.5vh,108px)]",
     label: "SECOND PRIZE",
   },
   3: {
@@ -52,9 +52,9 @@ const PODIUM_STYLE: Record<
     archBg: "bg-linear-to-b from-bronze/30 via-bronze/10 to-transparent",
     ribbon: "bg-bronze",
     ribbonText: "text-[#251a00]",
-    archHeight: "h-[clamp(72px,13vh,156px)]",
-    archWidth: "w-[clamp(92px,12.5vw,156px)]",
-    avatarSize: "size-[clamp(48px,7.5vh,88px)]",
+    archHeight: "h-[clamp(56px,11vh,156px)]",
+    archWidth: "w-[clamp(80px,11vw,156px)]",
+    avatarSize: "size-[clamp(38px,6.5vh,88px)]",
     label: "THIRD PRIZE",
   },
 };
@@ -168,16 +168,16 @@ export function PublishedResultsFeed({
 
         <div className="relative mb-1 flex items-center justify-center gap-3">
           <span className="size-3 animate-pulse rounded-full bg-gold" />
-          <span className="text-[clamp(0.8rem,1.6vh,1.05rem)] font-bold tracking-[0.3em] text-gold uppercase">
+          <span className="text-[clamp(0.75rem,1.3vh,1.05rem)] font-bold tracking-[0.3em] text-gold uppercase">
             ഇപ്പോൾ പ്രസിദ്ധീകരിച്ചു
           </span>
         </div>
         <Link
           href={`/leaderboard/program/${hero.program_id}`}
-          className="relative mb-2 block text-center font-heading font-black tracking-tight text-[clamp(2.1rem,5.8vh,4.2rem)] text-transparent bg-clip-text bg-linear-to-b from-white to-white/70 hover:from-gold hover:to-gold"
+          className="relative mb-2 block text-center font-heading font-black tracking-tight text-[clamp(1.6rem,4.4vh,4.2rem)] text-transparent bg-clip-text bg-linear-to-b from-white to-white/70 hover:from-gold hover:to-gold"
         >
           {hero.program_name}
-          <span className="mt-1 block text-[clamp(1.1rem,2.4vh,1.6rem)] font-bold text-primary-foreground/85">
+          <span className="mt-1 block text-[clamp(0.9rem,1.9vh,1.6rem)] font-bold text-primary-foreground/85">
             {ML_DIVISION_LABELS[hero.category]}
           </span>
         </Link>
@@ -195,11 +195,11 @@ export function PublishedResultsFeed({
                     <span
                       style={{ animationDelay: `${riseDelay + 200}ms` }}
                       className={cn(
-                        "animate-avatar-pop relative z-10 -mb-5 flex size-[clamp(32px,5vh,52px)] items-center justify-center rounded-full ring-4 ring-primary",
+                        "animate-avatar-pop relative z-10 -mb-4 flex size-[clamp(26px,4.2vh,52px)] items-center justify-center rounded-full ring-4 ring-primary",
                         style?.badge,
                       )}
                     >
-                      <span className="font-heading text-[clamp(1rem,2.4vh,1.5rem)] font-black">
+                      <span className="font-heading text-[clamp(0.85rem,2vh,1.5rem)] font-black">
                         {column.rank}
                       </span>
                     </span>
@@ -224,7 +224,7 @@ export function PublishedResultsFeed({
                       <span
                         style={{ animationDelay: `${riseDelay + 250}ms` }}
                         className={cn(
-                          "animate-avatar-pop relative mt-3 flex shrink-0 items-center justify-center rounded-full bg-white/10 ring-4",
+                          "animate-avatar-pop relative mt-2 flex shrink-0 items-center justify-center rounded-full bg-white/10 ring-4",
                           style?.avatarSize,
                           isChampion && "animate-pulse-glow",
                           groupRingColor(place.groupId),
@@ -233,7 +233,7 @@ export function PublishedResultsFeed({
                         <PlaceAvatar
                           photoUrl={place.photoUrl}
                           isGroup={hero.program_type === "group"}
-                          iconSize={isChampion ? "text-[clamp(32px,5.5vh,56px)]" : "text-[clamp(22px,3.8vh,36px)]"}
+                          iconSize={isChampion ? "text-[clamp(26px,4.5vh,56px)]" : "text-[clamp(18px,3vh,36px)]"}
                           imageSizes={isChampion ? "144px" : "108px"}
                         />
                       </span>
@@ -251,14 +251,14 @@ export function PublishedResultsFeed({
                         className={cn(
                           "truncate font-heading font-black",
                           isChampion
-                            ? "text-[clamp(1.3rem,3vh,1.9rem)]"
-                            : "text-[clamp(1.05rem,2.3vh,1.5rem)]",
+                            ? "text-[clamp(1rem,2.3vh,1.9rem)]"
+                            : "text-[clamp(0.85rem,1.8vh,1.5rem)]",
                         )}
                       >
                         {place.name}
                       </p>
                       {hero.program_type === "individual" && groupNames[place.groupId] && (
-                        <p className="truncate text-[clamp(0.7rem,1.4vh,0.9rem)] font-semibold text-primary-foreground/60">
+                        <p className="truncate text-[clamp(0.65rem,1.1vh,0.9rem)] font-semibold text-primary-foreground/60">
                           {groupNames[place.groupId]}
                         </p>
                       )}
@@ -268,7 +268,7 @@ export function PublishedResultsFeed({
                     <div
                       style={{ animationDelay: `${riseDelay + 380}ms` }}
                       className={cn(
-                        "animate-fade-in-up mt-1.5 flex w-full items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-center text-[clamp(0.65rem,1.4vh,0.9rem)] font-black tracking-widest uppercase",
+                        "animate-fade-in-up mt-1.5 flex w-full items-center justify-center gap-1.5 rounded-md px-2 py-1 text-center text-[clamp(0.6rem,1.1vh,0.9rem)] font-black tracking-widest uppercase",
                         style?.ribbon,
                         style?.ribbonText,
                       )}

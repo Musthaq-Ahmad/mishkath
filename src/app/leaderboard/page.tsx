@@ -54,7 +54,7 @@ export default async function LeaderboardPage() {
         className="h-full rounded-[2rem] p-0.75"
         style={{ background: "linear-gradient(135deg, var(--gold) 0%, transparent 35%, transparent 65%, var(--primary) 100%)" }}
       >
-        <div className="relative flex h-full flex-col overflow-hidden rounded-[calc(2rem-3px)] bg-[#0a0e27] px-6 py-4 font-bold text-primary-foreground xl:px-10 xl:py-5">
+        <div className="relative flex h-full flex-col overflow-hidden rounded-[calc(2rem-3px)] bg-[#0a0e27] px-6 py-3 font-bold text-primary-foreground xl:px-10 xl:py-4">
           {/* Islamic geometric lattice motif — diagonal diamond grid, gold on emerald. */}
           <div
             className="pointer-events-none absolute inset-0 opacity-50"
@@ -72,20 +72,20 @@ export default async function LeaderboardPage() {
           <CornerOrnament className="pointer-events-none absolute bottom-3 left-3 size-24 -scale-y-100" />
           <CornerOrnament className="pointer-events-none absolute right-3 bottom-3 size-24 -scale-x-100 -scale-y-100" />
 
-          <div className="relative mx-auto flex h-full w-full max-w-[1700px] min-h-0 flex-col gap-3">
+          <div className="relative mx-auto flex h-full w-full max-w-[1700px] min-h-0 flex-col gap-2">
             <div className="flex shrink-0 flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-4">
-                <div className="relative flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/10 ring-2 ring-gold/40">
+              <div className="flex items-center gap-3">
+                <div className="relative flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/10 ring-2 ring-gold/40">
                   <Image
                     src="/mishkat-icon.png"
                     alt=""
-                    width={56}
-                    height={56}
-                    className="size-14 object-cover"
+                    width={44}
+                    height={44}
+                    className="size-11 object-cover"
                   />
                 </div>
                 <div>
-                  <h1 className="font-heading text-3xl font-bold tracking-tight xl:text-4xl">
+                  <h1 className="font-heading text-2xl font-bold tracking-tight xl:text-3xl">
                     <span className="bg-linear-to-r from-gold to-primary bg-clip-text text-transparent">
                       മിഷ്കാത്ത്
                     </span>{" "}
@@ -99,7 +99,7 @@ export default async function LeaderboardPage() {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <div className="flex flex-col items-center gap-1 rounded-xl border border-gold/25 bg-white/5 px-5 py-2">
+                <div className="flex flex-col items-center gap-1 rounded-xl border border-gold/25 bg-white/5 px-4 py-1.5">
                   <div className="flex items-center gap-2 rounded-full bg-destructive/90 px-3 py-1 text-sm font-black tracking-wide text-white uppercase">
                     <span className="size-2 rounded-full bg-white" />
                     Live
@@ -110,7 +110,7 @@ export default async function LeaderboardPage() {
                 </div>
 
                 {totalProgramCount > 0 && (
-                  <div className="hidden flex-col items-center gap-1 rounded-xl border border-gold/25 bg-white/5 px-5 py-2 sm:flex">
+                  <div className="hidden flex-col items-center gap-1 rounded-xl border border-gold/25 bg-white/5 px-4 py-1.5 sm:flex">
                     <span className="text-xs font-bold tracking-widest text-gold uppercase">
                       പരിപാടികൾ
                     </span>
