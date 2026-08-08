@@ -27,6 +27,17 @@ const GROUP_BG_COLORS = [
   "bg-[#f87171]/25", // red
 ];
 
+const GROUP_TEXT_COLORS = [
+  "text-[#f472b6]", // pink
+  "text-[#67e8f9]", // cyan
+  "text-[#fbbf24]", // amber
+  "text-[#a78bfa]", // violet
+  "text-[#34d399]", // emerald
+  "text-[#fb923c]", // orange
+  "text-[#60a5fa]", // blue
+  "text-[#f87171]", // red
+];
+
 function groupColorIndex(groupId: string): number {
   let hash = 0;
   for (let i = 0; i < groupId.length; i++) {
@@ -45,4 +56,11 @@ export function groupRingColor(groupId: string | null | undefined): string {
 export function groupBgColor(groupId: string | null | undefined): string {
   if (!groupId) return "bg-white/10";
   return GROUP_BG_COLORS[groupColorIndex(groupId)];
+}
+
+// Text color in the same deterministic palette, for labeling a
+// participant's group affiliation inline (e.g. under their name).
+export function groupTextColor(groupId: string | null | undefined): string {
+  if (!groupId) return "text-muted-foreground";
+  return GROUP_TEXT_COLORS[groupColorIndex(groupId)];
 }

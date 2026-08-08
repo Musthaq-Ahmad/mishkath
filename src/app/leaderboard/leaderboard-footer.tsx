@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { groupPlacements } from "@/lib/leaderboard";
 import type { EventPlacementRow, ProgramPlacements } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { ML_DIVISION_LABELS } from "./malayalam";
+import { DIVISION_LABELS } from "./labels";
 
 const RANK_TEXT: Record<number, string> = {
   1: "text-gold",
@@ -36,30 +36,30 @@ function ResultChip({
   return (
     <Link
       href={`/leaderboard/program/${program.program_id}`}
-      className="flex shrink-0 items-center gap-5 px-8 hover:text-gold"
+      className="flex shrink-0 items-center gap-5 px-8 text-foreground transition-colors hover:text-primary"
     >
       <span className="flex items-center gap-2">
-        <span className="material-symbols-outlined text-[20px] text-gold">emoji_events</span>
-        <span className="font-heading text-base font-semibold whitespace-nowrap">
+        <span className="material-symbols-outlined text-[20px] text-muted-foreground">emoji_events</span>
+        <span className="font-heading text-lg font-semibold whitespace-nowrap">
           {program.program_name}
         </span>
-        <span className="text-sm text-primary-foreground/60 whitespace-nowrap">
-          {ML_DIVISION_LABELS[program.category]}
+        <span className="text-base text-muted-foreground whitespace-nowrap">
+          {DIVISION_LABELS[program.category]}
         </span>
       </span>
       {places.map((place) => (
         <span key={place.id} className="flex items-center gap-2 whitespace-nowrap">
           <span
             className={cn(
-              "font-heading text-sm font-bold tabular-nums",
-              RANK_TEXT[place.rank] ?? "text-primary-foreground/70",
+              "font-heading text-base font-bold tabular-nums",
+              RANK_TEXT[place.rank] ?? "text-muted-foreground",
             )}
           >
             {place.rank}.
           </span>
-          <span className="text-base font-semibold">{place.name}</span>
+          <span className="text-lg font-semibold">{place.name}</span>
           {program.program_type === "individual" && groupNames[place.groupId] && (
-            <span className="text-sm text-primary-foreground/60">
+            <span className="text-base text-muted-foreground">
               ({groupNames[place.groupId]})
             </span>
           )}
@@ -103,14 +103,14 @@ export function LeaderboardFooter({
   const marqueeDuration = Math.max(18, history.length * 6);
 
   return (
-    <div className="flex shrink-0 items-stretch overflow-hidden rounded-2xl border border-gold/20 bg-white/6 backdrop-blur-md">
-      <div className="flex shrink-0 items-center gap-2.5 border-r border-gold/15 px-3 py-2.5 sm:px-6 sm:py-3.5">
-        <span className="material-symbols-outlined text-[18px] text-gold sm:text-[22px]">campaign</span>
-        <span className="hidden text-sm font-bold tracking-widest text-gold uppercase sm:inline">
-          പ്രഖ്യാപനങ്ങൾ
+    <div className="hidden shrink-0 items-stretch overflow-hidden rounded-lg border border-border bg-card sm:flex">
+      <div className="flex shrink-0 items-center gap-2.5 border-r border-border px-6 py-3.5">
+        <span className="material-symbols-outlined text-[22px] text-muted-foreground">campaign</span>
+        <span className="text-base font-semibold tracking-widest text-muted-foreground uppercase">
+          Announcements
         </span>
       </div>
-      <div className="min-w-0 flex-1 overflow-hidden py-2.5 sm:py-3.5">
+      <div className="min-w-0 flex-1 overflow-hidden py-3.5">
         {history.length > 0 ? (
           <div
             className="animate-marquee flex w-max items-center"
@@ -125,8 +125,8 @@ export function LeaderboardFooter({
             ))}
           </div>
         ) : (
-          <span className="px-4 text-base text-primary-foreground/70">
-            മുൻ ഫലങ്ങൾ ഇതുവരെയില്ല.
+          <span className="px-4 text-lg text-muted-foreground">
+            No previous results yet.
           </span>
         )}
       </div>

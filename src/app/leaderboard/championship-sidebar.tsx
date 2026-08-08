@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { GroupLeaderboardRow } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { groupBgColor, groupRingColor } from "@/lib/group-color";
+import { groupRingColor } from "@/lib/group-color";
 
 const SEGMENTS = 10;
 
@@ -24,7 +24,7 @@ function SegmentedBar({ value, max, colorClass }: { value: number; max: number; 
       {Array.from({ length: SEGMENTS }, (_, i) => (
         <span
           key={i}
-          className={cn("h-3 flex-1 rounded-sm", i < filled ? colorClass : "bg-white/10")}
+          className={cn("h-3 flex-1 rounded-sm", i < filled ? colorClass : "bg-muted")}
         />
       ))}
     </div>
@@ -60,30 +60,24 @@ export function ChampionshipSidebar({
   const maxPoints = Math.max(1, ...rows.map((row) => row.points));
 
   return (
-    <aside className="flex w-full flex-col gap-4 rounded-2xl border border-gold/25 bg-primary-container/30 p-4 backdrop-blur-md sm:p-5 md:min-h-0 md:overflow-hidden">
-      <div className="flex shrink-0 flex-col items-center gap-1.5">
-        <span className="flex size-11 items-center justify-center rounded-full bg-gold/15 ring-2 ring-gold/40">
-          <span className="material-symbols-outlined text-[22px] text-gold">emoji_events</span>
-        </span>
-        <div className="flex items-center gap-1.5 text-gold">
-          <span className="text-xs">✦</span>
-          <h2 className="font-heading text-sm font-bold tracking-widest whitespace-nowrap uppercase">
-            ഓവറോൾ ചാമ്പ്യൻഷിപ്പ്
-          </h2>
-          <span className="text-xs">✦</span>
-        </div>
+    <aside className="card-elevated flex w-full flex-col gap-4 rounded-lg border border-border bg-card p-4 sm:p-5 md:h-full md:min-h-0 md:overflow-hidden">
+      <div className="flex shrink-0 items-center gap-2">
+        <span className="material-symbols-outlined shrink-0 text-[22px] text-muted-foreground">emoji_events</span>
+        <h2 className="font-heading text-sm font-bold tracking-wide text-foreground uppercase">
+          Overall Championship
+        </h2>
       </div>
 
       <div className="flex flex-col gap-3 md:min-h-0 md:flex-1 md:overflow-y-auto">
         {rows.map((row, index) => {
           const ring = groupRingColor(row.group_id);
-          const barColor = index === 0 ? "bg-gold" : "bg-primary-foreground/60";
+          const barColor = index === 0 ? "bg-gold" : "bg-primary";
           return (
             <div
               key={row.group_id}
               className={cn(
-                "animate-fade-in-up flex flex-col gap-2.5 rounded-xl bg-white/5 p-4 ring-1",
-                index === 0 ? "ring-gold/40" : "ring-white/10",
+                "animate-fade-in-up flex flex-col gap-2.5 rounded-md border border-border bg-background p-4",
+                index === 0 && "border-l-2 border-l-gold",
               )}
               style={{ animationDelay: `${Math.min(index, 8) * 60}ms` }}
             >
@@ -91,23 +85,22 @@ export function ChampionshipSidebar({
                 <div className="flex min-w-0 items-center gap-2.5">
                   <span
                     className={cn(
-                      "flex size-9 shrink-0 items-center justify-center rounded-md ring-2",
-                      groupBgColor(row.group_id),
+                      "flex size-10 shrink-0 items-center justify-center rounded-md bg-muted ring-2",
                       ring,
                     )}
                   >
-                    <span className="material-symbols-outlined text-[19px]">shield</span>
+                    <span className="material-symbols-outlined text-[21px]">shield</span>
                   </span>
-                  <span
-                    className={cn(
-                      "truncate font-heading text-lg font-bold",
-                      index === 0 && "text-gold",
-                    )}
-                  >
+                  <span className="truncate font-heading text-xl font-bold text-foreground">
                     {row.group_name}
                   </span>
                 </div>
-                <span className="shrink-0 font-heading text-2xl font-black tabular-nums text-gold">
+                <span
+                  className={cn(
+                    "shrink-0 font-heading text-3xl font-black tabular-nums",
+                    index === 0 ? "text-gold" : "text-foreground",
+                  )}
+                >
                   {row.points}
                 </span>
               </div>
@@ -116,8 +109,8 @@ export function ChampionshipSidebar({
           );
         })}
         {!rows.length && (
-          <p className="px-1 text-center text-base text-primary-foreground/70">
-            ഇതുവരെ ഫലങ്ങൾ പ്രസിദ്ധീകരിച്ചിട്ടില്ല.
+          <p className="px-1 text-center text-lg text-muted-foreground">
+            No results published yet.
           </p>
         )}
       </div>
