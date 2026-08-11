@@ -6,7 +6,7 @@ import { groupPlacements } from "@/lib/leaderboard";
 import { getUpcomingPrograms, formatScheduleTime } from "@/lib/schedule";
 import type { EventPlacementRow, Program, ProgramPlacements } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { DIVISION_LABELS } from "./labels";
+import { useLanguage } from "./i18n";
 
 async function fetchPlacements(): Promise<ProgramPlacements[]> {
   const supabase = createClient();
@@ -54,23 +54,23 @@ function InfoCard({
   subtitle?: string;
 }) {
   return (
-    <div className="flex items-center gap-3 px-4 py-3.5 sm:gap-3.5">
+    <div className="flex items-center gap-2.5 px-4 py-2 sm:gap-3">
       <span
         className={cn(
-          "flex size-11 shrink-0 items-center justify-center rounded-full bg-muted sm:size-12",
+          "flex size-9 shrink-0 items-center justify-center rounded-full bg-muted sm:size-10",
           accent ? "text-primary" : "text-muted-foreground",
         )}
       >
-        <span className="material-symbols-outlined text-[20px] sm:text-[24px]">{icon}</span>
+        <span className="material-symbols-outlined text-[18px] sm:text-[20px]">{icon}</span>
       </span>
       <div className="min-w-0">
-        <p className="truncate text-sm font-semibold tracking-widest text-muted-foreground uppercase">
+        <p className="truncate text-xs font-semibold tracking-widest text-muted-foreground uppercase">
           {label}
         </p>
-        <p className="truncate font-heading text-lg font-bold text-foreground sm:text-xl">
+        <p className="truncate font-heading text-base font-bold text-foreground sm:text-lg">
           {title}
         </p>
-        {subtitle && <p className="truncate text-base text-muted-foreground">{subtitle}</p>}
+        {subtitle && <p className="truncate text-sm text-muted-foreground">{subtitle}</p>}
       </div>
     </div>
   );
@@ -83,6 +83,7 @@ export function InfoCardsRow({
   initialPlacements: ProgramPlacements[];
   initialNextProgram: Program | null;
 }) {
+  const { t, divisionLabel, startsIn } = useLanguage();
   const [placements, setPlacements] = useState(initialPlacements);
   const [nextProgram, setNextProgram] = useState(initialNextProgram);
   const [now, setNow] = useState<number | null>(null);
@@ -125,32 +126,32 @@ export function InfoCardsRow({
     <div className="card-elevated grid shrink-0 grid-cols-1 divide-y divide-border rounded-lg border border-border bg-card md:grid-cols-4 md:divide-x md:divide-y-0">
       <InfoCard
         icon="emoji_events"
-        label="Previous Winner"
+        label={t("previousWinner")}
         title={previous ? previous.program_name : "—"}
         subtitle={previous?.places.find((p) => p.rank === 1)?.name}
       />
       <InfoCard
         icon="mic"
         accent
-        label="Current Program"
+        label={t("currentProgram")}
         title={current ? current.program_name : "—"}
-        subtitle={current ? DIVISION_LABELS[current.category] : undefined}
+        subtitle={current ? divisionLabel(current.category) : undefined}
       />
       <InfoCard
         icon="menu_book"
-        label="Next Program"
+        label={t("nextProgram")}
         title={nextProgram ? nextProgram.name : "—"}
         subtitle={
           nextProgram
             ? countdown
-              ? `Starts in ${countdown}`
+              ? startsIn(countdown)
               : formatScheduleTime(nextProgram.scheduled_start!)
-            : "Not scheduled"
+            : t("notScheduled")
         }
       />
       <InfoCard
         icon="campaign"
-        label="Announcement"
+        label={t("announcement")}
         title={announcement ? announcement.program_name : "—"}
         subtitle={announcement?.places.find((p) => p.rank === 1)?.name}
       />

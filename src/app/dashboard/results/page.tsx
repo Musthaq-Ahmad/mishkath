@@ -104,16 +104,28 @@ export default async function ResultsPage({
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="font-heading text-2xl font-semibold text-primary">
+          <nav className="mb-1 flex items-center text-xs font-medium tracking-wide text-muted-foreground">
+            <span>Management</span>
+            <span className="mx-2">/</span>
+            <span className="text-secondary-foreground">Results</span>
+          </nav>
+          <h1 className="font-heading text-3xl font-bold tracking-tight text-primary">
             Programs &amp; Results
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-muted-foreground">
             Publish a program&apos;s results to make them visible on the public leaderboard.
             Publishing unlocks once evaluation is marked Completed.
           </p>
         </div>
         <div className="flex items-center gap-4">
           <ResultsExportButton rows={exportRows} />
+          <Link
+            href="/leaderboard/report"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
+          >
+            <span className="material-symbols-outlined text-[18px]">description</span>
+            Print full report
+          </Link>
           <Link
             href="/leaderboard"
             className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"

@@ -1,7 +1,9 @@
+import { LanguageProvider } from "./i18n";
+
 export default function LeaderboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <div lang="en">{children}</div>;
+  return <LanguageProvider>{children}</LanguageProvider>;
 }

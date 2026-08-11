@@ -1,7 +1,10 @@
+import Image from "next/image";
 import Link from "next/link";
 import { requireRole } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
 import { PrintButton } from "@/components/print-button";
+import { groupBgColor, groupTextColor } from "@/lib/group-color";
+import { cn } from "@/lib/utils";
 import { STUDENT_DIVISION_LABELS } from "@/lib/validations/student";
 import type { Group, Student } from "@/lib/types";
 
@@ -76,20 +79,47 @@ export default async function StudentBadgesPage({
       </div>
 
       {visibleStudents.length ? (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 print:grid-cols-3 print:gap-3">
+        <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4 print:grid-cols-3 print:gap-4">
           {visibleStudents.map((student) => (
             <div
               key={student.id}
-              className="flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-border bg-card p-4 text-center break-inside-avoid"
+              className="card-elevated relative flex aspect-[3/4] flex-col overflow-hidden rounded-2xl border border-border bg-card break-inside-avoid [-webkit-print-color-adjust:exact] [print-color-adjust:exact]"
             >
-              <p className="font-heading text-4xl font-black text-primary tabular-nums">
-                {student.chest_number}
-              </p>
-              <p className="truncate text-base font-semibold text-foreground">{student.name}</p>
-              <p className="text-xs text-muted-foreground uppercase">
-                {STUDENT_DIVISION_LABELS[student.division]} ·{" "}
-                {groupNameById.get(student.group_id) ?? "—"}
-              </p>
+              <span className={cn("absolute inset-x-0 top-0 h-2", groupBgColor(student.group_id))} />
+
+              <div className="flex flex-col items-center gap-1.5 px-4 pt-6 pb-3">
+                <Image
+                  src="/mehfile-meem-logo-indigo.png"
+                  alt=""
+                  width={140}
+                  height={83}
+                  className="h-7 w-auto opacity-90"
+                />
+                <p className="text-[9px] font-bold tracking-[0.25em] text-muted-foreground uppercase">
+                  Meelad Fest 2K26
+                </p>
+              </div>
+
+              <div className="flex flex-1 flex-col items-center justify-center gap-1 border-y border-border/60 bg-muted/40 px-4">
+                <span className="font-heading text-6xl font-black text-primary tabular-nums">
+                  {student.chest_number}
+                </span>
+                <span className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                  Chest No.
+                </span>
+              </div>
+
+              <div className="flex flex-col items-center gap-1 px-3 py-3 text-center">
+                <p className="w-full truncate text-base font-semibold text-foreground">
+                  {student.name}
+                </p>
+                <p className="text-xs text-muted-foreground uppercase">
+                  {STUDENT_DIVISION_LABELS[student.division]} ·{" "}
+                  <span className={cn("font-semibold", groupTextColor(student.group_id))}>
+                    {groupNameById.get(student.group_id) ?? "—"}
+                  </span>
+                </p>
+              </div>
             </div>
           ))}
         </div>

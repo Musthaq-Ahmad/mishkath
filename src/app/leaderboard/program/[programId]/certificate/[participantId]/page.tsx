@@ -81,7 +81,13 @@ export default async function CertificatePage({
         <PrintButton label="Print / Save as PDF" />
       </div>
 
-      <div className="relative flex aspect-[1.414/1] w-full max-w-4xl flex-col overflow-hidden border-[10px] border-double border-gold bg-card shadow-sm print:shadow-none">
+      <div className="relative flex aspect-[1.414/1] w-full max-w-4xl flex-col overflow-hidden border-[10px] border-double border-gold bg-card shadow-sm [-webkit-print-color-adjust:exact] [print-color-adjust:exact] print:shadow-none">
+        {/* Soft radial glow for depth, subtler than a flat fill */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--gold)_0%,_transparent_60%)] opacity-[0.06]"
+        />
+
         {/* Inner hairline frame */}
         <div className="pointer-events-none absolute inset-3 border border-gold/40" />
 
@@ -116,18 +122,18 @@ export default async function CertificatePage({
             {isTop3 && (
               <span
                 className={cn(
-                  "flex size-16 items-center justify-center rounded-full font-heading text-2xl font-black tabular-nums shadow-sm",
+                  "flex size-16 items-center justify-center rounded-full font-heading text-2xl font-black tabular-nums shadow-sm ring-4 ring-gold/20 ring-offset-2 ring-offset-card",
                   RANK_BADGE[result.rank],
                 )}
               >
                 {result.rank}
               </span>
             )}
-            <div className="flex flex-col items-center gap-1">
+            <div className="flex flex-col items-center gap-1.5">
               <p className="font-heading text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
                 {isTop3 ? "Certificate of Achievement" : "Certificate of Participation"}
               </p>
-              <span aria-hidden className="h-px w-24 bg-gold" />
+              <span aria-hidden className="h-px w-24 bg-gradient-to-r from-transparent via-gold to-transparent" />
             </div>
           </div>
 

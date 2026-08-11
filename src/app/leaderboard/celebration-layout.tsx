@@ -1,5 +1,6 @@
 "use client";
 
+import confetti from "canvas-confetti";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { groupPlacements } from "@/lib/leaderboard";
@@ -7,6 +8,20 @@ import type { EventPlacementRow, ProgramPlacements } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const CELEBRATION_MS = 35_000;
+const CONFETTI_INTERVAL_MS = 1_500;
+
+// Four simultaneous cannons, one per edge, all firing inward — reads as a
+// single celebratory burst "from all sides" rather than one corner shooting
+// across the whole screen.
+function fireFourSidedBurst() {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  const shared = { particleCount: 70, spread: 80, ticks: 220, zIndex: 60 };
+  confetti({ ...shared, angle: 0, origin: { x: 0, y: 0.5 }, startVelocity: 50 }); // left edge, firing right
+  confetti({ ...shared, angle: 180, origin: { x: 1, y: 0.5 }, startVelocity: 50 }); // right edge, firing left
+  confetti({ ...shared, angle: 270, origin: { x: 0.5, y: 0 }, startVelocity: 45 }); // top edge, firing down
+  confetti({ ...shared, angle: 90, origin: { x: 0.5, y: 1 }, startVelocity: 60 }); // bottom edge, firing up
+}
 
 async function fetchLatestHeroId(): Promise<string | null> {
   const supabase = createClient();
@@ -32,13 +47,11 @@ export function CelebrationLayout({
   podium,
   sidebar,
   infoCards,
-  footer,
 }: {
   initialHeroId: string | null;
   podium: ReactNode;
   sidebar: ReactNode;
   infoCards: ReactNode;
-  footer: ReactNode;
 }) {
   const [celebrating, setCelebrating] = useState(false);
   const heroIdRef = useRef(initialHeroId);
@@ -46,13 +59,34 @@ export function CelebrationLayout({
   useEffect(() => {
     const supabase = createClient();
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    // A generation counter, not a timer handle — bumped every time a burst
+    // sequence starts (or the effect unmounts), so any previously-scheduled
+    // frame() calls recognize they're stale and stop rescheduling
+    // themselves. More robust than clearing a single setInterval/timeout
+    // handle, which is easy to lose track of across re-renders.
+    let generation = 0;
+
+    function fireContinuously(forGeneration: number, endAt: number) {
+      if (forGeneration !== generation) return;
+      fireFourSidedBurst();
+      if (Date.now() < endAt) {
+        setTimeout(() => fireContinuously(forGeneration, endAt), CONFETTI_INTERVAL_MS);
+      }
+    }
 
     async function checkForNewResult() {
       const newHeroId = await fetchLatestHeroId();
       if (newHeroId && newHeroId !== heroIdRef.current) {
         heroIdRef.current = newHeroId;
         setCelebrating(true);
+
         if (timeoutId) clearTimeout(timeoutId);
+        generation += 1;
+
+        // Keep bursting from all 4 sides for the whole celebration window,
+        // not just once — restarted fresh on every new result.
+        fireContinuously(generation, Date.now() + CELEBRATION_MS);
+
         timeoutId = setTimeout(() => setCelebrating(false), CELEBRATION_MS);
       }
     }
@@ -67,6 +101,7 @@ export function CelebrationLayout({
     return () => {
       supabase.removeChannel(channel);
       if (timeoutId) clearTimeout(timeoutId);
+      generation += 1;
     };
   }, []);
 
@@ -101,17 +136,6 @@ export function CelebrationLayout({
       >
         <div className="overflow-hidden">
           <div className={revealClass}>{infoCards}</div>
-        </div>
-      </div>
-
-      <div
-        className={cn(
-          "grid transition-[grid-template-rows] duration-700 ease-in-out",
-          celebrating ? "grid-rows-[0fr]" : "grid-rows-[1fr]",
-        )}
-      >
-        <div className="overflow-hidden">
-          <div className={revealClass}>{footer}</div>
         </div>
       </div>
     </>

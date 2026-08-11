@@ -47,10 +47,15 @@ export default async function ProgramsPage() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-heading text-2xl font-semibold tracking-tight text-foreground">
+          <nav className="mb-1 flex items-center text-xs font-medium tracking-wide text-muted-foreground">
+            <span>Management</span>
+            <span className="mx-2">/</span>
+            <span className="text-secondary-foreground">Programs</span>
+          </nav>
+          <h1 className="font-heading text-3xl font-bold tracking-tight text-primary">
             Festival Programs
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-muted-foreground">
             Manage and monitor current festival schedule and events.
           </p>
         </div>

@@ -28,6 +28,7 @@ export function groupPlacements(rows: EventPlacementRow[]): ProgramPlacements[] 
       name: row.place_name,
       photoUrl: row.place_photo_url,
       groupId: row.place_group_id,
+      category: row.place_category,
     });
   }
 

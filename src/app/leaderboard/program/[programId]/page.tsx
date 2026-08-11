@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { PrintButton } from "@/components/print-button";
 import { PROGRAM_TYPE_LABELS } from "@/lib/validations/program";
 import { DIVISION_LABELS, RANK_LABEL } from "../../labels";
+import { PlaceholderAvatar } from "@/components/gender-avatar";
 
 export const dynamic = "force-dynamic";
 
@@ -98,6 +99,7 @@ export default async function ProgramResultsPage({
                 ? (result as GroupProgramResult).group_id
                 : (result as ProgramResult).student_id;
               const photoUrl = isGroup ? null : (result as ProgramResult).photo_url;
+              const category = isGroup ? null : (result as ProgramResult).student_category;
               const groupId = isGroup
                 ? (result as GroupProgramResult).group_id
                 : (result as ProgramResult).group_id;
@@ -127,9 +129,7 @@ export default async function ProgramResultsPage({
                     {photoUrl ? (
                       <Image src={photoUrl} alt="" fill sizes="56px" className="object-cover" />
                     ) : (
-                      <span className="material-symbols-outlined text-[26px] text-muted-foreground">
-                        {isGroup ? "groups" : "person"}
-                      </span>
+                      <PlaceholderAvatar category={category} isGroup={isGroup} className="size-full p-2" />
                     )}
                   </span>
                   <span className="min-w-0 flex-1">
@@ -161,8 +161,8 @@ export default async function ProgramResultsPage({
         </div>
 
         {/* Print-only document — a clean letterhead + table, independent of the on-screen layout */}
-        <div className="hidden flex-col gap-8 print:flex">
-          <div className="flex flex-col items-center gap-2 border-b-2 border-foreground pb-6 text-center">
+        <div className="hidden flex-col gap-8 [-webkit-print-color-adjust:exact] [print-color-adjust:exact] print:flex">
+          <div className="flex flex-col items-center gap-2 pb-6 text-center">
             <Image
               src="/mehfile-meem-logo-indigo.png"
               alt="Mehfile Meem — Meelad Fest 2K26"
@@ -178,6 +178,7 @@ export default async function ProgramResultsPage({
             <p className="text-sm text-muted-foreground">
               {DIVISION_LABELS[program.category]} · {PROGRAM_TYPE_LABELS[program.program_type]}
             </p>
+            <span aria-hidden className="mt-2 h-1 w-24 rounded-full bg-gold" />
           </div>
 
           <table className="w-full border-collapse text-left">
@@ -202,8 +203,15 @@ export default async function ProgramResultsPage({
                   : (result as ProgramResult).group_id;
                 return (
                   <tr key={key} className="border-b border-border" style={{ breakInside: "avoid" }}>
-                    <td className="py-2.5 pr-2 font-heading text-lg font-bold tabular-nums">
-                      {result.rank}
+                    <td className="py-2.5 pr-2">
+                      <span
+                        className={cn(
+                          "flex size-8 items-center justify-center rounded-full font-heading text-sm font-bold tabular-nums",
+                          RANK_BADGE[result.rank] ?? "bg-muted text-muted-foreground",
+                        )}
+                      >
+                        {result.rank}
+                      </span>
                     </td>
                     <td className="py-2.5 pr-2 font-semibold">{name}</td>
                     {!isGroup && (

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { GroupLeaderboardRow } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "./i18n";
 
 async function fetchGroupRows(): Promise<GroupLeaderboardRow[]> {
   const supabase = createClient();
@@ -19,6 +20,7 @@ export function ChampionshipSidebar({
 }: {
   initialGroupRows: GroupLeaderboardRow[];
 }) {
+  const { t } = useLanguage();
   const [rows, setRows] = useState(initialGroupRows);
 
   useEffect(() => {
@@ -41,16 +43,18 @@ export function ChampionshipSidebar({
   }, []);
 
   return (
-    <aside className="card-elevated flex w-full flex-col gap-4 rounded-xl bg-sidebar p-4 text-sidebar-foreground sm:p-5 md:h-full md:min-h-0 md:overflow-hidden">
+    <aside className="card-elevated flex w-full shrink-0 flex-col gap-4 rounded-xl bg-sidebar p-4 text-sidebar-foreground sm:p-5">
       <div className="flex shrink-0 items-center gap-2">
         <span className="material-symbols-outlined shrink-0 text-[20px] text-gold">emoji_events</span>
         <div>
-          <h2 className="font-heading text-sm font-bold text-sidebar-foreground">Group Standings</h2>
-          <p className="text-xs text-sidebar-foreground/60">Overall Festival Points</p>
+          <h2 className="font-heading text-sm font-bold text-sidebar-foreground">
+            {t("groupStandings")}
+          </h2>
+          <p className="text-xs text-sidebar-foreground/60">{t("overallFestivalPoints")}</p>
         </div>
       </div>
 
-      <div className="flex flex-col gap-2 md:min-h-0 md:flex-1 md:overflow-y-auto">
+      <div className="flex flex-col gap-2">
         {rows.map((row, index) => (
           <div
             key={row.group_id}
@@ -81,7 +85,7 @@ export function ChampionshipSidebar({
         ))}
         {!rows.length && (
           <p className="px-1 text-center text-sm text-sidebar-foreground/60">
-            No results published yet.
+            {t("noResultsPublished")}
           </p>
         )}
       </div>

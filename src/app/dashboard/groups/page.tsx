@@ -35,8 +35,13 @@ export default async function GroupsPage({
     <div className="flex flex-col gap-6">
       <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
         <div>
-          <h1 className="font-heading text-3xl font-semibold text-primary">Groups</h1>
-          <p className="mt-1 text-muted-foreground">
+          <nav className="mb-1 flex items-center text-xs font-medium tracking-wide text-muted-foreground">
+            <span>Management</span>
+            <span className="mx-2">/</span>
+            <span className="text-secondary-foreground">Groups</span>
+          </nav>
+          <h1 className="font-heading text-3xl font-bold tracking-tight text-primary">Groups</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
             Manage and track active student circles for the festival season.
           </p>
         </div>

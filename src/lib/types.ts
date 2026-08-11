@@ -115,6 +115,7 @@ export type ProgramResult = {
   avg_total: number;
   rank: number;
   photo_url: string | null;
+  student_category: StudentCategory;
 };
 
 export type GroupProgramResult = {
@@ -142,6 +143,7 @@ export type EventPlacementRow = {
   place_name: string;
   place_photo_url: string | null;
   place_group_id: string;
+  place_category: StudentCategory | null;
 };
 
 export type ProgramPlacements = {
@@ -150,5 +152,12 @@ export type ProgramPlacements = {
   category: StudentDivision;
   program_type: ProgramType;
   published_at: string | null;
-  places: { id: string; rank: number; name: string; photoUrl: string | null; groupId: string }[];
+  places: {
+    id: string;
+    rank: number;
+    name: string;
+    photoUrl: string | null;
+    groupId: string;
+    category: StudentCategory | null;
+  }[];
 };

@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useLanguage } from "./i18n";
 
 // Renders a QR code for this page's own URL so attendees can pull up
 // results on their own phones. Uses a public QR-image API against
 // window.location — avoids adding a QR-generation dependency for one
 // small decorative widget.
 export function ResultsQrCode() {
+  const { t } = useLanguage();
   const [src, setSrc] = useState<string | null>(null);
 
   useEffect(() => {
@@ -31,10 +33,8 @@ export function ResultsQrCode() {
         height={40}
         className="rounded-sm border border-border"
       />
-      <span className="hidden text-xs font-medium text-muted-foreground lg:block">
-        Scan for
-        <br />
-        results
+      <span className="hidden max-w-[70px] text-xs font-medium text-muted-foreground lg:block">
+        {t("scanForResults")}
       </span>
     </div>
   );

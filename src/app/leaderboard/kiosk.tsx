@@ -4,6 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { CelebrationLayout } from "./celebration-layout";
+import { useLanguage } from "./i18n";
 
 const ROTATE_MS = 15_000;
 
@@ -27,21 +28,20 @@ function useKioskParam() {
  * with kiosk mode already on. */
 export function KioskToggleButton() {
   const { kiosk, setKiosk } = useKioskParam();
+  const { t } = useLanguage();
 
   return (
     <button
       type="button"
       onClick={() => setKiosk(!kiosk)}
-      title="Auto-rotate between the podium and full group standings — for an unattended display"
+      title={t("kioskToggleTitle")}
       className={cn(
-        "flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
-        kiosk
-          ? "border-primary bg-primary/10 text-primary"
-          : "border-border text-muted-foreground hover:bg-muted",
+        "flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-medium transition-colors",
+        kiosk ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-card hover:text-primary",
       )}
     >
       <span className="material-symbols-outlined text-[18px]">cast</span>
-      {kiosk ? "Kiosk: On" : "Kiosk Mode"}
+      {kiosk ? t("kioskOn") : t("kioskMode")}
     </button>
   );
 }
@@ -55,13 +55,11 @@ export function KioskStage({
   podium,
   sidebar,
   infoCards,
-  footer,
 }: {
   initialHeroId: string | null;
   podium: ReactNode;
   sidebar: ReactNode;
   infoCards: ReactNode;
-  footer: ReactNode;
 }) {
   const { kiosk } = useKioskParam();
   const [focus, setFocus] = useState<"podium" | "standings">("podium");
@@ -84,7 +82,6 @@ export function KioskStage({
       podium={podium}
       sidebar={sidebar}
       infoCards={infoCards}
-      footer={footer}
     />
   );
 }
