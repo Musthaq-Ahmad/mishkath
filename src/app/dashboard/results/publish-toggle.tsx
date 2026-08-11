@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { Button } from "@/components/ui/button";
+import { useTransition } from "react";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export function PublishToggle({
   published,
@@ -13,43 +14,36 @@ export function PublishToggle({
   onUnpublish: () => Promise<{ message?: string } | undefined>;
 }) {
   const [pending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
 
-  function run(action: () => Promise<{ message?: string } | undefined>) {
-    setError(null);
+  function toggle() {
     startTransition(async () => {
-      const result = await action();
+      const result = await (published ? onUnpublish() : onPublish());
       if (result?.message) {
-        setError(result.message);
+        toast.error(result.message);
+      } else {
+        toast.success(published ? "Results unpublished" : "Results published");
       }
     });
   }
 
   return (
-    <div className="flex flex-col items-end gap-1">
-      {published ? (
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          disabled={pending}
-          onClick={() => run(onUnpublish)}
-        >
-          {pending ? "Updating..." : "Unpublish"}
-        </Button>
-      ) : (
-        <Button
-          type="button"
-          size="sm"
-          disabled={pending}
-          className="gap-1.5"
-          onClick={() => run(onPublish)}
-        >
-          <span className="material-symbols-outlined text-[16px]">publish</span>
-          {pending ? "Publishing..." : "Publish"}
-        </Button>
+    <button
+      type="button"
+      role="switch"
+      aria-checked={published}
+      disabled={pending}
+      onClick={toggle}
+      className={cn(
+        "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors disabled:opacity-50",
+        published ? "bg-primary" : "bg-muted",
       )}
-      {error && <p className="max-w-56 text-right text-xs text-destructive">{error}</p>}
-    </div>
+    >
+      <span
+        className={cn(
+          "inline-block size-5 translate-x-0.5 rounded-full bg-white shadow-sm transition-transform",
+          published && "translate-x-[22px]",
+        )}
+      />
+    </button>
   );
 }

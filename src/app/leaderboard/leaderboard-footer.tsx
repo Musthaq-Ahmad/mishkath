@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { groupPlacements } from "@/lib/leaderboard";
@@ -34,10 +33,7 @@ function ResultChip({
 }) {
   const places = [...program.places].sort((a, b) => a.rank - b.rank);
   return (
-    <Link
-      href={`/leaderboard/program/${program.program_id}`}
-      className="flex shrink-0 items-center gap-5 px-8 text-foreground transition-colors hover:text-primary"
-    >
+    <div className="flex shrink-0 items-center gap-5 px-8 text-foreground">
       <span className="flex items-center gap-2">
         <span className="material-symbols-outlined text-[20px] text-muted-foreground">emoji_events</span>
         <span className="font-heading text-lg font-semibold whitespace-nowrap">
@@ -65,7 +61,7 @@ function ResultChip({
           )}
         </span>
       ))}
-    </Link>
+    </div>
   );
 }
 

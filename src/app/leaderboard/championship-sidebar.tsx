@@ -4,9 +4,6 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { GroupLeaderboardRow } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { groupRingColor } from "@/lib/group-color";
-
-const SEGMENTS = 10;
 
 async function fetchGroupRows(): Promise<GroupLeaderboardRow[]> {
   const supabase = createClient();
@@ -15,20 +12,6 @@ async function fetchGroupRows(): Promise<GroupLeaderboardRow[]> {
     .select("*")
     .returns<GroupLeaderboardRow[]>();
   return data ?? [];
-}
-
-function SegmentedBar({ value, max, colorClass }: { value: number; max: number; colorClass: string }) {
-  const filled = Math.max(0, Math.min(SEGMENTS, Math.round((value / max) * SEGMENTS)));
-  return (
-    <div className="flex gap-1">
-      {Array.from({ length: SEGMENTS }, (_, i) => (
-        <span
-          key={i}
-          className={cn("h-3 flex-1 rounded-sm", i < filled ? colorClass : "bg-muted")}
-        />
-      ))}
-    </div>
-  );
 }
 
 export function ChampionshipSidebar({
@@ -57,59 +40,47 @@ export function ChampionshipSidebar({
     };
   }, []);
 
-  const maxPoints = Math.max(1, ...rows.map((row) => row.points));
-
   return (
-    <aside className="card-elevated flex w-full flex-col gap-4 rounded-lg border border-border bg-card p-4 sm:p-5 md:h-full md:min-h-0 md:overflow-hidden">
+    <aside className="card-elevated flex w-full flex-col gap-4 rounded-xl bg-sidebar p-4 text-sidebar-foreground sm:p-5 md:h-full md:min-h-0 md:overflow-hidden">
       <div className="flex shrink-0 items-center gap-2">
-        <span className="material-symbols-outlined shrink-0 text-[22px] text-muted-foreground">emoji_events</span>
-        <h2 className="font-heading text-sm font-bold tracking-wide text-foreground uppercase">
-          Overall Championship
-        </h2>
+        <span className="material-symbols-outlined shrink-0 text-[20px] text-gold">emoji_events</span>
+        <div>
+          <h2 className="font-heading text-sm font-bold text-sidebar-foreground">Group Standings</h2>
+          <p className="text-xs text-sidebar-foreground/60">Overall Festival Points</p>
+        </div>
       </div>
 
-      <div className="flex flex-col gap-3 md:min-h-0 md:flex-1 md:overflow-y-auto">
-        {rows.map((row, index) => {
-          const ring = groupRingColor(row.group_id);
-          const barColor = index === 0 ? "bg-gold" : "bg-primary";
-          return (
-            <div
-              key={row.group_id}
-              className={cn(
-                "animate-fade-in-up flex flex-col gap-2.5 rounded-md border border-border bg-background p-4",
-                index === 0 && "border-l-2 border-l-gold",
-              )}
-              style={{ animationDelay: `${Math.min(index, 8) * 60}ms` }}
-            >
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex min-w-0 items-center gap-2.5">
-                  <span
-                    className={cn(
-                      "flex size-10 shrink-0 items-center justify-center rounded-md bg-muted ring-2",
-                      ring,
-                    )}
-                  >
-                    <span className="material-symbols-outlined text-[21px]">shield</span>
-                  </span>
-                  <span className="truncate font-heading text-xl font-bold text-foreground">
-                    {row.group_name}
-                  </span>
-                </div>
-                <span
-                  className={cn(
-                    "shrink-0 font-heading text-3xl font-black tabular-nums",
-                    index === 0 ? "text-gold" : "text-foreground",
-                  )}
-                >
-                  {row.points}
-                </span>
-              </div>
-              <SegmentedBar value={row.points} max={maxPoints} colorClass={barColor} />
+      <div className="flex flex-col gap-2 md:min-h-0 md:flex-1 md:overflow-y-auto">
+        {rows.map((row, index) => (
+          <div
+            key={row.group_id}
+            className="flex items-center justify-between gap-3 rounded-lg bg-sidebar-accent px-4 py-3"
+          >
+            <div className="flex min-w-0 items-center gap-3">
+              <span
+                className={cn(
+                  "flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-bold tabular-nums",
+                  index === 0 ? "bg-gold text-gold-foreground" : "bg-white/10 text-sidebar-foreground",
+                )}
+              >
+                {index + 1}
+              </span>
+              <span className="truncate text-sm font-semibold text-sidebar-foreground">
+                {row.group_name}
+              </span>
             </div>
-          );
-        })}
+            <span
+              className={cn(
+                "shrink-0 font-heading text-lg font-bold tabular-nums",
+                index === 0 ? "text-gold" : "text-sidebar-foreground",
+              )}
+            >
+              {row.points}
+            </span>
+          </div>
+        ))}
         {!rows.length && (
-          <p className="px-1 text-center text-lg text-muted-foreground">
+          <p className="px-1 text-center text-sm text-sidebar-foreground/60">
             No results published yet.
           </p>
         )}

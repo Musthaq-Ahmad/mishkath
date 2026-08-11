@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { cn } from "@/lib/utils";
+import { toastResult } from "@/lib/toast";
 import { setProgramStatus } from "../actions";
 import { PROGRAM_STATUSES, PROGRAM_STATUS_LABELS } from "@/lib/validations/program";
 import type { ProgramStatus } from "@/lib/types";
@@ -26,7 +27,10 @@ export function StatusControl({
             disabled={pending}
             onClick={() => {
               if (!active) {
-                startTransition(() => setProgramStatus(programId, s));
+                startTransition(async () => {
+                  const result = await setProgramStatus(programId, s);
+                  toastResult(result, `Status updated to ${PROGRAM_STATUS_LABELS[s]}`);
+                });
               }
             }}
             className={cn(

@@ -1,4 +1,4 @@
-# MISHKAT Design System
+# Mehfile Meem Design System
 
 A single reference for the app-wide visual redesign — admin dashboard, auth
 pages, and the public leaderboard now share one design language instead of

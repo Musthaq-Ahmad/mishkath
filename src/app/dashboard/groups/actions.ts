@@ -59,11 +59,16 @@ export async function updateGroup(
   return undefined;
 }
 
-export async function deleteGroup(id: string) {
+export async function deleteGroup(id: string): Promise<{ error?: string } | undefined> {
   await requireRole("admin");
 
   const supabase = await createClient();
-  await supabase.from("groups").delete().eq("id", id);
+  const { error } = await supabase.from("groups").delete().eq("id", id);
+
+  if (error) {
+    return { error: "Could not delete group." };
+  }
 
   revalidatePath("/dashboard/groups");
+  return undefined;
 }

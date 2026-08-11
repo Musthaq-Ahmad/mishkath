@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "MISHKAT — Festival Management",
+  title: "Mehfile Meem — Festival Management",
   description: "Festival management platform for groups, students, programs, judging and live results.",
 };
 

@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { cn } from "@/lib/utils";
+import { toastResult } from "@/lib/toast";
 
 export function ToggleCheckbox({
   checked,
@@ -10,7 +11,7 @@ export function ToggleCheckbox({
 }: {
   checked: boolean;
   label: string;
-  action: () => Promise<void>;
+  action: () => Promise<{ error?: string } | void>;
 }) {
   const [pending, startTransition] = useTransition();
 
@@ -28,7 +29,10 @@ export function ToggleCheckbox({
         checked={checked}
         disabled={pending}
         onChange={() => {
-          startTransition(() => action());
+          startTransition(async () => {
+            const result = await action();
+            toastResult(result ?? undefined, checked ? "Removed" : "Added");
+          });
         }}
       />
       {label}

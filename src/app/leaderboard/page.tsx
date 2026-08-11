@@ -4,11 +4,10 @@ import { createClient } from "@/lib/supabase/server";
 import { groupPlacements } from "@/lib/leaderboard";
 import { getUpcomingPrograms } from "@/lib/schedule";
 import type { EventPlacementRow, Group, GroupLeaderboardRow, Program } from "@/lib/types";
-import { CalligraphyFlourish } from "./calligraphy-flourish";
-import { CelebrationLayout } from "./celebration-layout";
 import { ChampionshipSidebar } from "./championship-sidebar";
 import { ClockCard } from "./clock-card";
 import { InfoCardsRow } from "./info-cards-row";
+import { KioskStage, KioskToggleButton } from "./kiosk";
 import { LeaderboardFooter } from "./leaderboard-footer";
 import { PublishedResultsFeed } from "./published-results-feed";
 import { ResultsQrCode } from "./results-qr-code";
@@ -51,42 +50,23 @@ export default async function LeaderboardPage() {
   );
 
   return (
-    <div
-      className="relative min-h-screen overflow-y-auto p-3 text-foreground sm:p-4 md:h-screen md:overflow-hidden lg:p-6"
-      style={{
-        background:
-          "radial-gradient(ellipse 65% 50% at 50% -10%, rgba(192,38,211,0.5) 0%, transparent 65%), radial-gradient(ellipse 55% 45% at 100% 105%, color-mix(in srgb, var(--gold) 30%, transparent) 0%, transparent 70%), radial-gradient(ellipse 50% 40% at -5% 100%, rgba(147,51,234,0.35) 0%, transparent 70%), linear-gradient(155deg, #3b0764 0%, #1a0a2e 45%, #4a044e 100%)",
-      }}
-    >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-[0.07]"
-        style={{
-          backgroundImage:
-            "linear-gradient(45deg, var(--gold) 1px, transparent 1px), linear-gradient(-45deg, var(--gold) 1px, transparent 1px)",
-          backgroundSize: "72px 72px",
-        }}
-      />
-      <CalligraphyFlourish className="animate-bg-drift pointer-events-none absolute -top-16 -left-20 size-[36rem] opacity-[0.1] blur-[1px] sm:size-[42rem]" />
-      <CalligraphyFlourish className="animate-bg-spin-slow pointer-events-none absolute -right-24 -bottom-24 size-[30rem] opacity-[0.08] blur-[1px] sm:size-[36rem]" />
+    <div className="relative min-h-screen overflow-y-auto bg-background p-3 text-foreground sm:p-4 md:h-screen md:overflow-hidden lg:p-6">
       <div className="relative mx-auto flex min-h-full w-full max-w-[1700px] flex-col gap-4 md:h-full md:min-h-0">
         <header className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
           <div className="flex items-center gap-3">
-            <div className="relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-card ring-1 ring-border">
-              <Image
-                src="/mishkat-icon.png"
-                alt=""
-                width={40}
-                height={40}
-                className="size-9 object-cover"
-              />
-            </div>
-            <div>
-              <h1 className="font-heading text-xl font-bold tracking-tight sm:text-2xl">
-                MISHKAT{" "}
-                <span className="font-medium text-muted-foreground">Live Results</span>
-              </h1>
-              <p className="hidden text-base text-muted-foreground sm:block">
+            <Image
+              src="/mehfile-meem-logo-indigo.png"
+              alt="Mehfile Meem — Meelad Fest 2K26"
+              width={200}
+              height={119}
+              className="h-auto w-[160px] sm:w-[200px]"
+              priority
+            />
+            <div className="hidden border-l border-border pl-3 sm:block">
+              <p className="font-heading text-lg font-bold tracking-tight text-primary">
+                Live Results
+              </p>
+              <p className="text-base text-muted-foreground">
                 Festival management and results tracking
               </p>
             </div>
@@ -123,6 +103,9 @@ export default async function LeaderboardPage() {
             </Link>
 
             <span aria-hidden className="h-4 w-px bg-border" />
+            <KioskToggleButton />
+
+            <span aria-hidden className="h-4 w-px bg-border" />
             <ClockCard />
             <div className="hidden sm:block">
               <ResultsQrCode />
@@ -130,7 +113,7 @@ export default async function LeaderboardPage() {
           </div>
         </header>
 
-        <CelebrationLayout
+        <KioskStage
           initialHeroId={placements[0]?.program_id ?? null}
           podium={<PublishedResultsFeed initialPlacements={placements} groupNames={groupNames} />}
           sidebar={<ChampionshipSidebar initialGroupRows={groupRows ?? []} />}

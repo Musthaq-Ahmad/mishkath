@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { verifySession } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentAndNextProgram, getUpcomingPrograms } from "@/lib/schedule";
+import { findScheduleConflicts, getCurrentAndNextProgram, getUpcomingPrograms } from "@/lib/schedule";
 import { groupPlacements } from "@/lib/leaderboard";
+import { cn } from "@/lib/utils";
 import { STUDENT_CATEGORY_LABELS, STUDENT_DIVISION_LABELS } from "@/lib/validations/student";
 import type {
   EventPlacementRow,
@@ -62,26 +63,28 @@ function CurrentNextPrograms({
 }) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <div className="card-elevated flex flex-col gap-2 rounded-xl bg-primary p-5 text-primary-foreground">
-        <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[10px] font-bold tracking-widest text-gold uppercase">
-          <span className="size-1.5 animate-pulse rounded-full bg-gold" />
+      <div className="card-elevated relative flex flex-col gap-2 overflow-hidden rounded-xl bg-card p-5 ring-1 ring-border">
+        <span className="absolute inset-x-0 top-0 h-1 bg-gold" />
+        <span className="inline-flex w-fit items-center gap-1.5 text-[10px] font-bold tracking-widest text-gold uppercase">
+          <span className="size-2 animate-pulse rounded-full bg-gold" />
           Now Playing
         </span>
         {current ? (
           <>
             <p className="font-heading text-xl font-semibold">{current.name}</p>
-            <p className="text-sm text-primary-foreground/70">
+            <p className="text-sm text-muted-foreground">
               {STUDENT_DIVISION_LABELS[current.category]}
               {current.scheduled_start && ` · Started ${formatTime(current.scheduled_start)}`}
             </p>
           </>
         ) : (
-          <p className="text-sm text-primary-foreground/70">No program in progress.</p>
+          <p className="text-sm text-muted-foreground">No program in progress.</p>
         )}
       </div>
 
       <div className="card-elevated flex flex-col gap-2 rounded-xl bg-card p-5 ring-1 ring-border">
-        <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-surface-container-low px-3 py-1 text-[10px] font-bold tracking-widest text-primary uppercase">
+        <span className="inline-flex w-fit items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+          <span className="material-symbols-outlined text-[14px]">schedule</span>
           Up Next
         </span>
         {next ? (
@@ -95,6 +98,56 @@ function CurrentNextPrograms({
         ) : (
           <p className="text-sm text-muted-foreground">Nothing scheduled yet.</p>
         )}
+      </div>
+    </div>
+  );
+}
+
+const STATUS_DOT_COLOR: Record<ProgramStatus, string> = {
+  draft: "bg-outline",
+  scheduled: "bg-primary",
+  running: "bg-warning",
+  completed: "bg-success",
+};
+
+function StatusPills({ statusCounts }: { statusCounts: Map<ProgramStatus, number> }) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {PROGRAM_STATUSES.map((status) => (
+        <span
+          key={status}
+          className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-container px-3 py-1.5 text-[11px] font-bold tracking-wide text-muted-foreground uppercase"
+        >
+          <span className={cn("size-2 rounded-full", STATUS_DOT_COLOR[status])} />
+          {PROGRAM_STATUS_LABELS[status]}: {statusCounts.get(status) ?? 0}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function ScoringProgressRing({ pct }: { pct: number }) {
+  const radius = 45;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (pct / 100) * circumference;
+  return (
+    <div className="relative size-32">
+      <svg viewBox="0 0 100 100" className="size-full -rotate-90">
+        <circle cx="50" cy="50" r={radius} fill="transparent" stroke="var(--surface-container-high)" strokeWidth="8" />
+        <circle
+          cx="50"
+          cy="50"
+          r={radius}
+          fill="transparent"
+          stroke="var(--primary)"
+          strokeWidth="8"
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="font-heading text-2xl font-bold tabular-nums">{pct}%</span>
       </div>
     </div>
   );
@@ -157,6 +210,7 @@ export default async function DashboardPage() {
     { data: groupScores },
     { data: groupLeaderboard },
     { data: placementRows },
+    { count: checkedInCount },
   ] = await Promise.all([
     Promise.all(
       ADMIN_STATS.map(async (stat) => {
@@ -208,6 +262,7 @@ export default async function DashboardPage() {
       .order("published_at", { ascending: false })
       .order("rank", { ascending: true })
       .returns<EventPlacementRow[]>(),
+    supabase.from("students").select("*", { count: "exact", head: true }).eq("checked_in", true),
   ]);
 
   const activity: ActivityItem[] = [
@@ -261,6 +316,8 @@ export default async function DashboardPage() {
   }
   const totalPrograms = allPrograms?.length ?? 0;
 
+  const conflictedProgramIds = findScheduleConflicts(scheduledPrograms ?? []);
+
   let programsWithParticipants = 0;
   let programsFullyScored = 0;
   const needsAttention: { id: string; name: string; reason: string }[] = [];
@@ -276,6 +333,13 @@ export default async function DashboardPage() {
     } else if (p.status === "completed" && !p.published) {
       needsAttention.push({ id: p.id, name: p.name, reason: "Fully scored — ready to publish" });
     }
+    if (conflictedProgramIds.has(p.id)) {
+      needsAttention.push({
+        id: p.id,
+        name: p.name,
+        reason: "Scheduling conflict — shares a start time with another program",
+      });
+    }
   }
 
   const recentlyPublished = groupPlacements(placementRows ?? []).slice(0, 4);
@@ -289,6 +353,7 @@ export default async function DashboardPage() {
           </h1>
           <p className="text-sm text-muted-foreground">{today}</p>
         </div>
+        <StatusPills statusCounts={statusCounts} />
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -305,6 +370,11 @@ export default async function DashboardPage() {
             <p className="font-heading text-3xl font-semibold tabular-nums">
               {stat.count.toLocaleString()}
             </p>
+            {stat.key === "students" && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                Checked in: {(checkedInCount ?? 0).toLocaleString()}
+              </p>
+            )}
           </div>
         ))}
       </div>
@@ -341,7 +411,15 @@ export default async function DashboardPage() {
             {(groupLeaderboard ?? []).map((row, index) => (
               <li key={row.group_id} className="flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-3">
-                  <span className="w-5 shrink-0 text-sm font-semibold text-muted-foreground tabular-nums">
+                  <span
+                    className={cn(
+                      "flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-bold tabular-nums",
+                      index === 0 && "bg-gold text-gold-foreground",
+                      index === 1 && "bg-silver text-[#1b1c19]",
+                      index === 2 && "bg-bronze text-[#251a00]",
+                      index > 2 && "bg-muted text-muted-foreground",
+                    )}
+                  >
                     {index + 1}
                   </span>
                   <span className="truncate text-sm font-medium">{row.group_name}</span>
@@ -357,38 +435,19 @@ export default async function DashboardPage() {
           </ul>
         </div>
 
-        <div className="card-elevated flex flex-col gap-4 rounded-xl bg-card p-5 ring-1 ring-border">
-          <h2 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+        <div className="card-elevated flex flex-col items-center gap-3 rounded-xl bg-card p-5 text-center ring-1 ring-border">
+          <h2 className="w-full text-left text-xs font-semibold tracking-widest text-muted-foreground uppercase">
             Scoring Progress
           </h2>
-          <div className="flex flex-col gap-2">
-            <div className="flex items-baseline justify-between">
-              <span className="font-heading text-2xl font-semibold tabular-nums">
-                {programsFullyScored} / {programsWithParticipants || 0}
-              </span>
-              <span className="text-xs text-muted-foreground">programs fully judged</span>
-            </div>
-            <div className="h-2 overflow-hidden rounded-full bg-surface-container-low">
-              <div
-                className="h-full rounded-full bg-primary transition-all"
-                style={{
-                  width: `${programsWithParticipants ? Math.round((programsFullyScored / programsWithParticipants) * 100) : 0}%`,
-                }}
-              />
-            </div>
-          </div>
-          <div className="flex flex-col gap-2 border-t border-border pt-3">
-            {PROGRAM_STATUSES.map((status) => (
-              <div key={status} className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">{PROGRAM_STATUS_LABELS[status]}</span>
-                <span className="font-semibold tabular-nums">{statusCounts.get(status) ?? 0}</span>
-              </div>
-            ))}
-            <div className="flex items-center justify-between border-t border-border pt-2 text-sm font-medium">
-              <span>Total</span>
-              <span className="tabular-nums">{totalPrograms}</span>
-            </div>
-          </div>
+          <ScoringProgressRing
+            pct={programsWithParticipants ? Math.round((programsFullyScored / programsWithParticipants) * 100) : 0}
+          />
+          <p className="font-heading text-lg font-semibold tabular-nums">
+            {programsFullyScored} / {programsWithParticipants || 0}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            programs fully judged &middot; {totalPrograms} total
+          </p>
         </div>
 
         <div className="card-elevated flex flex-col gap-4 rounded-xl bg-card p-5 ring-1 ring-border">
@@ -420,24 +479,26 @@ export default async function DashboardPage() {
           <h2 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
             Recent Activity
           </h2>
-          <ul className="flex flex-col gap-3">
-            {activity.map((item) => (
-              <li key={item.id} className="flex items-start gap-3">
-                <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-surface-container-low text-primary">
-                  <span className="material-symbols-outlined text-[16px]">{item.icon}</span>
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm">{item.text}</p>
+          {activity.length ? (
+            <ul className="relative ml-1.5 flex flex-col gap-4 border-l border-border pb-1">
+              {activity.map((item, index) => (
+                <li key={item.id} className="relative pl-5">
+                  <span
+                    className={cn(
+                      "absolute top-1 -left-[5px] size-2.5 rounded-full ring-4 ring-card",
+                      index === 0 ? "bg-primary" : "bg-outline-variant",
+                    )}
+                  />
                   <p className="text-xs text-muted-foreground">
                     {formatRelativeTime(item.created_at)}
                   </p>
-                </div>
-              </li>
-            ))}
-            {!activity.length && (
-              <li className="text-sm text-muted-foreground">Nothing yet.</li>
-            )}
-          </ul>
+                  <p className="text-sm">{item.text}</p>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-muted-foreground">Nothing yet.</p>
+          )}
         </div>
 
         <div className="card-elevated flex flex-col gap-4 rounded-xl bg-card p-5 ring-1 ring-border">

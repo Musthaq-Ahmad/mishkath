@@ -37,7 +37,7 @@ export async function adminSubmitScore(
   );
 
   if (error) {
-    return { message: "Could not save score." };
+    return { message: `Could not save score: ${error.message}` };
   }
 
   revalidatePath(`/dashboard/programs/${programId}`);
@@ -76,7 +76,7 @@ export async function adminSubmitGroupScore(
   );
 
   if (error) {
-    return { message: "Could not save score." };
+    return { message: `Could not save score: ${error.message}` };
   }
 
   revalidatePath(`/dashboard/programs/${programId}`);

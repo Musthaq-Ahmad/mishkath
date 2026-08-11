@@ -5,7 +5,7 @@ import { groupPlacements } from "@/lib/leaderboard";
 import { groupRingColor } from "@/lib/group-color";
 import { cn } from "@/lib/utils";
 import type { EventPlacementRow, Group } from "@/lib/types";
-import { DIVISION_LABELS, MEDAL_LABEL, RANK_LABEL } from "../labels";
+import { DIVISION_LABELS, RANK_LABEL } from "../labels";
 
 export const dynamic = "force-dynamic";
 
@@ -56,11 +56,10 @@ export default async function AllResultsPage() {
           {placements.map((program, index) => {
             const places = [...program.places].sort((a, b) => a.rank - b.rank);
             return (
-              <Link
+              <div
                 key={program.program_id}
-                href={`/leaderboard/program/${program.program_id}`}
                 style={{ animationDelay: `${Math.min(index, 8) * 60}ms` }}
-                className="card-elevated animate-fade-in-up flex flex-col gap-4 rounded-lg border border-border bg-card p-5 transition-colors hover:border-primary/40 sm:p-6"
+                className="card-elevated animate-fade-in-up flex flex-col gap-4 rounded-lg border border-border bg-card p-5 sm:p-6"
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <h2 className="font-heading text-xl font-bold text-foreground sm:text-2xl">
@@ -100,7 +99,6 @@ export default async function AllResultsPage() {
                         <p className="truncate text-base font-semibold text-foreground">{place.name}</p>
                         <p className="truncate text-xs text-muted-foreground uppercase tracking-wide">
                           {RANK_LABEL[place.rank]}
-                          {MEDAL_LABEL[place.rank] ? ` · ${MEDAL_LABEL[place.rank]}` : ""}
                           {program.program_type === "individual" && groupNames[place.groupId]
                             ? ` · ${groupNames[place.groupId]}`
                             : ""}
@@ -109,7 +107,7 @@ export default async function AllResultsPage() {
                     </div>
                   ))}
                 </div>
-              </Link>
+              </div>
             );
           })}
 

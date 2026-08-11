@@ -14,6 +14,7 @@ import { DeleteButton } from "@/components/delete-button";
 import type { Program, ProgramParticipant } from "@/lib/types";
 import { PROGRAM_STATUS_LABELS } from "@/lib/validations/program";
 import { STUDENT_DIVISION_LABELS } from "@/lib/validations/student";
+import { findScheduleConflicts, formatScheduleTime } from "@/lib/schedule";
 import { ProgramForm } from "./program-form";
 import { deleteProgram } from "./actions";
 
@@ -40,6 +41,7 @@ export default async function ProgramsPage() {
   const totalPrograms = programs?.length ?? 0;
   const totalParticipants = participants?.length ?? 0;
   const completedPrograms = (programs ?? []).filter((p) => p.status === "completed").length;
+  const conflictedProgramIds = findScheduleConflicts(programs ?? []);
 
   return (
     <div className="flex flex-col gap-6">
@@ -122,6 +124,9 @@ export default async function ProgramsPage() {
                   Category
                 </TableHead>
                 <TableHead className="text-xs tracking-wider text-primary-foreground uppercase">
+                  Scheduled
+                </TableHead>
+                <TableHead className="text-xs tracking-wider text-primary-foreground uppercase">
                   Participants
                 </TableHead>
                 <TableHead className="text-xs tracking-wider text-primary-foreground uppercase">
@@ -164,6 +169,25 @@ export default async function ProgramsPage() {
                     </span>
                   </TableCell>
                   <TableCell>
+                    {program.scheduled_start ? (
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm text-muted-foreground">
+                          {formatScheduleTime(program.scheduled_start)}
+                        </span>
+                        {conflictedProgramIds.has(program.id) && (
+                          <span
+                            className="material-symbols-outlined text-[16px] text-destructive"
+                            title="Scheduling conflict: another program shares this exact start time"
+                          >
+                            warning
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
                     {participantCountByProgram.get(program.id) ?? 0}
                   </TableCell>
                   <TableCell>
@@ -181,14 +205,14 @@ export default async function ProgramsPage() {
                           </span>
                         }
                       />
-                      <DeleteButton action={deleteProgram.bind(null, program.id)} />
+                      <DeleteButton action={deleteProgram.bind(null, program.id)} label="Program" />
                     </div>
                   </TableCell>
                 </TableRow>
               ))}
               {!programs?.length && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground">
+                  <TableCell colSpan={6} className="text-center text-muted-foreground">
                     No programs yet.
                   </TableCell>
                 </TableRow>

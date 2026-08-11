@@ -30,3 +30,20 @@ export function formatScheduleTime(isoString: string) {
     minute: "2-digit",
   });
 }
+
+/** Programs that share the exact same scheduled_start timestamp as another
+ * program — flags a likely double-booking so it can be surfaced to admins. */
+export function findScheduleConflicts(programs: Program[]): Set<string> {
+  const idsByStart = new Map<string, string[]>();
+  for (const program of programs) {
+    if (!program.scheduled_start) continue;
+    const key = new Date(program.scheduled_start).toISOString();
+    idsByStart.set(key, [...(idsByStart.get(key) ?? []), program.id]);
+  }
+
+  const conflicted = new Set<string>();
+  for (const ids of idsByStart.values()) {
+    if (ids.length > 1) ids.forEach((id) => conflicted.add(id));
+  }
+  return conflicted;
+}

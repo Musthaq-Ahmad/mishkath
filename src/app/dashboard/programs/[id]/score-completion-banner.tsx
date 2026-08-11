@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 import { setProgramStatus } from "../actions";
 import { Button } from "@/components/ui/button";
+import { toastResult } from "@/lib/toast";
 import type { ProgramStatus } from "@/lib/types";
 
 export function ScoreCompletionBanner({
@@ -44,7 +45,10 @@ export function ScoreCompletionBanner({
           size="sm"
           disabled={pending}
           onClick={() =>
-            startTransition(() => setProgramStatus(programId, "completed" satisfies ProgramStatus))
+            startTransition(async () => {
+              const result = await setProgramStatus(programId, "completed" satisfies ProgramStatus);
+              toastResult(result, "Program marked Completed");
+            })
           }
         >
           {pending ? "Updating..." : "Mark Completed"}

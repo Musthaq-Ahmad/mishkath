@@ -13,3 +13,12 @@ export function codeForIndex(n: number): string {
   }
   return result;
 }
+
+/** Inverse of codeForIndex — "A" -> 1, "Z" -> 26, "AA" -> 27, ... */
+export function indexForCode(code: string): number {
+  let result = 0;
+  for (const char of code) {
+    result = result * 26 + (char.charCodeAt(0) - 64);
+  }
+  return result;
+}

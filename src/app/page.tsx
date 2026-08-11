@@ -8,7 +8,7 @@ export default function Home() {
       <ThemeToggle className="absolute top-4 right-4" />
       <div className="flex flex-col gap-2">
         <h1 className="font-heading text-4xl font-semibold tracking-tight">
-          MISHKAT
+          Mehfile Meem
         </h1>
         <p className="max-w-md text-muted-foreground">
           Festival management platform for groups, students, programs, judging

@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 import { signup } from "@/app/login/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +10,10 @@ import { Label } from "@/components/ui/label";
 
 export function SignupForm() {
   const [state, action, pending] = useActionState(signup, undefined);
+
+  useEffect(() => {
+    if (state?.message) toast.error(state.message);
+  }, [state]);
 
   return (
     <form action={action} className="flex flex-col gap-4">

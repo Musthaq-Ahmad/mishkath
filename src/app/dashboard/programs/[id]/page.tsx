@@ -21,9 +21,11 @@ import {
 import type {
   Group,
   GroupScoreRow,
+  Profile,
   Program,
   ProgramGroupParticipant,
   ProgramParticipant,
+  ScoreAuditLogRow,
   ScoreRow,
   Student,
 } from "@/lib/types";
@@ -85,6 +87,24 @@ export default async function ProgramDetailPage({
       .returns<GroupScoreRow[]>(),
   ]);
 
+  const { data: auditLog } = await supabase
+    .from("score_audit_log")
+    .select("*")
+    .eq("program_id", id)
+    .order("changed_at", { ascending: false })
+    .limit(100)
+    .returns<ScoreAuditLogRow[]>();
+
+  const changedByIds = [...new Set((auditLog ?? []).map((a) => a.changed_by).filter(Boolean))];
+  const { data: changedByProfiles } = changedByIds.length
+    ? await supabase
+        .from("profiles")
+        .select("id, full_name")
+        .in("id", changedByIds)
+        .returns<Pick<Profile, "id" | "full_name">[]>()
+    : { data: [] as Pick<Profile, "id" | "full_name">[] };
+  const changedByNameById = new Map((changedByProfiles ?? []).map((p) => [p.id, p.full_name]));
+
   const groupNameById = new Map((groups ?? []).map((g) => [g.id, g.name]));
   const participantStudentIds = new Set(
     (participants ?? []).map((p) => p.student_id),
@@ -125,6 +145,10 @@ export default async function ProgramDetailPage({
     program.program_type === "group"
       ? (groupParticipants ?? []).some((p) => p.code)
       : (participants ?? []).some((p) => p.code);
+  const hasMissingCodes =
+    program.program_type === "group"
+      ? (groupParticipants ?? []).some((p) => !p.code)
+      : (participants ?? []).some((p) => !p.code);
 
   const totalParticipantCount =
     program.program_type === "group"
@@ -177,6 +201,10 @@ export default async function ProgramDetailPage({
             <TabsTrigger value="scores" className="gap-1.5 rounded-lg py-2">
               <span className="material-symbols-outlined text-[18px]">edit_note</span>
               Enter Scores
+            </TabsTrigger>
+            <TabsTrigger value="history" className="gap-1.5 rounded-lg py-2">
+              <span className="material-symbols-outlined text-[18px]">history</span>
+              History
             </TabsTrigger>
           </TabsList>
         </div>
@@ -234,7 +262,12 @@ export default async function ProgramDetailPage({
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
-              <CodesPanel programId={id} hasCodes={hasCodes} locked={locked} />
+              <CodesPanel
+                programId={id}
+                hasCodes={hasCodes}
+                locked={locked}
+                hasMissingCodes={hasMissingCodes}
+              />
               <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
@@ -330,6 +363,70 @@ export default async function ProgramDetailPage({
                   scoresByParticipant={scoresByStudent}
                 />
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="history" className="mt-4">
+          <Card className="card-elevated">
+            <CardHeader>
+              <CardTitle>Score Change History</CardTitle>
+              <CardDescription>
+                Every score entry, update, and deletion for this program, most recent first.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>When</TableHead>
+                      <TableHead>Participant</TableHead>
+                      <TableHead>Action</TableHead>
+                      <TableHead>Presentation</TableHead>
+                      <TableHead>Content</TableHead>
+                      <TableHead>Overall</TableHead>
+                      <TableHead>Total</TableHead>
+                      <TableHead>Changed By</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {(auditLog ?? []).map((entry) => {
+                      const name =
+                        entry.participant_kind === "group"
+                          ? groupNameById.get(entry.participant_id) ?? "—"
+                          : studentNameById.get(entry.participant_id) ?? "—";
+                      return (
+                        <TableRow key={entry.id}>
+                          <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+                            {new Date(entry.changed_at).toLocaleString("en-US", {
+                              dateStyle: "medium",
+                              timeStyle: "short",
+                            })}
+                          </TableCell>
+                          <TableCell className="font-medium">{name}</TableCell>
+                          <TableCell className="capitalize">{entry.action}</TableCell>
+                          <TableCell>{entry.presentation ?? "—"}</TableCell>
+                          <TableCell>{entry.content ?? "—"}</TableCell>
+                          <TableCell>{entry.overall ?? "—"}</TableCell>
+                          <TableCell className="font-semibold">{entry.total ?? "—"}</TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {entry.changed_by
+                              ? changedByNameById.get(entry.changed_by) ?? "Unknown"
+                              : "—"}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                    {!auditLog?.length && (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center text-muted-foreground">
+                          No score changes recorded yet.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

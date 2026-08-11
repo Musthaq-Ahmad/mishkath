@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { toast } from "sonner";
 import { createStudent, updateStudent } from "./actions";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -51,11 +52,17 @@ export function StudentForm({
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
-    if (submittedRef.current && !pending && !state) {
-      setOpen(false);
-      submittedRef.current = false;
+    if (!submittedRef.current || pending) return;
+    submittedRef.current = false;
+    if (!state) {
+      toast.success(student ? "Student updated" : "Student created");
+      setTimeout(() => setOpen(false), 0);
+    } else if (state.message) {
+      toast.error(state.message);
+    } else if (state.errors) {
+      toast.error("Please fix the highlighted fields.");
     }
-  }, [pending, state]);
+  }, [pending, state, student]);
 
   async function handlePhotoChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];

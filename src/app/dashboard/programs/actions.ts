@@ -3,9 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
-import { codeForIndex } from "@/lib/codes";
+import { codeForIndex, indexForCode } from "@/lib/codes";
+import { notifyWhatsAppGroup } from "@/lib/whatsapp";
 import { ProgramSchema, type ProgramFormState } from "@/lib/validations/program";
-import type { ProgramStatus, ProgramType } from "@/lib/types";
+import { STUDENT_DIVISION_LABELS } from "@/lib/validations/student";
+import type { EventPlacementRow, ProgramStatus, ProgramType } from "@/lib/types";
 
 export async function createProgram(
   _state: ProgramFormState,
@@ -79,13 +81,18 @@ export async function updateProgram(
   return undefined;
 }
 
-export async function deleteProgram(id: string) {
+export async function deleteProgram(id: string): Promise<{ error?: string } | undefined> {
   await requireRole("admin");
 
   const supabase = await createClient();
-  await supabase.from("programs").delete().eq("id", id);
+  const { error } = await supabase.from("programs").delete().eq("id", id);
+
+  if (error) {
+    return { error: "Could not delete program." };
+  }
 
   revalidatePath("/dashboard/programs");
+  return undefined;
 }
 
 export async function publishResults(programId: string): Promise<{ message?: string } | undefined> {
@@ -112,9 +119,38 @@ export async function publishResults(programId: string): Promise<{ message?: str
     return { message: error.message };
   }
 
+  await announceResultsOnWhatsApp(supabase, programId);
+
   revalidatePath("/dashboard/results");
   revalidatePath("/leaderboard");
   return undefined;
+}
+
+const RANK_MEDALS = ["🥇", "🥈", "🥉"] as const;
+
+async function announceResultsOnWhatsApp(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  programId: string,
+) {
+  const { data: placements } = await supabase
+    .from("public_event_top3")
+    .select("*")
+    .eq("program_id", programId)
+    .order("rank", { ascending: true })
+    .returns<EventPlacementRow[]>();
+
+  if (!placements?.length) return;
+
+  const { program_name, category } = placements[0];
+  const lines = placements.map(
+    (row) => `${RANK_MEDALS[row.rank - 1] ?? `${row.rank}.`} ${row.place_name}`,
+  );
+  const text = [
+    `📢 Results Published: ${program_name} (${STUDENT_DIVISION_LABELS[category]})`,
+    ...lines,
+  ].join("\n");
+
+  await notifyWhatsAppGroup(text);
 }
 
 export async function unpublishResults(programId: string): Promise<{ message?: string } | undefined> {
@@ -169,15 +205,42 @@ async function shuffleAndAssignCodes(
   );
 }
 
+// Assigns codes only to participants who don't have one yet, continuing
+// the letter sequence after the highest code already in use. Safe to run
+// even once judging has started, since it never touches an existing
+// participant's code — unlike a full reshuffle, which would invalidate
+// codes judges have already scored against.
+async function assignMissingCodes(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  programId: string,
+  programType: ProgramType,
+) {
+  const table = programType === "group" ? "program_group_participants" : "program_participants";
+  const { data: rows } = await supabase
+    .from(table)
+    .select("id, code")
+    .eq("program_id", programId);
+
+  const missing = (rows ?? []).filter((row) => !row.code);
+  if (missing.length === 0) return;
+
+  const usedIndices = (rows ?? [])
+    .filter((row) => row.code)
+    .map((row) => indexForCode(row.code as string));
+  let nextIndex = usedIndices.length ? Math.max(...usedIndices) + 1 : 1;
+
+  await Promise.all(
+    missing.map((row) =>
+      supabase.from(table).update({ code: codeForIndex(nextIndex++) }).eq("id", row.id),
+    ),
+  );
+}
+
 export async function generateParticipantCodes(
   programId: string,
 ): Promise<{ message?: string } | undefined> {
   await requireRole("admin");
   const supabase = await createClient();
-
-  if (await isJudgingLocked(supabase, programId)) {
-    return { message: "Judging has begun — codes are locked and cannot be regenerated." };
-  }
 
   const { data: program } = await supabase
     .from("programs")
@@ -189,13 +252,25 @@ export async function generateParticipantCodes(
     return { message: "Program not found." };
   }
 
+  if (await isJudgingLocked(supabase, programId)) {
+    // Judging has already started — a full reshuffle would invalidate
+    // codes already scored against, so only newly added participants
+    // (who have no code yet) get one.
+    await assignMissingCodes(supabase, programId, program.program_type);
+    revalidatePath(`/dashboard/programs/${programId}`);
+    return undefined;
+  }
+
   await shuffleAndAssignCodes(supabase, programId, program.program_type);
 
   revalidatePath(`/dashboard/programs/${programId}`);
   return undefined;
 }
 
-export async function setProgramStatus(programId: string, status: ProgramStatus) {
+export async function setProgramStatus(
+  programId: string,
+  status: ProgramStatus,
+): Promise<{ error?: string } | undefined> {
   await requireRole("admin");
   const supabase = await createClient();
 
@@ -221,57 +296,94 @@ export async function setProgramStatus(programId: string, status: ProgramStatus)
     }
   }
 
-  await supabase.from("programs").update({ status }).eq("id", programId);
+  const { error } = await supabase.from("programs").update({ status }).eq("id", programId);
 
   revalidatePath(`/dashboard/programs/${programId}`);
   revalidatePath("/dashboard/programs");
   revalidatePath("/dashboard");
+
+  if (error) {
+    return { error: "Could not update program status." };
+  }
+  return undefined;
 }
 
-export async function addGroupParticipant(programId: string, groupId: string) {
+export async function addGroupParticipant(
+  programId: string,
+  groupId: string,
+): Promise<{ error?: string } | undefined> {
   await requireRole("admin");
 
   const supabase = await createClient();
-  await supabase
+  const { error } = await supabase
     .from("program_group_participants")
     .insert({ program_id: programId, group_id: groupId });
 
+  if (error) {
+    return { error: "Could not add group." };
+  }
+
   revalidatePath(`/dashboard/programs/${programId}`);
+  return undefined;
 }
 
-export async function removeGroupParticipant(programId: string, groupId: string) {
+export async function removeGroupParticipant(
+  programId: string,
+  groupId: string,
+): Promise<{ error?: string } | undefined> {
   await requireRole("admin");
 
   const supabase = await createClient();
-  await supabase
+  const { error } = await supabase
     .from("program_group_participants")
     .delete()
     .eq("program_id", programId)
     .eq("group_id", groupId);
 
+  if (error) {
+    return { error: "Could not remove group." };
+  }
+
   revalidatePath(`/dashboard/programs/${programId}`);
+  return undefined;
 }
 
-export async function addParticipant(programId: string, studentId: string) {
+export async function addParticipant(
+  programId: string,
+  studentId: string,
+): Promise<{ error?: string } | undefined> {
   await requireRole("admin");
 
   const supabase = await createClient();
-  await supabase
+  const { error } = await supabase
     .from("program_participants")
     .insert({ program_id: programId, student_id: studentId });
 
+  if (error) {
+    return { error: "Could not add student." };
+  }
+
   revalidatePath(`/dashboard/programs/${programId}`);
+  return undefined;
 }
 
-export async function removeParticipant(programId: string, studentId: string) {
+export async function removeParticipant(
+  programId: string,
+  studentId: string,
+): Promise<{ error?: string } | undefined> {
   await requireRole("admin");
 
   const supabase = await createClient();
-  await supabase
+  const { error } = await supabase
     .from("program_participants")
     .delete()
     .eq("program_id", programId)
     .eq("student_id", studentId);
 
+  if (error) {
+    return { error: "Could not remove student." };
+  }
+
   revalidatePath(`/dashboard/programs/${programId}`);
+  return undefined;
 }

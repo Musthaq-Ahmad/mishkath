@@ -30,6 +30,8 @@ export type Student = {
   is_active: boolean;
   chest_number: string | null;
   photo_url: string | null;
+  checked_in: boolean;
+  checked_in_at: string | null;
   created_at: string;
 };
 
@@ -77,6 +79,20 @@ export type ScoreRow = {
   total: number;
   created_at: string;
   updated_at: string;
+};
+
+export type ScoreAuditLogRow = {
+  id: string;
+  program_id: string;
+  participant_kind: "student" | "group";
+  participant_id: string;
+  presentation: number | null;
+  content: number | null;
+  overall: number | null;
+  total: number | null;
+  action: "insert" | "update" | "delete";
+  changed_by: string | null;
+  changed_at: string;
 };
 
 export type GroupScoreRow = {

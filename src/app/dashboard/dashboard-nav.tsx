@@ -27,23 +27,24 @@ export function DashboardNav({
 }) {
   const pathname = usePathname();
   const items = NAV_ITEMS.filter((item) => item.roles.includes(role));
+  const initials = fullName
+    .split(" ")
+    .map((part) => part[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 
   return (
-    <Sidebar className="border-none bg-sidebar">
+    <Sidebar className="border-none bg-sidebar print:hidden">
       <SidebarHeader className="gap-0 px-4 py-5">
-        <div className="flex items-center gap-2">
-          <div className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/10 ring-1 ring-white/15">
-            <Image src="/mishkat-icon.png" alt="" width={32} height={32} className="size-8 object-cover" />
-          </div>
-          <div className="flex flex-col leading-tight">
-            <span className="font-heading text-lg font-bold tracking-tight text-gold">
-              MISHKAT
-            </span>
-            <span className="text-[10px] font-semibold tracking-[0.15em] text-sidebar-foreground/60 uppercase">
-              Festival Management
-            </span>
-          </div>
-        </div>
+        <Image
+          src="/mehfile-meem-logo-gold.png"
+          alt="Mehfile Meem — Meelad Fest 2K26"
+          width={170}
+          height={101}
+          className="h-auto w-[170px]"
+          priority
+        />
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
@@ -69,11 +70,27 @@ export function DashboardNav({
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        {role === "admin" && (
+          <div className="mt-auto px-3 pb-2">
+            <Link
+              href="/dashboard/programs"
+              className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+            >
+              <span className="material-symbols-outlined text-[18px]">add</span>
+              New Program
+            </Link>
+          </div>
+        )}
       </SidebarContent>
       <SidebarFooter className="gap-1 border-t border-white/10 px-2 py-3">
-        <div className="flex flex-col px-2 py-2 text-sm text-sidebar-foreground">
-          <span className="font-medium">{fullName}</span>
-          <span className="text-xs text-sidebar-foreground/60 capitalize">{role}</span>
+        <div className="flex items-center gap-2.5 px-2 py-2">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-sidebar-accent text-sm font-semibold text-sidebar-foreground">
+            {initials}
+          </div>
+          <div className="flex flex-col text-sm text-sidebar-foreground">
+            <span className="font-medium">{fullName}</span>
+            <span className="text-xs text-sidebar-foreground/60 capitalize">{role}</span>
+          </div>
         </div>
         <SidebarMenu className="gap-1">
           <SidebarMenuItem>

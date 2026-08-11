@@ -1,11 +1,21 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useState } from "react";
+import { toast } from "sonner";
 import { adminSubmitScore, adminSubmitGroupScore } from "./score-entry-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { GroupScoreRow, ScoreRow } from "@/lib/types";
+
+function initialsOf(name: string) {
+  return name
+    .split(" ")
+    .map((part) => part[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
 
 type Common = {
   programId: string;
@@ -28,21 +38,41 @@ export function ScoreEntryRow(
   const [state, formAction, pending] = useActionState(boundAction, undefined);
   const rowId = props.kind === "student" ? props.studentId : props.groupId;
 
+  useEffect(() => {
+    if (state?.success) {
+      toast.success(`Score saved for ${name}`);
+    } else if (state?.message) {
+      toast.error(state.message);
+    }
+  }, [state, name]);
+
+  const [presentation, setPresentation] = useState(existingScore?.presentation ?? "");
+  const [content, setContent] = useState(existingScore?.content ?? "");
+  const [overall, setOverall] = useState(existingScore?.overall ?? "");
+  const total =
+    (Number(presentation) || 0) + (Number(content) || 0) + (Number(overall) || 0);
+
   return (
     <form
       action={formAction}
       className="card-elevated flex flex-col gap-4 rounded-xl bg-card p-5 ring-1 ring-border"
     >
       <div className="flex items-center gap-3">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-surface-container-low text-sm font-semibold text-primary">
-          <span className="material-symbols-outlined text-[20px]">badge</span>
+        {code && (
+          <span className="shrink-0 font-heading text-sm font-bold text-muted-foreground tabular-nums">
+            #{code}
+          </span>
+        )}
+        <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-surface-container-low text-xs font-semibold text-primary">
+          {initialsOf(name)}
         </div>
-        <div className="flex flex-1 items-baseline justify-between gap-2 min-w-0">
-          <span className="truncate font-heading font-semibold">{name}</span>
-          {code && (
-            <span className="shrink-0 text-xs text-muted-foreground">Code {code}</span>
-          )}
-        </div>
+        <span className="truncate font-heading font-semibold">{name}</span>
+        <span className="ml-auto shrink-0 text-right">
+          <span className="text-xs text-muted-foreground uppercase">Total</span>{" "}
+          <span className="font-heading text-lg font-bold tabular-nums text-primary">
+            {total}
+          </span>
+        </span>
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -60,7 +90,8 @@ export function ScoreEntryRow(
             min={0}
             max={maxScore}
             step="0.5"
-            defaultValue={existingScore?.presentation}
+            value={presentation}
+            onChange={(e) => setPresentation(e.target.value)}
             required
           />
           {state?.errors?.presentation && (
@@ -82,7 +113,8 @@ export function ScoreEntryRow(
             min={0}
             max={maxScore}
             step="0.5"
-            defaultValue={existingScore?.content}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
             required
           />
           {state?.errors?.content && (
@@ -104,7 +136,8 @@ export function ScoreEntryRow(
             min={0}
             max={maxScore}
             step="0.5"
-            defaultValue={existingScore?.overall}
+            value={overall}
+            onChange={(e) => setOverall(e.target.value)}
             required
           />
           {state?.errors?.overall && (
@@ -113,16 +146,7 @@ export function ScoreEntryRow(
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-2 border-t border-border pt-3">
-        <div>
-          {state?.message && <p className="text-sm text-destructive">{state.message}</p>}
-          {state?.success && (
-            <p className="flex items-center gap-1 text-sm font-medium text-success">
-              <span className="material-symbols-outlined text-[16px]">check_circle</span>
-              Saved
-            </p>
-          )}
-        </div>
+      <div className="flex items-center justify-end gap-2 border-t border-border pt-3">
         <Button type="submit" size="sm" disabled={pending} className="gap-1.5">
           {pending ? "Saving..." : existingScore ? "Update score" : "Save score"}
         </Button>

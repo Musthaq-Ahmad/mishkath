@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { createGroup, updateGroup } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,11 +29,17 @@ export function GroupForm({
   const submittedRef = useRef(false);
 
   useEffect(() => {
-    if (submittedRef.current && !pending && !state) {
-      setOpen(false);
-      submittedRef.current = false;
+    if (!submittedRef.current || pending) return;
+    submittedRef.current = false;
+    if (!state) {
+      toast.success(group ? "Group updated" : "Group created");
+      setTimeout(() => setOpen(false), 0);
+    } else if (state.message) {
+      toast.error(state.message);
+    } else if (state.errors) {
+      toast.error("Please fix the highlighted fields.");
     }
-  }, [pending, state]);
+  }, [pending, state, group]);
 
   return (
     <Dialog

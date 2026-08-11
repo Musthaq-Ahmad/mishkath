@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -11,11 +12,15 @@ export function LoginForm() {
   const [state, action, pending] = useActionState(login, undefined);
   const [showPassword, setShowPassword] = useState(false);
 
+  useEffect(() => {
+    if (state?.message) toast.error(state.message);
+  }, [state]);
+
   return (
     <form action={action} className="flex flex-col gap-5">
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="email" className="ml-0.5 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-          Administrator Email
+        <Label htmlFor="email" className="ml-0.5 text-xs font-semibold tracking-wide text-muted-foreground">
+          Email Address
         </Label>
         <div className="relative">
           <span className="material-symbols-outlined pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-[20px] text-muted-foreground">
@@ -25,7 +30,7 @@ export function LoginForm() {
             id="email"
             name="email"
             type="email"
-            placeholder="e.g. curator@mishkat.org"
+            placeholder="e.g. curator@mehfilemeem.org"
             required
             className="h-12 pl-11"
           />
@@ -36,8 +41,8 @@ export function LoginForm() {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="password" className="ml-0.5 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-          Secure Password
+        <Label htmlFor="password" className="ml-0.5 text-xs font-semibold tracking-wide text-muted-foreground">
+          Password
         </Label>
         <div className="relative">
           <span className="material-symbols-outlined pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-[20px] text-muted-foreground">

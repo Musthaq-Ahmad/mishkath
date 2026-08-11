@@ -2,6 +2,7 @@ import { verifySession } from "@/lib/dal";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { DashboardNav } from "./dashboard-nav";
+import { GlobalSearch } from "./global-search";
 
 export default async function DashboardLayout({
   children,
@@ -20,18 +21,9 @@ export default async function DashboardLayout({
     <SidebarProvider>
       <DashboardNav role={profile.role} fullName={profile.full_name} />
       <SidebarInset className="bg-background">
-        <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b border-border bg-card/90 px-4 backdrop-blur-sm">
+        <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b border-border bg-card/90 px-4 backdrop-blur-sm print:hidden">
           <SidebarTrigger />
-          <div className="relative hidden max-w-md flex-1 md:block">
-            <span className="material-symbols-outlined pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[18px] text-muted-foreground">
-              search
-            </span>
-            <input
-              type="search"
-              placeholder="Search programs, students or results..."
-              className="w-full rounded-full border-none bg-muted py-2 pr-4 pl-10 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring/50"
-            />
-          </div>
+          <GlobalSearch />
           <div className="ml-auto flex items-center gap-1.5 sm:gap-3">
             <ThemeToggle />
             <span className="material-symbols-outlined hidden text-muted-foreground sm:inline">

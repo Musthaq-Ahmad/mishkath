@@ -65,7 +65,7 @@
 }
 
 :root {
-  /* MISHKAT design tokens — see DESIGN.md ("Modern SaaS": slate + indigo) */
+  /* Mehfile Meem design tokens — see DESIGN.md ("Modern Heritage": slate + indigo) */
   /* A genuine, overridable custom property (not baked in by @theme inline)
      so scoped subtrees — e.g. the leaderboard — can swap the heading font
      independently of the body font by setting --font-heading locally. */
@@ -76,7 +76,7 @@
   --card-foreground: #0f172a;
   --popover: #ffffff;
   --popover-foreground: #0f172a;
-  --primary: #4f46e5;
+  --primary: #3525cd;
   --primary-foreground: #ffffff;
   --secondary: #eef2ff;
   --secondary-foreground: #3730a3;
@@ -87,8 +87,8 @@
   --destructive: #dc2626;
   --border: #e2e8f0;
   --input: #e2e8f0;
-  --ring: #4f46e5;
-  --chart-1: #4f46e5;
+  --ring: #3525cd;
+  --chart-1: #3525cd;
   --chart-2: #c7a24a;
   --chart-3: #6366f1;
   --chart-4: #64748b;
@@ -226,15 +226,6 @@
     .animate-marquee {
       animation: marquee-scroll linear infinite;
     }
-    .animate-bg-drift {
-      animation: bg-drift 26s ease-in-out infinite;
-    }
-    .animate-bg-spin-slow {
-      animation: bg-spin-slow 110s linear infinite;
-    }
-    .animate-confetti-fall {
-      animation: confetti-fall linear infinite;
-    }
   }
 }
 
@@ -249,48 +240,12 @@
   }
 }
 
-@keyframes bg-drift {
-  0%,
-  100% {
-    transform: translate(0, 0) rotate(0deg) scale(1);
-  }
-  50% {
-    transform: translate(2.5%, -3%) rotate(4deg) scale(1.04);
-  }
-}
-
-@keyframes bg-spin-slow {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 @keyframes marquee-scroll {
   from {
     transform: translateX(0);
   }
   to {
     transform: translateX(-50%);
-  }
-}
-
-@keyframes confetti-fall {
-  0% {
-    transform: translateY(-10%) rotate(0deg);
-    opacity: 0;
-  }
-  10% {
-    opacity: 1;
-  }
-  90% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(720%) rotate(360deg);
-    opacity: 0;
   }
 }
 

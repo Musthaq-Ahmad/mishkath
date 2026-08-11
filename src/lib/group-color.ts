@@ -47,14 +47,14 @@ function groupColorIndex(groupId: string): number {
 }
 
 export function groupRingColor(groupId: string | null | undefined): string {
-  if (!groupId) return "ring-white/15";
+  if (!groupId) return "ring-border";
   return GROUP_RING_COLORS[groupColorIndex(groupId)];
 }
 
 // Solid background fill in the same deterministic color, for shield/badge
 // icons where a tinted fill reads better than a ring outline.
 export function groupBgColor(groupId: string | null | undefined): string {
-  if (!groupId) return "bg-white/10";
+  if (!groupId) return "bg-muted";
   return GROUP_BG_COLORS[groupColorIndex(groupId)];
 }
 
