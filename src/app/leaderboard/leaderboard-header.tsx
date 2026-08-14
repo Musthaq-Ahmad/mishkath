@@ -20,19 +20,28 @@ export function LeaderboardHeader({
   return (
     <header className="card-elevated flex shrink-0 flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3 sm:px-5">
       <div className="flex items-center gap-3">
+        {/* theme-aware logo: indigo on light surfaces, gold on dark —
+            the indigo mark loses all contrast against the dark card */}
         <Image
           src="/mehfile-meem-logo-indigo.png"
           alt="Mehfile Meem — Meelad Fest 2K26"
           width={200}
           height={119}
-          className="h-auto w-[160px] sm:w-[200px]"
+          className="h-auto w-40 sm:w-50 dark:hidden"
+          priority
+        />
+        <Image
+          src="/mehfile-meem-logo-gold.png"
+          alt="Mehfile Meem — Meelad Fest 2K26"
+          width={200}
+          height={119}
+          className="hidden h-auto w-40 sm:w-50 dark:block"
           priority
         />
         <div className="hidden border-l border-border pl-3 sm:block">
           <p className="font-heading text-lg font-bold tracking-tight text-primary">
             {t("liveResults")}
           </p>
-          <p className="text-base text-muted-foreground">{t("festivalTagline")}</p>
         </div>
       </div>
 

@@ -40,39 +40,39 @@ const PODIUM_STYLE: Record<
   1: {
     block:
       "bg-linear-to-b from-[#eccf85] via-gold to-[#a87c26] text-gold-foreground shadow-lg shadow-gold/25",
-    blockHeight: "h-32",
+    blockHeight: "h-[clamp(44px,13cqh,130px)]",
     lip: "bg-linear-to-b from-[#f9ecc4] to-[#e3bd5e]",
     frame:
       "bg-linear-to-br from-[#f2d287] via-gold to-[#b98a2e] shadow-lg shadow-gold/40",
     chip: "bg-gold text-gold-foreground",
-    photoSize: "size-28 sm:size-32",
-    nameSize: "text-xl sm:text-2xl",
+    photoSize: "size-[clamp(56px,15cqh,150px)]",
+    nameSize: "text-[clamp(1rem,3cqh,1.75rem)]",
     medalColor: "text-gold",
     label: "1st Prize",
   },
   2: {
     block:
       "bg-linear-to-b from-[#eeece8] via-silver to-[#96948f] text-[#1b1c19] shadow-md shadow-black/25",
-    blockHeight: "h-24",
+    blockHeight: "h-[clamp(36px,10.5cqh,100px)]",
     lip: "bg-linear-to-b from-[#f8f7f5] to-[#d4d2ce]",
     frame:
       "bg-linear-to-br from-[#e4e2de] via-silver to-[#a9a7a3] shadow-md shadow-black/20",
     chip: "bg-silver text-[#1b1c19]",
-    photoSize: "size-24 sm:size-28",
-    nameSize: "text-lg sm:text-xl",
+    photoSize: "size-[clamp(48px,13cqh,120px)]",
+    nameSize: "text-[clamp(0.9rem,2.6cqh,1.4rem)]",
     medalColor: "text-silver",
     label: "2nd Prize",
   },
   3: {
     block:
       "bg-linear-to-b from-[#e8cda7] via-bronze to-[#8f6c3f] text-[#251a00] shadow-md shadow-black/25",
-    blockHeight: "h-20",
+    blockHeight: "h-[clamp(28px,8.5cqh,84px)]",
     lip: "bg-linear-to-b from-[#f3e3c9] to-[#d3af7d]",
     frame:
       "bg-linear-to-br from-[#dfc19a] via-bronze to-[#a37f4f] shadow-md shadow-black/20",
     chip: "bg-bronze text-[#251a00]",
-    photoSize: "size-24 sm:size-28",
-    nameSize: "text-lg sm:text-xl",
+    photoSize: "size-[clamp(48px,13cqh,120px)]",
+    nameSize: "text-[clamp(0.9rem,2.6cqh,1.4rem)]",
     medalColor: "text-bronze",
     label: "3rd Prize",
   },
@@ -269,9 +269,16 @@ export function PublishedResultsFeed({
     .filter((column) => column.items.length > 0);
 
   return (
-    <div className="card-elevated relative isolate flex flex-col gap-6 rounded-xl border border-border bg-card p-6 md:h-full md:min-h-0 md:overflow-y-auto">
+    // The card is a size container at md+ (it has a definite h-full there),
+    // so the podium sizes below use cqh — a percentage of the card itself —
+    // and always fit regardless of how much height the header/footer take.
+    // Below md the card grows with content and cqh falls back to viewport
+    // units, which is fine because the page scrolls there.
+    <div className="card-elevated relative isolate flex flex-col gap-[clamp(0.5rem,2vh,1.5rem)] rounded-xl border border-border bg-card p-[clamp(1rem,2.5vh,1.5rem)] md:h-full md:min-h-0 md:overflow-hidden md:@container-size">
       <PodiumBackdrop />
-      <div className="flex items-center justify-between gap-3">
+      {/* floats over the card corner instead of taking a flex row, so its
+          height never competes with the podium's budget */}
+      <div className="absolute inset-x-[clamp(1rem,2.5vh,1.5rem)] top-[clamp(1rem,2.5vh,1.5rem)] z-10 flex items-center justify-between gap-3">
         <div
           className={cn(
             "flex items-center gap-2 rounded-full px-3 py-1",
@@ -303,18 +310,21 @@ export function PublishedResultsFeed({
           fade/slide-in animation as a lightweight transition. */}
       <div
         key={hero.program_id}
-        className="animate-fade-in-up flex flex-col gap-6"
+        className="animate-fade-in-up flex flex-1 flex-col justify-center gap-[clamp(0.5rem,2cqh,1.25rem)]"
       >
-        <div>
-          <p className="font-heading text-2xl font-bold text-foreground">
+        {/* hero title: read from across the room — the program name is the
+            headline of this screen, centered and oversized like an event
+            poster, with the division as a gold ticket badge */}
+        <div className="flex flex-col items-center gap-[clamp(0.25rem,1cqh,0.5rem)] text-center">
+          <p className="bg-linear-to-b from-foreground to-foreground/60 bg-clip-text font-heading text-[clamp(1.25rem,5cqh,3rem)] leading-tight font-black tracking-tight text-balance text-transparent">
             {hero.program_name}
           </p>
-          <p className="text-sm text-muted-foreground">
+          <p className="rounded-full border border-gold/30 bg-gold/10 px-4 py-0.5 text-[clamp(0.7rem,1.7cqh,0.875rem)] font-bold tracking-[0.25em] text-gold uppercase">
             {divisionLabel(hero.category)}
           </p>
         </div>
 
-        <div className="flex flex-wrap items-end justify-center gap-6 border-t border-border pt-6 sm:gap-8">
+        <div className="flex flex-wrap items-end justify-center gap-6 sm:gap-10">
           {podiumColumns.map((column) => {
             const style = PODIUM_STYLE[column.rank];
             const isChampion = column.rank === 1;
@@ -326,13 +336,13 @@ export function PublishedResultsFeed({
                   "flex flex-1 flex-col items-center basis-[180px]",
                   tied
                     ? "w-full max-w-[380px] gap-1.5"
-                    : "w-full max-w-[240px] gap-3",
+                    : "w-full max-w-[240px] gap-[clamp(0.375rem,1.2cqh,0.75rem)]",
                   MOBILE_ORDER[column.rank],
                 )}
               >
                 {isChampion && (
                   <span aria-hidden className="text-gold">
-                    <span className="material-symbols-outlined text-[28px]">
+                    <span className="material-symbols-outlined text-[clamp(18px,3.5cqh,28px)]">
                       military_tech
                     </span>
                   </span>
@@ -343,7 +353,7 @@ export function PublishedResultsFeed({
                     "flex w-full items-end",
                     tied
                       ? "flex-row flex-wrap justify-center gap-x-3 gap-y-2"
-                      : "flex-col items-center gap-4",
+                      : "flex-col items-center gap-[clamp(0.5rem,1.5cqh,1rem)]",
                   )}
                 >
                   {column.items.map((place) => (
@@ -383,7 +393,7 @@ export function PublishedResultsFeed({
                           {column.rank}
                         </span>
                       </div>
-                      <div className="flex max-w-[9rem] flex-col items-center gap-0.5 text-center">
+                      <div className="flex max-w-48 flex-col items-center gap-0.5 text-center">
                         <p
                           className={cn(
                             "text-balance break-words font-heading font-bold text-foreground",
@@ -396,7 +406,7 @@ export function PublishedResultsFeed({
                           groupNames[place.groupId] && (
                             <p
                               className={cn(
-                                "text-balance break-words text-sm font-medium",
+                                "text-[clamp(0.75rem,1.8cqh,0.875rem)] font-medium wrap-break-word text-balance",
                                 groupTextColor(place.groupId),
                               )}
                             >
@@ -408,25 +418,29 @@ export function PublishedResultsFeed({
                   ))}
                 </div>
 
-                {/* poster-style podium stand: a lighter perspective "top
-                    face" lip over a metallic gradient front face with a
-                    glossy sheen, an inset hairline, and a giant ghost
-                    numeral anchored to the base */}
-                <div className="w-full">
-                  <div
-                    aria-hidden
-                    className={cn(
-                      "h-2.5 w-full [clip-path:polygon(4%_0,96%_0,100%_100%,0_100%)]",
-                      style?.lip,
-                    )}
-                  />
-                  <div
-                    className={cn(
-                      "relative flex w-full flex-col items-center justify-center gap-1 overflow-hidden rounded-b-md font-heading",
-                      style?.block,
-                      style?.blockHeight,
-                    )}
-                  >
+                {/* poster-style 3D podium stand: the wrapper adds
+                    perspective and tilts the whole box slightly forward;
+                    the "top face" is a real plane rotated back in 3D space
+                    (a sibling of the front face — it can't live inside it,
+                    because overflow-hidden would flatten the 3D transform).
+                    The front face keeps the metallic gradient, glossy
+                    sheen, inset hairline, and base-anchored ghost numeral. */}
+                <div className="w-full [perspective:900px]">
+                  <div className="relative w-full [transform:rotateX(9deg)] [transform-style:preserve-3d]">
+                    <div
+                      aria-hidden
+                      className={cn(
+                        "absolute inset-x-0 -top-[clamp(12px,2.5cqh,24px)] h-[clamp(12px,2.5cqh,24px)] origin-bottom transform-[rotateX(62deg)]",
+                        style?.lip,
+                      )}
+                    />
+                    <div
+                      className={cn(
+                        "relative flex w-full flex-col items-center justify-center gap-1 overflow-hidden rounded-b-md font-heading",
+                        style?.block,
+                        style?.blockHeight,
+                      )}
+                    >
                     <span
                       aria-hidden
                       className="pointer-events-none absolute inset-x-0 top-0 h-1/3 bg-linear-to-b from-white/35 to-transparent"
@@ -452,11 +466,12 @@ export function PublishedResultsFeed({
                     >
                       {column.rank}
                     </span>
-                    <span className="relative text-xs font-semibold tracking-widest uppercase opacity-80">
-                      {tied
-                        ? `${rankLabel(column.rank) ?? `Rank ${column.rank}`} · ${t("tie")}`
-                        : rankLabel(column.rank)}
-                    </span>
+                      <span className="relative text-xs font-semibold tracking-widest uppercase opacity-80">
+                        {tied
+                          ? `${rankLabel(column.rank) ?? `Rank ${column.rank}`} · ${t("tie")}`
+                          : rankLabel(column.rank)}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>

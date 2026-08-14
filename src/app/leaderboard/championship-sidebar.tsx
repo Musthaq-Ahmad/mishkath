@@ -52,37 +52,82 @@ export function ChampionshipSidebar({
           </h2>
           <p className="text-xs text-sidebar-foreground/60">{t("overallFestivalPoints")}</p>
         </div>
+        {rows.length > 1 && (rows[0].points ?? 0) > (rows[1].points ?? 0) && (
+          <span className="ml-auto shrink-0 rounded-full bg-gold/15 px-2.5 py-1 font-heading text-xs font-bold text-gold tabular-nums">
+            +{(rows[0].points ?? 0) - (rows[1].points ?? 0)}
+          </span>
+        )}
       </div>
 
       <div className="flex flex-col gap-2">
-        {rows.map((row, index) => (
-          <div
-            key={row.group_id}
-            className="flex items-center justify-between gap-3 rounded-lg bg-sidebar-accent px-4 py-3"
-          >
-            <div className="flex min-w-0 items-center gap-3">
-              <span
-                className={cn(
-                  "flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-bold tabular-nums",
-                  index === 0 ? "bg-gold text-gold-foreground" : "bg-white/10 text-sidebar-foreground",
-                )}
-              >
-                {index + 1}
-              </span>
-              <span className="truncate text-sm font-semibold text-sidebar-foreground">
-                {row.group_name}
-              </span>
-            </div>
-            <span
+        {rows.map((row, index) => {
+          const maxPoints = Math.max(...rows.map((r) => r.points ?? 0), 1);
+          const isLeader = index === 0;
+          return (
+            <div
+              key={row.group_id}
               className={cn(
-                "shrink-0 font-heading text-lg font-bold tabular-nums",
-                index === 0 ? "text-gold" : "text-sidebar-foreground",
+                "flex flex-col gap-2.5 rounded-xl px-4 py-3.5",
+                isLeader
+                  ? "bg-linear-to-br from-[#f2d287] via-gold to-[#b98a2e] text-gold-foreground shadow-lg shadow-gold/25"
+                  : "bg-sidebar-accent",
               )}
             >
-              {row.points}
-            </span>
-          </div>
-        ))}
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-3">
+                  <span
+                    className={cn(
+                      "flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-bold tabular-nums",
+                      isLeader
+                        ? "bg-gold-foreground/15 text-gold-foreground"
+                        : "bg-white/10 text-sidebar-foreground",
+                    )}
+                  >
+                    {index + 1}
+                  </span>
+                  <span
+                    className={cn(
+                      "truncate font-semibold",
+                      isLeader
+                        ? "text-base text-gold-foreground"
+                        : "text-sm text-sidebar-foreground",
+                    )}
+                  >
+                    {row.group_name}
+                  </span>
+                </div>
+                <span
+                  className={cn(
+                    "shrink-0 font-heading font-bold tabular-nums",
+                    isLeader
+                      ? "text-3xl text-gold-foreground"
+                      : "text-xl text-sidebar-foreground",
+                  )}
+                >
+                  {row.points}
+                </span>
+              </div>
+              {/* points relative to the leader, so the gap is readable
+                  at a glance on a TV screen */}
+              <div
+                className={cn(
+                  "h-1.5 overflow-hidden rounded-full",
+                  isLeader ? "bg-gold-foreground/20" : "bg-white/10",
+                )}
+              >
+                <div
+                  className={cn(
+                    "h-full rounded-full transition-[width] duration-700",
+                    isLeader ? "bg-gold-foreground/70" : "bg-sidebar-foreground/40",
+                  )}
+                  style={{
+                    width: `${Math.round(((row.points ?? 0) / maxPoints) * 100)}%`,
+                  }}
+                />
+              </div>
+            </div>
+          );
+        })}
         {!rows.length && (
           <p className="px-1 text-center text-sm text-sidebar-foreground/60">
             {t("noResultsPublished")}
