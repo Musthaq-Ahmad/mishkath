@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { groupPlacements } from "@/lib/leaderboard";
 import type {
@@ -28,6 +28,9 @@ const PODIUM_STYLE: Record<
   {
     block: string;
     blockHeight: string;
+    lip: string;
+    frame: string;
+    chip: string;
     photoSize: string;
     nameSize: string;
     medalColor: string;
@@ -35,30 +38,91 @@ const PODIUM_STYLE: Record<
   }
 > = {
   1: {
-    block: "bg-gold text-gold-foreground",
-    blockHeight: "h-28",
+    block:
+      "bg-linear-to-b from-[#eccf85] via-gold to-[#a87c26] text-gold-foreground shadow-lg shadow-gold/25",
+    blockHeight: "h-32",
+    lip: "bg-linear-to-b from-[#f9ecc4] to-[#e3bd5e]",
+    frame:
+      "bg-linear-to-br from-[#f2d287] via-gold to-[#b98a2e] shadow-lg shadow-gold/40",
+    chip: "bg-gold text-gold-foreground",
     photoSize: "size-28 sm:size-32",
     nameSize: "text-xl sm:text-2xl",
     medalColor: "text-gold",
     label: "1st Prize",
   },
   2: {
-    block: "bg-silver text-[#1b1c19]",
-    blockHeight: "h-20",
+    block:
+      "bg-linear-to-b from-[#eeece8] via-silver to-[#96948f] text-[#1b1c19] shadow-md shadow-black/25",
+    blockHeight: "h-24",
+    lip: "bg-linear-to-b from-[#f8f7f5] to-[#d4d2ce]",
+    frame:
+      "bg-linear-to-br from-[#e4e2de] via-silver to-[#a9a7a3] shadow-md shadow-black/20",
+    chip: "bg-silver text-[#1b1c19]",
     photoSize: "size-24 sm:size-28",
     nameSize: "text-lg sm:text-xl",
     medalColor: "text-silver",
     label: "2nd Prize",
   },
   3: {
-    block: "bg-bronze text-[#251a00]",
-    blockHeight: "h-16",
+    block:
+      "bg-linear-to-b from-[#e8cda7] via-bronze to-[#8f6c3f] text-[#251a00] shadow-md shadow-black/25",
+    blockHeight: "h-20",
+    lip: "bg-linear-to-b from-[#f3e3c9] to-[#d3af7d]",
+    frame:
+      "bg-linear-to-br from-[#dfc19a] via-bronze to-[#a37f4f] shadow-md shadow-black/20",
+    chip: "bg-bronze text-[#251a00]",
     photoSize: "size-24 sm:size-28",
     nameSize: "text-lg sm:text-xl",
     medalColor: "text-bronze",
     label: "3rd Prize",
   },
 };
+
+// Animated poster-style backdrop behind the podium: the Mehfile Meem gold
+// wordmark oversized and slightly tilted like a screen-printed poster, over
+// a breathing gold wash and thin slow-rotating rays. Purely decorative
+// (aria-hidden, pointer-events-none), theme-aware via var(--gold), and gated
+// behind prefers-reduced-motion. Memoized with no props so the feed's
+// realtime refetches and 15s rotation re-renders never re-render it — its
+// DOM persists, so the animations run continuously instead of restarting.
+// Sits at -z-10 inside the card's isolated stacking context: above bg-card,
+// below all content.
+const PodiumBackdrop = memo(function PodiumBackdrop() {
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute inset-0 -z-10 overflow-hidden rounded-xl"
+    >
+      <div
+        className="animate-halo-pulse absolute top-[60%] left-1/2 size-[clamp(240px,48vh,560px)] -translate-x-1/2 -translate-y-1/2 rounded-full"
+        style={{
+          background:
+            "radial-gradient(circle, color-mix(in srgb, var(--gold) 15%, transparent) 0%, transparent 68%)",
+        }}
+      />
+      <div
+        className="animate-sunburst absolute top-[60%] left-1/2 size-[clamp(300px,62vh,700px)] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-[0.06]"
+        style={{
+          background:
+            "repeating-conic-gradient(from 0deg, var(--gold) 0deg 4deg, transparent 4deg 22deg)",
+          maskImage:
+            "radial-gradient(circle, black 0%, black 45%, transparent 72%)",
+          WebkitMaskImage:
+            "radial-gradient(circle, black 0%, black 45%, transparent 72%)",
+        }}
+      />
+      <div className="animate-logo-breathe absolute top-[58%] left-1/2 aspect-[2011/1220] w-[clamp(320px,55vw,860px)] -translate-x-1/2 -translate-y-1/2 -rotate-6">
+        <Image
+          src="/mehfile-meem-logo-gold.png"
+          alt=""
+          fill
+          sizes="860px"
+          className="object-contain opacity-[0.06]"
+        />
+      </div>
+    </div>
+  );
+});
 
 function PlaceAvatar({
   photoUrl,
@@ -205,7 +269,8 @@ export function PublishedResultsFeed({
     .filter((column) => column.items.length > 0);
 
   return (
-    <div className="card-elevated flex flex-col gap-6 rounded-xl border border-border bg-card p-6 md:h-full md:min-h-0 md:overflow-y-auto">
+    <div className="card-elevated relative isolate flex flex-col gap-6 rounded-xl border border-border bg-card p-6 md:h-full md:min-h-0 md:overflow-y-auto">
+      <PodiumBackdrop />
       <div className="flex items-center justify-between gap-3">
         <div
           className={cn(
@@ -289,19 +354,34 @@ export function PublishedResultsFeed({
                         tied ? "gap-1" : "gap-3",
                       )}
                     >
-                      <div
-                        className={cn(
-                          "relative overflow-hidden rounded-xl bg-muted",
-                          style?.photoSize,
-                          isChampion && "ring-4 ring-gold",
-                        )}
-                      >
-                        <PlaceAvatar
-                          photoUrl={place.photoUrl}
-                          isGroup={hero.program_type === "group"}
-                          category={place.category}
-                          imageSizes="160px"
-                        />
+                      {/* modern avatar stand: medal-gradient frame with a
+                          floating rank chip pinned to the corner */}
+                      <div className="relative">
+                        <div
+                          className={cn("rounded-2xl p-0.75", style?.frame)}
+                        >
+                          <div
+                            className={cn(
+                              "relative overflow-hidden rounded-xl bg-muted",
+                              style?.photoSize,
+                            )}
+                          >
+                            <PlaceAvatar
+                              photoUrl={place.photoUrl}
+                              isGroup={hero.program_type === "group"}
+                              category={place.category}
+                              imageSizes="160px"
+                            />
+                          </div>
+                        </div>
+                        <span
+                          className={cn(
+                            "absolute -right-2 -bottom-2 flex size-7 items-center justify-center rounded-full font-heading text-sm font-black shadow-md ring-2 ring-card",
+                            style?.chip,
+                          )}
+                        >
+                          {column.rank}
+                        </span>
                       </div>
                       <div className="flex max-w-[9rem] flex-col items-center gap-0.5 text-center">
                         <p
@@ -328,19 +408,56 @@ export function PublishedResultsFeed({
                   ))}
                 </div>
 
-                <div
-                  className={cn(
-                    "flex w-full flex-col items-center justify-center gap-0.5 rounded-lg font-heading shadow-sm",
-                    style?.block,
-                    style?.blockHeight,
-                  )}
-                >
-                  <span className="text-3xl font-bold">{column.rank}</span>
-                  <span className="text-xs font-semibold tracking-wide uppercase opacity-80">
-                    {tied
-                      ? `${rankLabel(column.rank) ?? `Rank ${column.rank}`} · ${t("tie")}`
-                      : rankLabel(column.rank)}
-                  </span>
+                {/* poster-style podium stand: a lighter perspective "top
+                    face" lip over a metallic gradient front face with a
+                    glossy sheen, an inset hairline, and a giant ghost
+                    numeral anchored to the base */}
+                <div className="w-full">
+                  <div
+                    aria-hidden
+                    className={cn(
+                      "h-2.5 w-full [clip-path:polygon(4%_0,96%_0,100%_100%,0_100%)]",
+                      style?.lip,
+                    )}
+                  />
+                  <div
+                    className={cn(
+                      "relative flex w-full flex-col items-center justify-center gap-1 overflow-hidden rounded-b-md font-heading",
+                      style?.block,
+                      style?.blockHeight,
+                    )}
+                  >
+                    <span
+                      aria-hidden
+                      className="pointer-events-none absolute inset-x-0 top-0 h-1/3 bg-linear-to-b from-white/35 to-transparent"
+                    />
+                    <span
+                      aria-hidden
+                      className="pointer-events-none absolute inset-0 rounded-b-md ring-1 ring-white/25 ring-inset"
+                    />
+                    <span
+                      aria-hidden
+                      className={cn(
+                        "pointer-events-none absolute -bottom-2 -left-1 font-black leading-none tracking-tighter opacity-15 select-none",
+                        isChampion ? "text-8xl" : "text-7xl",
+                      )}
+                    >
+                      {column.rank}
+                    </span>
+                    <span
+                      className={cn(
+                        "relative font-bold",
+                        isChampion ? "text-4xl" : "text-3xl",
+                      )}
+                    >
+                      {column.rank}
+                    </span>
+                    <span className="relative text-xs font-semibold tracking-widest uppercase opacity-80">
+                      {tied
+                        ? `${rankLabel(column.rank) ?? `Rank ${column.rank}`} · ${t("tie")}`
+                        : rankLabel(column.rank)}
+                    </span>
+                  </div>
                 </div>
               </div>
             );
