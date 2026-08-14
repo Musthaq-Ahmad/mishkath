@@ -70,7 +70,7 @@ export function ChampionshipSidebar({
                 "flex flex-col gap-2.5 rounded-xl px-4 py-3.5",
                 isLeader
                   ? "bg-linear-to-br from-[#f2d287] via-gold to-[#b98a2e] text-gold-foreground shadow-lg shadow-gold/25"
-                  : "bg-sidebar-accent",
+                  : "bg-white/[0.03] ring-1 ring-white/5",
               )}
             >
               <div className="flex items-center justify-between gap-3">
@@ -80,7 +80,7 @@ export function ChampionshipSidebar({
                       "flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-bold tabular-nums",
                       isLeader
                         ? "bg-gold-foreground/15 text-gold-foreground"
-                        : "bg-white/10 text-sidebar-foreground",
+                        : "bg-white/[0.035] text-sidebar-foreground ring-1 ring-white/10",
                     )}
                   >
                     {index + 1}
@@ -112,7 +112,7 @@ export function ChampionshipSidebar({
               <div
                 className={cn(
                   "h-1.5 overflow-hidden rounded-full",
-                  isLeader ? "bg-gold-foreground/20" : "bg-white/10",
+                  isLeader ? "bg-gold-foreground/20" : "bg-white/[0.07]",
                 )}
               >
                 <div

@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { ClockCard } from "./clock-card";
-import { KioskToggleButton } from "./kiosk";
 import { LanguageToggle } from "./language-toggle";
 import { ResultsQrCode } from "./results-qr-code";
 import { useLanguage } from "./i18n";
@@ -18,7 +18,12 @@ export function LeaderboardHeader({
   const { t } = useLanguage();
 
   return (
-    <header className="card-elevated flex shrink-0 flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3 sm:px-5">
+    <header className="card-elevated relative flex shrink-0 flex-wrap items-center justify-between gap-3 overflow-hidden rounded-2xl border border-border bg-card px-4 py-3 sm:px-5">
+      <span
+        aria-hidden
+        className="absolute inset-x-0 top-0 h-0.5 bg-linear-to-r from-transparent via-gold to-transparent"
+      />
+
       <div className="flex items-center gap-3">
         {/* theme-aware logo: indigo on light surfaces, gold on dark —
             the indigo mark loses all contrast against the dark card */}
@@ -46,17 +51,17 @@ export function LeaderboardHeader({
       </div>
 
       <div className="flex flex-wrap items-center gap-2 text-base sm:gap-3">
-        <div className="flex items-center gap-3 rounded-full bg-destructive/10 px-3 py-1.5">
+        <div className="flex items-center gap-3 rounded-full bg-gold/10 px-3 py-1.5">
           <div className="flex items-center gap-2">
             <span className="relative flex size-2">
-              <span className="absolute inline-flex size-full animate-ping rounded-full bg-destructive opacity-75" />
-              <span className="relative inline-flex size-2 rounded-full bg-destructive" />
+              <span className="absolute inline-flex size-full animate-ping rounded-full bg-gold opacity-75" />
+              <span className="relative inline-flex size-2 rounded-full bg-gold" />
             </span>
-            <span className="font-semibold tracking-wide text-destructive uppercase">{t("live")}</span>
+            <span className="font-semibold tracking-wide text-gold uppercase">{t("live")}</span>
           </div>
 
           {totalProgramCount > 0 && (
-            <div className="hidden items-center gap-1.5 border-l border-destructive/20 pl-3 text-muted-foreground sm:flex">
+            <div className="hidden items-center gap-1.5 border-l border-gold/25 pl-3 text-muted-foreground sm:flex">
               <span className="material-symbols-outlined text-[18px]">calendar_month</span>
               <span className="font-heading font-semibold tabular-nums text-foreground">
                 {publishedProgramCount}/{totalProgramCount}
@@ -74,15 +79,16 @@ export function LeaderboardHeader({
             <span className="hidden font-medium sm:inline">{t("allResults")}</span>
           </Link>
           <LanguageToggle />
-          <KioskToggleButton />
         </div>
 
-        <div className="flex items-center gap-3 rounded-full border border-border px-3 py-1.5">
+        <div className="flex items-center gap-2 rounded-full border border-border px-3 py-1.5">
           <ClockCard />
           <span aria-hidden className="hidden h-4 w-px bg-border sm:block" />
           <div className="hidden sm:block">
             <ResultsQrCode />
           </div>
+          <span aria-hidden className="h-4 w-px bg-border" />
+          <ThemeToggle className="size-7 rounded-full hover:bg-muted" />
         </div>
       </div>
     </header>

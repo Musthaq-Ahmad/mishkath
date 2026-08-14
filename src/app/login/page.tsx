@@ -9,7 +9,7 @@ export default function LoginPage() {
       <main className="card-elevated relative flex min-h-[600px] w-full max-w-[1000px] flex-col overflow-hidden rounded-xl bg-card md:flex-row">
         <section
           className="relative hidden flex-col justify-between overflow-hidden p-10 text-primary-foreground md:flex md:w-5/12"
-          style={{ background: "linear-gradient(135deg, #0f0069 0%, #3323cc 100%)" }}
+          style={{ background: "linear-gradient(135deg, oklch(60% 0.2 30) 0%, oklch(48% 0.18 26) 100%)" }}
         >
           <div
             aria-hidden

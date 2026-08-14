@@ -65,109 +65,116 @@
 }
 
 :root {
-  /* Mehfile Meem design tokens — see DESIGN.md ("Modern Heritage": slate + indigo) */
+  /* Mehfile Meem design tokens — exact match to Kerala Sahityotsav's
+     published theme (their base :root = our light mode, their
+     .live-scope = our dark mode below), pulled directly from their
+     compiled CSS rather than approximated. Warm ink/cream/gold/red
+     palette, replacing the prior slate + indigo scheme. */
   /* A genuine, overridable custom property (not baked in by @theme inline)
-     so scoped subtrees — e.g. the leaderboard — can swap the heading font
-     independently of the body font by setting --font-heading locally. */
-  --font-heading: var(--font-sans);
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --card: #ffffff;
-  --card-foreground: #0f172a;
-  --popover: #ffffff;
-  --popover-foreground: #0f172a;
-  --primary: #3525cd;
-  --primary-foreground: #ffffff;
-  --secondary: #eef2ff;
-  --secondary-foreground: #3730a3;
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
-  --accent: #eef2ff;
-  --accent-foreground: #0f172a;
-  --destructive: #dc2626;
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --ring: #3525cd;
-  --chart-1: #3525cd;
-  --chart-2: #c7a24a;
-  --chart-3: #6366f1;
-  --chart-4: #64748b;
-  --chart-5: #94a3b8;
-  --radius: 0.75rem;
-  --sidebar: #111827;
-  --sidebar-foreground: #f1f5f9;
-  --sidebar-primary: #818cf8;
-  --sidebar-primary-foreground: #111827;
-  --sidebar-accent: #1f2937;
-  --sidebar-accent-foreground: #f1f5f9;
-  --sidebar-border: #1f2937;
-  --sidebar-ring: #818cf8;
-  --gold: #c7a24a;
-  --gold-foreground: #251a00;
+     so scoped subtrees could swap the heading font independently of the
+     body font by setting --font-heading locally, if ever needed. Site-wide
+     default is the Poppins/Baloo Chettan 2 display pairing (see
+     src/app/layout.tsx), falling back to the body sans font. */
+  --font-heading: var(--font-poppins), var(--font-baloo-chettan), var(--font-sans);
+  --background: oklch(94.5% 0.008 30);
+  --foreground: oklch(24% 0.006 40);
+  --card: oklch(97.5% 0.006 40);
+  --card-foreground: oklch(22% 0.006 40);
+  --popover: oklch(97.5% 0.006 40);
+  --popover-foreground: oklch(22% 0.006 40);
+  --primary: oklch(58.5% 0.205 28);
+  --primary-foreground: oklch(98% 0.01 60);
+  --secondary: oklch(92% 0.012 40);
+  --secondary-foreground: oklch(24% 0.006 40);
+  --muted: oklch(93% 0.01 40);
+  --muted-foreground: oklch(46% 0.02 40);
+  --accent: oklch(55% 0.13 152);
+  --accent-foreground: oklch(98% 0.01 60);
+  --destructive: oklch(58.5% 0.22 28);
+  --border: oklch(87% 0.012 40);
+  --input: oklch(89% 0.012 40);
+  --ring: oklch(58.5% 0.205 28);
+  --chart-1: oklch(58.5% 0.205 28);
+  --chart-2: oklch(80% 0.14 78);
+  --chart-3: oklch(55% 0.13 152);
+  --chart-4: oklch(46% 0.02 40);
+  --chart-5: oklch(70% 0.02 40);
+  --radius: 1rem;
+  --sidebar: oklch(20% 0.005 75);
+  --sidebar-foreground: oklch(94.5% 0.01 50);
+  --sidebar-primary: oklch(80% 0.13 78);
+  --sidebar-primary-foreground: oklch(24% 0.005 75);
+  --sidebar-accent: oklch(29.5% 0.005 75);
+  --sidebar-accent-foreground: oklch(94.5% 0.01 50);
+  --sidebar-border: oklch(100% 0 0 / 0.1);
+  --sidebar-ring: oklch(66% 0.17 40);
+  --gold: oklch(80% 0.14 78);
+  --gold-foreground: oklch(24% 0.006 40);
   --silver: #c8c6c2;
   --bronze: #c8a97e;
-  --surface-container-low: #f8fafc;
-  --surface-container: #f1f5f9;
-  --surface-container-high: #eef2ff;
-  --surface-container-highest: #e2e8f0;
-  --success: #16a34a;
-  --success-foreground: #ffffff;
-  --warning: #d97706;
-  --warning-foreground: #ffffff;
-  --outline: #64748b;
-  --outline-variant: #e2e8f0;
-  --primary-container: #eef2ff;
-  --on-primary-container: #3730a3;
+  --surface-container-low: oklch(94.5% 0.008 30);
+  --surface-container: oklch(92% 0.012 40);
+  --surface-container-high: oklch(90% 0.02 50);
+  --surface-container-highest: oklch(87% 0.012 40);
+  --success: oklch(55% 0.13 152);
+  --success-foreground: oklch(98% 0.01 60);
+  --warning: oklch(76.9% 0.188 70.08);
+  --warning-foreground: oklch(24% 0.006 40);
+  --outline: oklch(46% 0.02 40);
+  --outline-variant: oklch(87% 0.012 40);
+  --primary-container: oklch(92% 0.05 28);
+  --on-primary-container: oklch(35% 0.15 28);
 }
 
 .dark {
-  --background: #0b0f19;
-  --foreground: #f1f5f9;
-  --card: #131a29;
-  --card-foreground: #f1f5f9;
-  --popover: #131a29;
-  --popover-foreground: #f1f5f9;
-  --primary: #818cf8;
-  --primary-foreground: #0b0f19;
-  --secondary: #1e1b4b;
-  --secondary-foreground: #c7d2fe;
-  --muted: #1e293b;
-  --muted-foreground: #94a3b8;
-  --accent: #1e1b4b;
-  --accent-foreground: #f1f5f9;
-  --destructive: #f87171;
-  --border: #1f2937;
-  --input: #1f2937;
-  --ring: #818cf8;
-  --chart-1: #818cf8;
-  --chart-2: #e9c266;
-  --chart-3: #6366f1;
-  --chart-4: #94a3b8;
-  --chart-5: #64748b;
-  --sidebar: #0b0f19;
-  --sidebar-foreground: #f1f5f9;
-  --sidebar-primary: #818cf8;
-  --sidebar-primary-foreground: #0b0f19;
-  --sidebar-accent: #1e293b;
-  --sidebar-accent-foreground: #f1f5f9;
-  --sidebar-border: #1f2937;
-  --sidebar-ring: #818cf8;
-  --gold: #e9c266;
-  --gold-foreground: #251a00;
+  --background: oklch(26% 0.005 75);
+  --foreground: oklch(94.5% 0.01 50);
+  --card: oklch(29.5% 0.005 75);
+  --card-foreground: oklch(94.5% 0.01 50);
+  --popover: oklch(29.5% 0.005 75);
+  --popover-foreground: oklch(94.5% 0.01 50);
+  --primary: oklch(56% 0.19 29);
+  --primary-foreground: oklch(97% 0.01 60);
+  --secondary: oklch(32.5% 0.006 75);
+  --secondary-foreground: oklch(94.5% 0.01 50);
+  --muted: oklch(31% 0.005 75);
+  --muted-foreground: oklch(73% 0.015 70);
+  --accent: oklch(80% 0.13 78);
+  --accent-foreground: oklch(24% 0.005 75);
+  --destructive: oklch(56% 0.2 29);
+  --border: oklch(100% 0 0 / 0.12);
+  --input: oklch(100% 0 0 / 0.14);
+  --ring: oklch(66% 0.17 40);
+  --chart-1: oklch(56% 0.19 29);
+  --chart-2: oklch(80% 0.13 78);
+  --chart-3: oklch(58% 0.1 155);
+  --chart-4: oklch(73% 0.015 70);
+  --chart-5: oklch(50% 0.01 70);
+  --radius: 0.375rem;
+  --sidebar: oklch(20% 0.005 75);
+  --sidebar-foreground: oklch(94.5% 0.01 50);
+  --sidebar-primary: oklch(80% 0.13 78);
+  --sidebar-primary-foreground: oklch(24% 0.005 75);
+  --sidebar-accent: oklch(29.5% 0.005 75);
+  --sidebar-accent-foreground: oklch(94.5% 0.01 50);
+  --sidebar-border: oklch(100% 0 0 / 0.1);
+  --sidebar-ring: oklch(66% 0.17 40);
+  --gold: oklch(80% 0.13 78);
+  --gold-foreground: oklch(24% 0.005 75);
   --silver: #c8c6c2;
   --bronze: #c8a97e;
-  --surface-container-low: #0f1420;
-  --surface-container: #131a29;
-  --surface-container-high: #1e293b;
-  --surface-container-highest: #263143;
-  --success: #4ade80;
-  --success-foreground: #0b0f19;
-  --warning: #e9c266;
-  --warning-foreground: #251a00;
-  --outline: #94a3b8;
-  --outline-variant: #1f2937;
-  --primary-container: #1e1b4b;
-  --on-primary-container: #c7d2fe;
+  --surface-container-low: oklch(24% 0.005 75);
+  --surface-container: oklch(29.5% 0.005 75);
+  --surface-container-high: oklch(32.5% 0.006 75);
+  --surface-container-highest: oklch(36% 0.006 75);
+  --success: oklch(58% 0.1 155);
+  --success-foreground: oklch(20% 0.005 75);
+  --warning: oklch(76.9% 0.188 70.08);
+  --warning-foreground: oklch(24% 0.005 75);
+  --outline: oklch(73% 0.015 70);
+  --outline-variant: oklch(100% 0 0 / 0.12);
+  --primary-container: oklch(30% 0.08 28);
+  --on-primary-container: oklch(85% 0.1 28);
 }
 
 @layer base {
@@ -183,31 +190,32 @@
 }
 
 @layer components {
-  /* Shared elevated-card treatment — neutral single shadow per DESIGN.md,
-     lifts slightly on hover. Use on any card-like surface site-wide. */
+  /* Shared elevated-card treatment — exact shadow-soft values from Kerala
+     Sahityotsav's theme, lifts slightly on hover. Use on any card-like
+     surface site-wide. */
   .card-elevated {
     box-shadow:
-      0 1px 2px rgba(15, 23, 42, 0.04),
-      0 8px 24px rgba(15, 23, 42, 0.06);
+      0 1px 2px oklch(20% 0.006 40 / 0.06),
+      0 8px 24px oklch(20% 0.006 40 / 0.09);
     transition:
       box-shadow 0.2s ease,
       transform 0.2s ease;
   }
   .card-elevated:hover {
     box-shadow:
-      0 2px 4px rgba(15, 23, 42, 0.06),
-      0 12px 32px rgba(15, 23, 42, 0.1);
+      0 2px 4px oklch(20% 0.006 40 / 0.08),
+      0 12px 32px oklch(20% 0.006 40 / 0.13);
     transform: translateY(-2px);
   }
   .dark .card-elevated {
     box-shadow:
-      0 1px 2px rgba(0, 0, 0, 0.3),
-      0 8px 24px rgba(0, 0, 0, 0.25);
+      0 1px 2px oklch(0% 0 0 / 0.25),
+      0 10px 30px oklch(0% 0 0 / 0.3);
   }
   .dark .card-elevated:hover {
     box-shadow:
-      0 2px 4px rgba(0, 0, 0, 0.35),
-      0 12px 32px rgba(0, 0, 0, 0.4);
+      0 2px 4px oklch(0% 0 0 / 0.3),
+      0 14px 36px oklch(0% 0 0 / 0.38);
   }
 
   /* Glass panel for headers/overlays over colored backgrounds. */
@@ -222,12 +230,6 @@
   @media (prefers-reduced-motion: no-preference) {
     .animate-fade-in-up {
       animation: fade-in-up 0.4s ease-out both;
-    }
-    .animate-sunburst {
-      animation: sunburst-spin 40s linear infinite;
-    }
-    .animate-logo-breathe {
-      animation: logo-breathe 7s ease-in-out infinite;
     }
     .animate-halo-pulse {
       animation: halo-pulse 5s ease-in-out infinite;
@@ -249,22 +251,10 @@
   }
 }
 
-/* These three keyframes animate `transform` only — elements they run on are
-   centered with Tailwind translate utilities, which compile to the separate
-   CSS `translate` property, so the animation must not set translate itself
+/* Animates `transform` only — the element it runs on is centered with
+   Tailwind translate utilities, which compile to the separate CSS
+   `translate` property, so the animation must not set translate itself
    (it would double-shift the element). */
-@keyframes logo-breathe {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 0.8;
-  }
-  50% {
-    transform: scale(1.04);
-    opacity: 1;
-  }
-}
-
 @keyframes halo-pulse {
   0%,
   100% {
@@ -274,15 +264,6 @@
   50% {
     transform: scale(1.06);
     opacity: 1;
-  }
-}
-
-@keyframes sunburst-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
   }
 }
 

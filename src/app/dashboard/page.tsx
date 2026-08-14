@@ -413,11 +413,8 @@ export default async function DashboardPage() {
                 <div className="flex min-w-0 items-center gap-3">
                   <span
                     className={cn(
-                      "flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-bold tabular-nums",
-                      index === 0 && "bg-gold text-gold-foreground",
-                      index === 1 && "bg-silver text-[#1b1c19]",
-                      index === 2 && "bg-bronze text-[#251a00]",
-                      index > 2 && "bg-muted text-muted-foreground",
+                      "flex size-7 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold tabular-nums",
+                      index === 0 ? "text-gold ring-2 ring-gold/50" : "text-muted-foreground ring-1 ring-border",
                     )}
                   >
                     {index + 1}

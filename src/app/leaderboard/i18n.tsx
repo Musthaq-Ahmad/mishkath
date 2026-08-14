@@ -10,9 +10,6 @@ type TranslationKey =
   | "festivalTagline"
   | "live"
   | "allResults"
-  | "kioskMode"
-  | "kioskOn"
-  | "kioskToggleTitle"
   | "scanForResults"
   | "justPublished"
   | "previousResult"
@@ -39,12 +36,6 @@ const TRANSLATIONS: Record<TranslationKey, Record<Lang, string>> = {
   },
   live: { en: "Live", ml: "ലൈവ്" },
   allResults: { en: "All Results", ml: "എല്ലാ ഫലങ്ങളും" },
-  kioskMode: { en: "Kiosk Mode", ml: "കിയോസ്ക് മോഡ്" },
-  kioskOn: { en: "Kiosk: On", ml: "കിയോസ്ക്: ഓൺ" },
-  kioskToggleTitle: {
-    en: "Auto-rotate between the podium and full group standings — for an unattended display",
-    ml: "പോഡിയവും ഗ്രൂപ്പ് സ്ഥാനങ്ങളും തമ്മിൽ സ്വയമേവ മാറിക്കൊണ്ടിരിക്കും — ആളില്ലാത്ത സ്ക്രീനുകൾക്ക്",
-  },
   scanForResults: { en: "Scan for results", ml: "ഫലങ്ങൾക്കായി സ്കാൻ ചെയ്യുക" },
   justPublished: { en: "Just Published", ml: "പുതുതായി പ്രഖ്യാപിച്ചത്" },
   previousResult: { en: "Previous Result", ml: "മുൻ ഫലം" },

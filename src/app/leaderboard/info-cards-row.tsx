@@ -40,25 +40,34 @@ function formatCountdown(targetIso: string, nowMs: number): string | null {
   return `${hours}h ${minutes}m`;
 }
 
+const CARD_ACCENT = {
+  gold: { bar: "bg-gold", chip: "bg-gold/15 text-gold" },
+  primary: { bar: "bg-primary", chip: "bg-primary/15 text-primary" },
+  warning: { bar: "bg-warning", chip: "bg-warning/15 text-warning" },
+  neutral: { bar: "bg-border", chip: "bg-muted text-muted-foreground" },
+} as const;
+
 function InfoCard({
   icon,
-  accent,
+  tone = "neutral",
   label,
   title,
   subtitle,
 }: {
   icon: string;
-  accent?: boolean;
+  tone?: keyof typeof CARD_ACCENT;
   label: string;
   title: string;
   subtitle?: string;
 }) {
+  const accent = CARD_ACCENT[tone];
   return (
-    <div className="flex items-center gap-2.5 px-4 py-2 sm:gap-3">
+    <div className="relative flex items-center gap-2.5 px-4 py-2.5 sm:gap-3">
+      <span aria-hidden className={cn("absolute inset-x-4 top-0 h-0.5 rounded-full", accent.bar)} />
       <span
         className={cn(
-          "flex size-9 shrink-0 items-center justify-center rounded-full bg-muted sm:size-10",
-          accent ? "text-primary" : "text-muted-foreground",
+          "flex size-9 shrink-0 items-center justify-center rounded-full sm:size-10",
+          accent.chip,
         )}
       >
         <span className="material-symbols-outlined text-[18px] sm:text-[20px]">{icon}</span>
@@ -126,19 +135,21 @@ export function InfoCardsRow({
     <div className="card-elevated grid shrink-0 grid-cols-1 divide-y divide-border rounded-lg border border-border bg-card md:grid-cols-4 md:divide-x md:divide-y-0">
       <InfoCard
         icon="emoji_events"
+        tone="gold"
         label={t("previousWinner")}
         title={previous ? previous.program_name : "—"}
         subtitle={previous?.places.find((p) => p.rank === 1)?.name}
       />
       <InfoCard
         icon="mic"
-        accent
+        tone="primary"
         label={t("currentProgram")}
         title={current ? current.program_name : "—"}
         subtitle={current ? divisionLabel(current.category) : undefined}
       />
       <InfoCard
         icon="menu_book"
+        tone="warning"
         label={t("nextProgram")}
         title={nextProgram ? nextProgram.name : "—"}
         subtitle={

@@ -14,79 +14,132 @@ import { groupTextColor } from "@/lib/group-color";
 import { PlaceholderAvatar } from "@/components/gender-avatar";
 import { useLanguage } from "./i18n";
 
-// On mobile the podium stacks in a single column — show the champion
-// first (natural reading order), then reorder back to silver/gold/bronze
-// left-to-right once there's room to sit side by side.
+// Below md the podium stacks in a single column — show the champion first
+// (natural reading order), then reorder back to silver/gold/bronze
+// left-to-right at md+, matching the md: breakpoint the champion's
+// wider/lifted treatment also switches on below (keeping both changes in
+// sync avoids an in-between width where cards sit in a row but without
+// the lift, or vice versa).
 const MOBILE_ORDER: Record<number, string> = {
-  1: "order-1 sm:order-2",
-  2: "order-2 sm:order-1",
+  1: "order-1 md:order-2",
+  2: "order-2 md:order-1",
   3: "order-3",
 };
 
+// Quiet, editorial podium treatment: each rank is its own "trophy case"
+// card — a soft gradient-bordered frame (the `shell`, via padding so the
+// gradient shows through as an even border ring) wrapping a fixed-dark
+// `core` card (bg-sidebar, same always-dark panel used by
+// ChampionshipSidebar regardless of page theme) with a giant ghost-outline
+// numeral as the dominant graphic instead of a colored badge. Color is
+// used sparingly — gold for the champion's frame/glow/numeral, a faint
+// white wash for 2nd/3rd.
 const PODIUM_STYLE: Record<
   number,
   {
-    block: string;
-    blockHeight: string;
-    lip: string;
-    frame: string;
-    chip: string;
+    shell: string;
+    glow: string;
+    numeral: string;
+    divider: string;
+    ring: string;
     photoSize: string;
     nameSize: string;
-    medalColor: string;
-    label: string;
   }
 > = {
   1: {
-    block:
-      "bg-linear-to-b from-[#eccf85] via-gold to-[#a87c26] text-gold-foreground shadow-lg shadow-gold/25",
-    blockHeight: "h-[clamp(44px,13cqh,130px)]",
-    lip: "bg-linear-to-b from-[#f9ecc4] to-[#e3bd5e]",
-    frame:
-      "bg-linear-to-br from-[#f2d287] via-gold to-[#b98a2e] shadow-lg shadow-gold/40",
-    chip: "bg-gold text-gold-foreground",
-    photoSize: "size-[clamp(56px,15cqh,150px)]",
-    nameSize: "text-[clamp(1rem,3cqh,1.75rem)]",
-    medalColor: "text-gold",
-    label: "1st Prize",
+    shell: "bg-linear-to-br from-gold/80 via-gold/25 to-transparent shadow-[0_30px_70px_-38px_var(--gold)]",
+    glow: "radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--gold) 25%, transparent), transparent 55%)",
+    numeral: "text-[clamp(3rem,15cqh,6.5rem)] text-gold",
+    divider: "w-24 bg-gold/60",
+    ring: "ring-2 ring-gold/50",
+    photoSize: "size-[clamp(56px,14cqh,120px)]",
+    nameSize: "text-[clamp(1.1rem,3.2cqh,1.875rem)]",
   },
   2: {
-    block:
-      "bg-linear-to-b from-[#eeece8] via-silver to-[#96948f] text-[#1b1c19] shadow-md shadow-black/25",
-    blockHeight: "h-[clamp(36px,10.5cqh,100px)]",
-    lip: "bg-linear-to-b from-[#f8f7f5] to-[#d4d2ce]",
-    frame:
-      "bg-linear-to-br from-[#e4e2de] via-silver to-[#a9a7a3] shadow-md shadow-black/20",
-    chip: "bg-silver text-[#1b1c19]",
-    photoSize: "size-[clamp(48px,13cqh,120px)]",
+    shell: "bg-linear-to-br from-white/20 to-transparent shadow-[0_20px_50px_-32px_rgba(0,0,0,0.6)]",
+    glow: "radial-gradient(circle at 50% 0%, rgba(255,255,255,0.07), transparent 45%)",
+    numeral: "text-[clamp(2.25rem,11cqh,4.5rem)] text-white/15",
+    divider: "w-14 bg-white/15",
+    ring: "ring-1 ring-white/20",
+    photoSize: "size-[clamp(48px,11cqh,96px)]",
     nameSize: "text-[clamp(0.9rem,2.6cqh,1.4rem)]",
-    medalColor: "text-silver",
-    label: "2nd Prize",
   },
   3: {
-    block:
-      "bg-linear-to-b from-[#e8cda7] via-bronze to-[#8f6c3f] text-[#251a00] shadow-md shadow-black/25",
-    blockHeight: "h-[clamp(28px,8.5cqh,84px)]",
-    lip: "bg-linear-to-b from-[#f3e3c9] to-[#d3af7d]",
-    frame:
-      "bg-linear-to-br from-[#dfc19a] via-bronze to-[#a37f4f] shadow-md shadow-black/20",
-    chip: "bg-bronze text-[#251a00]",
-    photoSize: "size-[clamp(48px,13cqh,120px)]",
+    shell: "bg-linear-to-br from-white/20 to-transparent shadow-[0_20px_50px_-32px_rgba(0,0,0,0.6)]",
+    glow: "radial-gradient(circle at 50% 0%, rgba(255,255,255,0.07), transparent 45%)",
+    numeral: "text-[clamp(2.25rem,11cqh,4.5rem)] text-white/15",
+    divider: "w-14 bg-white/15",
+    ring: "ring-1 ring-white/20",
+    photoSize: "size-[clamp(48px,11cqh,96px)]",
     nameSize: "text-[clamp(0.9rem,2.6cqh,1.4rem)]",
-    medalColor: "text-bronze",
-    label: "3rd Prize",
   },
 };
 
-// Animated poster-style backdrop behind the podium: the Mehfile Meem gold
-// wordmark oversized and slightly tilted like a screen-printed poster, over
-// a breathing gold wash and thin slow-rotating rays. Purely decorative
-// (aria-hidden, pointer-events-none), theme-aware via var(--gold), and gated
-// behind prefers-reduced-motion. Memoized with no props so the feed's
-// realtime refetches and 15s rotation re-renders never re-render it — its
-// DOM persists, so the animations run continuously instead of restarting.
-// Sits at -z-10 inside the card's isolated stacking context: above bg-card,
-// below all content.
+// Small deterministic PRNG (not Math.random()) so the "random" scatter
+// below renders identically on the server and on client hydration — using
+// Math.random() directly would reseed differently in each environment and
+// throw a hydration mismatch.
+function createSeededRandom(seed: number) {
+  return () => {
+    seed = (seed * 9301 + 49297) % 233280;
+    return seed / 233280;
+  };
+}
+
+// Colors already established elsewhere in the app (theme accent tokens +
+// the same categorical palette used for group rings/badges), reused here
+// rather than invented, so the scatter reads as "part of this app's
+// theme" instead of random new colors.
+const BACKDROP_LOGO_COLORS = [
+  "var(--gold)",
+  "var(--primary)",
+  "var(--success)",
+  "#f472b6",
+  "#67e8f9",
+  "#a78bfa",
+  "#34d399",
+  "#fb923c",
+  "#60a5fa",
+];
+
+type BackdropLogoMark = {
+  left: number;
+  top: number;
+  size: number;
+  rotate: number;
+  opacity: number;
+  color: string;
+};
+
+const BACKDROP_LOGOS: BackdropLogoMark[] = (() => {
+  const rand = createSeededRandom(42);
+  const cols = 6;
+  const rows = 4;
+  const marks: BackdropLogoMark[] = [];
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      marks.push({
+        left: ((col + 0.5) / cols) * 100 + (rand() - 0.5) * 10,
+        top: ((row + 0.5) / rows) * 100 + (rand() - 0.5) * 10,
+        size: 48 + rand() * 44,
+        rotate: (rand() - 0.5) * 30,
+        opacity: 0.14 + rand() * 0.18,
+        color: BACKDROP_LOGO_COLORS[Math.floor(rand() * BACKDROP_LOGO_COLORS.length)],
+      });
+    }
+  }
+  return marks;
+})();
+
+// Podium backdrop: a soft breathing gold wash behind a scattered field of
+// small logo marks, each recolored via a CSS mask (the logo PNG's alpha
+// shape masking a solid-color div) so every mark can take a different
+// theme color without needing separate colored image assets. Purely
+// decorative (aria-hidden, pointer-events-none), gated behind
+// prefers-reduced-motion for the glow animation. Memoized with no props so
+// the feed's realtime refetches and 15s rotation re-renders never
+// re-render it. Sits at -z-10 inside the card's isolated stacking context:
+// above bg-card, below all content.
 const PodiumBackdrop = memo(function PodiumBackdrop() {
   return (
     <div
@@ -100,26 +153,28 @@ const PodiumBackdrop = memo(function PodiumBackdrop() {
             "radial-gradient(circle, color-mix(in srgb, var(--gold) 15%, transparent) 0%, transparent 68%)",
         }}
       />
-      <div
-        className="animate-sunburst absolute top-[60%] left-1/2 size-[clamp(300px,62vh,700px)] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-[0.06]"
-        style={{
-          background:
-            "repeating-conic-gradient(from 0deg, var(--gold) 0deg 4deg, transparent 4deg 22deg)",
-          maskImage:
-            "radial-gradient(circle, black 0%, black 45%, transparent 72%)",
-          WebkitMaskImage:
-            "radial-gradient(circle, black 0%, black 45%, transparent 72%)",
-        }}
-      />
-      <div className="animate-logo-breathe absolute top-[58%] left-1/2 aspect-[2011/1220] w-[clamp(320px,55vw,860px)] -translate-x-1/2 -translate-y-1/2 -rotate-6">
-        <Image
-          src="/mehfile-meem-logo-gold.png"
-          alt=""
-          fill
-          sizes="860px"
-          className="object-contain opacity-[0.06]"
+      {BACKDROP_LOGOS.map((mark, index) => (
+        <span
+          key={index}
+          className="absolute aspect-[2011/1220]"
+          style={{
+            left: `${mark.left}%`,
+            top: `${mark.top}%`,
+            width: `${mark.size}px`,
+            opacity: mark.opacity,
+            backgroundColor: mark.color,
+            transform: `translate(-50%, -50%) rotate(${mark.rotate}deg)`,
+            maskImage: "url(/mehfile-meem-logo-white.png)",
+            maskSize: "contain",
+            maskRepeat: "no-repeat",
+            maskPosition: "center",
+            WebkitMaskImage: "url(/mehfile-meem-logo-white.png)",
+            WebkitMaskSize: "contain",
+            WebkitMaskRepeat: "no-repeat",
+            WebkitMaskPosition: "center",
+          }}
         />
-      </div>
+      ))}
     </div>
   );
 });
@@ -274,7 +329,7 @@ export function PublishedResultsFeed({
     // and always fit regardless of how much height the header/footer take.
     // Below md the card grows with content and cqh falls back to viewport
     // units, which is fine because the page scrolls there.
-    <div className="card-elevated relative isolate flex flex-col gap-[clamp(0.5rem,2vh,1.5rem)] rounded-xl border border-border bg-card p-[clamp(1rem,2.5vh,1.5rem)] md:h-full md:min-h-0 md:overflow-hidden md:@container-size">
+    <div className="card-elevated relative isolate flex flex-col gap-[clamp(0.5rem,2vh,1.5rem)] rounded-xl border border-border bg-card p-[clamp(1rem,2.5vh,1.5rem)] md:h-full md:min-h-0 md:overflow-y-auto md:@container-size">
       <PodiumBackdrop />
       {/* floats over the card corner instead of taking a flex row, so its
           height never competes with the podium's budget */}
@@ -307,10 +362,13 @@ export function PublishedResultsFeed({
 
       {/* Keying on program_id remounts this block whenever the podium swaps
           to a different result (new publish or rotation), replaying the
-          fade/slide-in animation as a lightweight transition. */}
+          fade/slide-in animation as a lightweight transition. pt- reserves
+          clearance for the floating status badge above (which is
+          absolutely positioned and out of flow), so on shorter viewports
+          the centered title never renders underneath it. */}
       <div
         key={hero.program_id}
-        className="animate-fade-in-up flex flex-1 flex-col justify-center gap-[clamp(0.5rem,2cqh,1.25rem)]"
+        className="animate-fade-in-up flex flex-1 flex-col justify-center gap-[clamp(1rem,2.5cqh,1.5rem)] pt-[clamp(2.75rem,7cqh,3.5rem)]"
       >
         {/* hero title: read from across the room — the program name is the
             headline of this screen, centered and oversized like an event
@@ -324,7 +382,7 @@ export function PublishedResultsFeed({
           </p>
         </div>
 
-        <div className="flex flex-wrap items-end justify-center gap-6 sm:gap-10">
+        <div className="flex flex-wrap items-start justify-center gap-6 md:gap-10">
           {podiumColumns.map((column) => {
             const style = PODIUM_STYLE[column.rank];
             const isChampion = column.rank === 1;
@@ -333,144 +391,118 @@ export function PublishedResultsFeed({
               <div
                 key={column.rank}
                 className={cn(
-                  "flex flex-1 flex-col items-center basis-[180px]",
-                  tied
-                    ? "w-full max-w-[380px] gap-1.5"
-                    : "w-full max-w-[240px] gap-[clamp(0.375rem,1.2cqh,0.75rem)]",
+                  // Full-width basis below md forces each card onto its own
+                  // line no matter the exact pixel arithmetic — a fixed
+                  // 180px basis let two cards fit on the same cramped row
+                  // together on narrow phones instead of stacking cleanly.
+                  "flex basis-full flex-col md:basis-[180px]",
+                  isChampion
+                    ? "w-full max-w-[420px] flex-[1.6] md:-translate-y-[clamp(0px,2.5cqh,1.25rem)]"
+                    : "w-full max-w-[240px] flex-1",
                   MOBILE_ORDER[column.rank],
                 )}
               >
-                {isChampion && (
-                  <span aria-hidden className="text-gold">
-                    <span className="material-symbols-outlined text-[clamp(18px,3.5cqh,28px)]">
-                      military_tech
-                    </span>
-                  </span>
-                )}
-
-                <div
-                  className={cn(
-                    "flex w-full items-end",
-                    tied
-                      ? "flex-row flex-wrap justify-center gap-x-3 gap-y-2"
-                      : "flex-col items-center gap-[clamp(0.5rem,1.5cqh,1rem)]",
-                  )}
-                >
-                  {column.items.map((place) => (
+                {/* "trophy case" card: an outer gradient-bordered shell (the
+                    gradient shows through as an even ring via the padding)
+                    wrapping a fixed-dark inner core — same always-dark
+                    panel treatment as ChampionshipSidebar, independent of
+                    the page's light/dark theme. */}
+                <div className={cn("w-full rounded-[2rem] p-1.5", style?.shell)}>
+                  <div
+                    className={cn(
+                      "relative flex w-full flex-col items-center overflow-hidden rounded-[1.625rem] bg-sidebar px-4 text-center",
+                      isChampion
+                        ? "min-h-[180px] gap-[clamp(0.375rem,1.2cqh,0.75rem)] py-7 md:min-h-[clamp(200px,34cqh,360px)]"
+                        : "min-h-[140px] gap-[clamp(0.3rem,1cqh,0.6rem)] py-5 md:min-h-[clamp(160px,28cqh,280px)]",
+                    )}
+                  >
                     <div
-                      key={place.id}
-                      className={cn(
-                        "flex flex-col items-center",
-                        tied ? "gap-1" : "gap-3",
-                      )}
-                    >
-                      {/* modern avatar stand: medal-gradient frame with a
-                          floating rank chip pinned to the corner */}
-                      <div className="relative">
-                        <div
-                          className={cn("rounded-2xl p-0.75", style?.frame)}
-                        >
-                          <div
-                            className={cn(
-                              "relative overflow-hidden rounded-xl bg-muted",
-                              style?.photoSize,
-                            )}
-                          >
-                            <PlaceAvatar
-                              photoUrl={place.photoUrl}
-                              isGroup={hero.program_type === "group"}
-                              category={place.category}
-                              imageSizes="160px"
-                            />
-                          </div>
-                        </div>
-                        <span
-                          className={cn(
-                            "absolute -right-2 -bottom-2 flex size-7 items-center justify-center rounded-full font-heading text-sm font-black shadow-md ring-2 ring-card",
-                            style?.chip,
-                          )}
-                        >
-                          {column.rank}
+                      aria-hidden
+                      className="pointer-events-none absolute inset-0"
+                      style={{ background: style?.glow }}
+                    />
+
+                    <div className="relative z-10 flex w-full flex-col items-center gap-[clamp(0.25rem,1cqh,0.5rem)]">
+                      {isChampion && (
+                        <span aria-hidden className="text-gold">
+                          <span className="material-symbols-outlined text-[clamp(16px,3cqh,24px)]">
+                            military_tech
+                          </span>
                         </span>
-                      </div>
-                      <div className="flex max-w-48 flex-col items-center gap-0.5 text-center">
-                        <p
-                          className={cn(
-                            "text-balance break-words font-heading font-bold text-foreground",
-                            style?.nameSize,
-                          )}
-                        >
-                          {place.name}
-                        </p>
-                        {hero.program_type === "individual" &&
-                          groupNames[place.groupId] && (
-                            <p
+                      )}
+
+                      {/* micro-label caption + giant ghost numeral + hairline
+                          divider — the numeral (not a colored badge) is the
+                          dominant graphic per rank, matching the reference's
+                          quiet, editorial treatment. */}
+                      <p className="text-[clamp(0.6rem,1.3cqh,0.7rem)] font-bold tracking-[0.25em] text-gold uppercase">
+                        {rankLabel(column.rank)}
+                      </p>
+                      <p
+                        aria-hidden
+                        className={cn(
+                          "font-heading leading-none font-black tabular-nums select-none",
+                          style?.numeral,
+                        )}
+                      >
+                        {column.rank}
+                      </p>
+                      <span aria-hidden className={cn("h-px", style?.divider)} />
+
+                      <div
+                        className={cn(
+                          "flex w-full items-start justify-center",
+                          tied
+                            ? "flex-row flex-wrap gap-x-4 gap-y-3"
+                            : "flex-col items-center gap-2",
+                        )}
+                      >
+                        {column.items.map((place) => (
+                          <div key={place.id} className="flex flex-col items-center gap-2">
+                            <div
                               className={cn(
-                                "text-[clamp(0.75rem,1.8cqh,0.875rem)] font-medium wrap-break-word text-balance",
-                                groupTextColor(place.groupId),
+                                "relative overflow-hidden rounded-full bg-white/10",
+                                style?.photoSize,
+                                style?.ring,
                               )}
                             >
-                              {groupNames[place.groupId]}
-                            </p>
-                          )}
+                              <PlaceAvatar
+                                photoUrl={place.photoUrl}
+                                isGroup={hero.program_type === "group"}
+                                category={place.category}
+                                imageSizes="160px"
+                              />
+                            </div>
+                            <div className="flex max-w-48 flex-col items-center gap-0.5 text-center">
+                              <p
+                                className={cn(
+                                  "text-balance break-words font-heading font-bold text-sidebar-foreground",
+                                  style?.nameSize,
+                                )}
+                              >
+                                {place.name}
+                              </p>
+                              {hero.program_type === "individual" &&
+                                groupNames[place.groupId] && (
+                                  <p
+                                    className={cn(
+                                      "text-[clamp(0.75rem,1.8cqh,0.875rem)] font-medium wrap-break-word text-balance",
+                                      groupTextColor(place.groupId),
+                                    )}
+                                  >
+                                    {groupNames[place.groupId]}
+                                  </p>
+                                )}
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    </div>
-                  ))}
-                </div>
 
-                {/* poster-style 3D podium stand: the wrapper adds
-                    perspective and tilts the whole box slightly forward;
-                    the "top face" is a real plane rotated back in 3D space
-                    (a sibling of the front face — it can't live inside it,
-                    because overflow-hidden would flatten the 3D transform).
-                    The front face keeps the metallic gradient, glossy
-                    sheen, inset hairline, and base-anchored ghost numeral. */}
-                <div className="w-full [perspective:900px]">
-                  <div className="relative w-full [transform:rotateX(9deg)] [transform-style:preserve-3d]">
-                    <div
-                      aria-hidden
-                      className={cn(
-                        "absolute inset-x-0 -top-[clamp(12px,2.5cqh,24px)] h-[clamp(12px,2.5cqh,24px)] origin-bottom transform-[rotateX(62deg)]",
-                        style?.lip,
+                      {tied && (
+                        <span className="text-[10px] font-semibold tracking-widest text-sidebar-foreground/60 uppercase">
+                          {t("tie")}
+                        </span>
                       )}
-                    />
-                    <div
-                      className={cn(
-                        "relative flex w-full flex-col items-center justify-center gap-1 overflow-hidden rounded-b-md font-heading",
-                        style?.block,
-                        style?.blockHeight,
-                      )}
-                    >
-                    <span
-                      aria-hidden
-                      className="pointer-events-none absolute inset-x-0 top-0 h-1/3 bg-linear-to-b from-white/35 to-transparent"
-                    />
-                    <span
-                      aria-hidden
-                      className="pointer-events-none absolute inset-0 rounded-b-md ring-1 ring-white/25 ring-inset"
-                    />
-                    <span
-                      aria-hidden
-                      className={cn(
-                        "pointer-events-none absolute -bottom-2 -left-1 font-black leading-none tracking-tighter opacity-15 select-none",
-                        isChampion ? "text-8xl" : "text-7xl",
-                      )}
-                    >
-                      {column.rank}
-                    </span>
-                    <span
-                      className={cn(
-                        "relative font-bold",
-                        isChampion ? "text-4xl" : "text-3xl",
-                      )}
-                    >
-                      {column.rank}
-                    </span>
-                      <span className="relative text-xs font-semibold tracking-widest uppercase opacity-80">
-                        {tied
-                          ? `${rankLabel(column.rank) ?? `Rank ${column.rank}`} · ${t("tie")}`
-                          : rankLabel(column.rank)}
-                      </span>
                     </div>
                   </div>
                 </div>

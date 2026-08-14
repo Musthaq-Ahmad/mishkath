@@ -2,9 +2,9 @@ import { createClient } from "@/lib/supabase/server";
 import { groupPlacements } from "@/lib/leaderboard";
 import { getUpcomingPrograms } from "@/lib/schedule";
 import type { EventPlacementRow, Group, GroupLeaderboardRow, Program } from "@/lib/types";
+import { CelebrationLayout } from "./celebration-layout";
 import { ChampionshipSidebar } from "./championship-sidebar";
 import { InfoCardsRow } from "./info-cards-row";
-import { KioskStage } from "./kiosk";
 import { LeaderboardHeader } from "./leaderboard-header";
 import { PublishedResultsFeed } from "./published-results-feed";
 
@@ -53,7 +53,7 @@ export default async function LeaderboardPage() {
           publishedProgramCount={publishedProgramCount}
         />
 
-        <KioskStage
+        <CelebrationLayout
           initialHeroId={placements[0]?.program_id ?? null}
           podium={<PublishedResultsFeed initialPlacements={placements} groupNames={groupNames} />}
           sidebar={
