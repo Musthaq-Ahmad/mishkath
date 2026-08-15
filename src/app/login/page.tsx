@@ -8,7 +8,7 @@ export default function LoginPage() {
       <ThemeToggle className="absolute top-4 right-4" />
       <main className="card-elevated relative flex min-h-[600px] w-full max-w-[1000px] flex-col overflow-hidden rounded-xl bg-card md:flex-row">
         <section
-          className="relative hidden flex-col justify-between overflow-hidden p-10 text-primary-foreground md:flex md:w-5/12"
+          className="relative hidden flex-col justify-center overflow-hidden p-10 text-primary-foreground md:flex md:w-5/12"
           style={{ background: "linear-gradient(135deg, oklch(60% 0.2 30) 0%, oklch(48% 0.18 26) 100%)" }}
         >
           <div
@@ -24,17 +24,14 @@ export default function LoginPage() {
             className="pointer-events-none absolute -right-16 -bottom-16 size-80 rounded-full bg-gold/20 blur-[100px]"
           />
 
-          <Image
-            src="/mehfile-meem-logo-white.png"
-            alt="Mehfile Meem — Meelad Fest 2K26"
-            width={280}
-            height={167}
-            className="relative z-10 h-auto w-[280px]"
-            priority
-          />
-
+          {/* Only one logo on this page (on the form side, always visible
+              regardless of viewport) — this panel carries the branding
+              through typography instead of repeating the mark. */}
           <div className="relative z-10 max-w-xs">
-            <h1 className="mb-4 font-heading text-3xl leading-tight font-bold text-primary-foreground">
+            <span className="text-[11px] font-bold tracking-[0.3em] text-gold uppercase">
+              Meelad Fest 2K26
+            </span>
+            <h1 className="mt-4 mb-4 font-heading text-3xl leading-tight font-bold text-primary-foreground">
               Illuminating the path through clarity, guidance, and heritage
             </h1>
             <p className="text-sm leading-relaxed text-primary-foreground/80">
@@ -51,7 +48,15 @@ export default function LoginPage() {
               alt="Mehfile Meem — Meelad Fest 2K26"
               width={220}
               height={131}
-              className="h-auto w-[220px]"
+              className="h-auto w-[220px] dark:hidden"
+              priority
+            />
+            <Image
+              src="/mehfile-meem-logo-gold.png"
+              alt="Mehfile Meem — Meelad Fest 2K26"
+              width={220}
+              height={131}
+              className="hidden h-auto w-[220px] dark:block"
               priority
             />
             <p className="text-sm text-muted-foreground">

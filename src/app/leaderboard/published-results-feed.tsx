@@ -395,10 +395,14 @@ export function PublishedResultsFeed({
                   // line no matter the exact pixel arithmetic — a fixed
                   // 180px basis let two cards fit on the same cramped row
                   // together on narrow phones instead of stacking cleanly.
+                  // Uses grow/grow-[n] (grow-only) rather than flex-1/
+                  // flex-[1.6] — those are `flex` shorthand utilities that
+                  // also set flex-basis, which was silently overriding the
+                  // basis-* below regardless of this className's order.
                   "flex basis-full flex-col md:basis-[180px]",
                   isChampion
-                    ? "w-full max-w-[420px] flex-[1.6] md:-translate-y-[clamp(0px,2.5cqh,1.25rem)]"
-                    : "w-full max-w-[240px] flex-1",
+                    ? "w-full max-w-[420px] grow-[1.6] md:-translate-y-[clamp(0px,2.5cqh,1.25rem)]"
+                    : "w-full max-w-[240px] grow",
                   MOBILE_ORDER[column.rank],
                 )}
               >
