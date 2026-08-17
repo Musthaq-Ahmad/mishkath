@@ -69,7 +69,7 @@ export function ChampionshipSidebar({
               className={cn(
                 "flex flex-col gap-2.5 rounded-xl px-4 py-3.5",
                 isLeader
-                  ? "bg-linear-to-br from-[#f2d287] via-gold to-[#b98a2e] text-gold-foreground shadow-lg shadow-gold/25"
+                  ? "bg-linear-to-br from-[#f2d287] via-gold to-[#b98a2e] text-gold-foreground shadow-lg shadow-gold/25 leaderboard-metallic-sweep"
                   : "bg-white/[0.03] ring-1 ring-white/5",
               )}
             >

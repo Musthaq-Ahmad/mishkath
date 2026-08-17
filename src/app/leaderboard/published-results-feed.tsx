@@ -411,7 +411,13 @@ export function PublishedResultsFeed({
                     wrapping a fixed-dark inner core — same always-dark
                     panel treatment as ChampionshipSidebar, independent of
                     the page's light/dark theme. */}
-                <div className={cn("w-full rounded-[2rem] p-1.5", style?.shell)}>
+                <div
+                  className={cn(
+                    "w-full rounded-[2rem] p-1.5",
+                    style?.shell,
+                    isChampion && "leaderboard-metallic-sweep",
+                  )}
+                >
                   <div
                     className={cn(
                       "relative flex w-full flex-col items-center overflow-hidden rounded-[1.625rem] bg-sidebar px-4 text-center",

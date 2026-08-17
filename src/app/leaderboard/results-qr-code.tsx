@@ -15,7 +15,7 @@ export function ResultsQrCode() {
     const id = setTimeout(() => {
       const data = encodeURIComponent(window.location.href);
       setSrc(
-        `https://api.qrserver.com/v1/create-qr-code/?size=160x160&margin=0&color=0b0f19&bgcolor=ffffff&data=${data}`,
+        `https://api.qrserver.com/v1/create-qr-code/?size=160x160&margin=0&color=f7bd48&bgcolor=131313&data=${data}`,
       );
     }, 0);
     return () => clearTimeout(id);

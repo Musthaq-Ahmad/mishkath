@@ -1,0 +1,160 @@
+/* Scoped "ultra-premium festival" theme for the public leaderboard only.
+   Applied via the `.leaderboard-theme` wrapper in layout.tsx, so every
+   route under /leaderboard renders this dark charcoal + radiant gold look
+   regardless of the site-wide light/dark toggle — the reference design
+   (see the "festival dashboard elite" mock) has no light variant.
+   Every token below overrides one already consumed by existing
+   Tailwind utilities (bg-card, text-gold, bg-sidebar, font-heading, …),
+   so components need no className changes to pick this up. */
+.leaderboard-theme {
+  --background: #131313;
+  --foreground: #f2ecd9;
+  --card: #1c1b1a;
+  --card-foreground: #f2ecd9;
+  --popover: #201f1e;
+  --popover-foreground: #f2ecd9;
+  --primary: #fdf3d7;
+  --primary-foreground: #2a2005;
+  --secondary: #241f12;
+  --secondary-foreground: #f2ecd9;
+  --muted: #201f1e;
+  --muted-foreground: #b7ac8c;
+  --accent: #f7bd48;
+  --accent-foreground: #241a00;
+  --destructive: #ff6b5b;
+  --border: color-mix(in srgb, #f7bd48 16%, transparent);
+  --input: color-mix(in srgb, #f7bd48 22%, transparent);
+  --ring: #f7bd48;
+  --chart-1: #f7bd48;
+  --chart-2: #e3a542;
+  --chart-3: #caa06b;
+  --chart-4: #8f7b52;
+  --chart-5: #5c4f36;
+  --sidebar: #0e0e0e;
+  --sidebar-foreground: #f2ecd9;
+  --sidebar-primary: #f7bd48;
+  --sidebar-primary-foreground: #241a00;
+  --sidebar-accent: #201f1e;
+  --sidebar-accent-foreground: #f2ecd9;
+  --sidebar-border: color-mix(in srgb, #f7bd48 14%, transparent);
+  --sidebar-ring: #f7bd48;
+  --gold: #f7bd48;
+  --gold-foreground: #2a1d00;
+  --silver: #c8c6c2;
+  --bronze: #c8a97e;
+  --surface-container-low: #1c1b1a;
+  --surface-container: #201f1e;
+  --surface-container-high: #2a2927;
+  --surface-container-highest: #353330;
+  --success: #4ade80;
+  --success-foreground: #0c2013;
+  --warning: #d99a4e;
+  --warning-foreground: #2a1a00;
+  --outline: #8f8571;
+  --outline-variant: color-mix(in srgb, #f7bd48 20%, transparent);
+  --primary-container: color-mix(in srgb, #f7bd48 22%, #131313);
+  --on-primary-container: #fde9b8;
+
+  /* Libre Caslon Text (editorial serif) for headings, Montserrat for body —
+     both keep the Baloo Chettan 2 fallback so Malayalam leaderboard text
+     still renders correctly (neither Google font covers that script). */
+  --font-heading: var(--font-libre-caslon), var(--font-baloo-chettan), Georgia, serif;
+  --font-sans: var(--font-montserrat), var(--font-baloo-chettan), Arial, sans-serif;
+}
+
+/* Glassmorphism: every existing `.card-elevated` surface (header, podium,
+   sidebar, info cards, results rows) becomes a frosted, hairline-gold-
+   bordered panel instead of a flat card — the signature look of the
+   reference design. Selector is doubled to reliably outrank the
+   equal-specificity `.dark .card-elevated` rule in globals.css regardless
+   of CSS module import order. */
+.leaderboard-theme.leaderboard-theme .card-elevated {
+  background-color: color-mix(in srgb, var(--card) 72%, transparent);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-color: color-mix(in srgb, var(--gold) 18%, transparent);
+}
+.leaderboard-theme .card-elevated:hover {
+  box-shadow:
+    0 1px 2px oklch(0% 0 0 / 0.35),
+    0 16px 40px -14px color-mix(in srgb, var(--gold) 30%, transparent);
+}
+
+/* Atmospheric backdrop: a soft top-down gold glow over a faint glowing
+   grid — a lightweight CSS approximation of the reference design's
+   animated WebGL "god rays" shader, cheap enough to run for hours on an
+   unattended display. */
+.leaderboard-atmosphere {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 80% 45% at 50% -10%, color-mix(in srgb, var(--gold) 14%, transparent), transparent 60%),
+    repeating-linear-gradient(
+      0deg,
+      color-mix(in srgb, var(--gold) 5%, transparent) 0 1px,
+      transparent 1px 48px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--gold) 5%, transparent) 0 1px,
+      transparent 1px 48px
+    );
+}
+@media print {
+  .leaderboard-atmosphere {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .leaderboard-atmosphere {
+    animation: leaderboard-atmosphere-pulse 8s ease-in-out infinite;
+  }
+}
+@keyframes leaderboard-atmosphere-pulse {
+  0%,
+  100% {
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Metallic sweep: a single diagonal gold highlight drifting across the
+   element on a loop — used on the champion's podium card and the leading
+   group's standings row, matching the reference design's "Metallic Sweep"
+   motion spec. */
+.leaderboard-metallic-sweep {
+  position: relative;
+  overflow: hidden;
+}
+.leaderboard-metallic-sweep::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 40%,
+    color-mix(in srgb, var(--gold) 55%, transparent) 50%,
+    transparent 60%
+  );
+  transform: translateX(-120%);
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .leaderboard-metallic-sweep::after {
+    animation: leaderboard-sweep 5s ease-in-out infinite;
+  }
+}
+@keyframes leaderboard-sweep {
+  0%,
+  15% {
+    transform: translateX(-120%);
+  }
+  55%,
+  100% {
+    transform: translateX(120%);
+  }
+}

@@ -47,6 +47,7 @@ export default async function LeaderboardPage() {
 
   return (
     <div className="relative min-h-screen overflow-y-auto bg-background p-3 text-foreground sm:p-4 md:h-screen md:overflow-hidden lg:p-6">
+      <div aria-hidden className="leaderboard-atmosphere" />
       <div className="relative mx-auto flex min-h-full w-full max-w-[1700px] flex-col gap-4 md:h-full md:min-h-0">
         <LeaderboardHeader
           totalProgramCount={totalProgramCount}
