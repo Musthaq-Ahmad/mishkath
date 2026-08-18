@@ -73,9 +73,6 @@ export type ScoreRow = {
   id: string;
   program_id: string;
   student_id: string;
-  presentation: number;
-  content: number;
-  overall: number;
   total: number;
   created_at: string;
   updated_at: string;
@@ -86,9 +83,6 @@ export type ScoreAuditLogRow = {
   program_id: string;
   participant_kind: "student" | "group";
   participant_id: string;
-  presentation: number | null;
-  content: number | null;
-  overall: number | null;
   total: number | null;
   action: "insert" | "update" | "delete";
   changed_by: string | null;
@@ -99,9 +93,6 @@ export type GroupScoreRow = {
   id: string;
   program_id: string;
   group_id: string;
-  presentation: number;
-  content: number;
-  overall: number;
   total: number;
   created_at: string;
   updated_at: string;

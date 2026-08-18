@@ -14,9 +14,7 @@ export async function adminSubmitScore(
   await requireRole("admin");
 
   const validatedFields = ScoreSchema.safeParse({
-    presentation: formData.get("presentation"),
-    content: formData.get("content"),
-    overall: formData.get("overall"),
+    total: formData.get("total"),
   });
 
   if (!validatedFields.success) {
@@ -28,9 +26,7 @@ export async function adminSubmitScore(
     {
       program_id: programId,
       student_id: studentId,
-      presentation: validatedFields.data.presentation,
-      content: validatedFields.data.content,
-      overall: validatedFields.data.overall,
+      total: validatedFields.data.total,
       updated_at: new Date().toISOString(),
     },
     { onConflict: "program_id,student_id" },
@@ -53,9 +49,7 @@ export async function adminSubmitGroupScore(
   await requireRole("admin");
 
   const validatedFields = ScoreSchema.safeParse({
-    presentation: formData.get("presentation"),
-    content: formData.get("content"),
-    overall: formData.get("overall"),
+    total: formData.get("total"),
   });
 
   if (!validatedFields.success) {
@@ -67,9 +61,7 @@ export async function adminSubmitGroupScore(
     {
       program_id: programId,
       group_id: groupId,
-      presentation: validatedFields.data.presentation,
-      content: validatedFields.data.content,
-      overall: validatedFields.data.overall,
+      total: validatedFields.data.total,
       updated_at: new Date().toISOString(),
     },
     { onConflict: "program_id,group_id" },

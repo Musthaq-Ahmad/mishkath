@@ -177,6 +177,70 @@
   --on-primary-container: oklch(85% 0.1 28);
 }
 
+/* Printed output should always read as standard black-on-white, regardless
+   of which theme (light/dark) was active on screen — a printed judge
+   scoresheet or badge sheet is read on paper, not a monitor, and dark-mode
+   text (near-white foreground, translucent white borders) is invisible
+   once the browser forces a white page background for print. `:root, .dark`
+   targets the same `<html>` element either way; same specificity as the
+   `.dark` rule above, so source order (this comes after) makes it win
+   whenever both are true (dark mode + printing). Anything wrapped in
+   `.leaderboard-theme` (src/app/leaderboard/leaderboard-theme.css) sets
+   these variables again on its own element, which continues to take
+   precedence there via ordinary inheritance. */
+@media print {
+  :root,
+  .dark {
+    --background: #ffffff;
+    --foreground: #000000;
+    --card: #ffffff;
+    --card-foreground: #000000;
+    --popover: #ffffff;
+    --popover-foreground: #000000;
+    --primary: #171310;
+    --primary-foreground: #ffffff;
+    --secondary: #f0f0f0;
+    --secondary-foreground: #000000;
+    --muted: #f5f5f5;
+    --muted-foreground: #333333;
+    --accent: #a8842c;
+    --accent-foreground: #ffffff;
+    --destructive: #b3261e;
+    --border: #999999;
+    --input: #cccccc;
+    --ring: #a8842c;
+    --chart-1: #a8842c;
+    --chart-2: #8a6a45;
+    --chart-3: #6b6b6b;
+    --chart-4: #4d4d4d;
+    --chart-5: #333333;
+    --sidebar: #ffffff;
+    --sidebar-foreground: #000000;
+    --sidebar-primary: #a8842c;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #f5f5f5;
+    --sidebar-accent-foreground: #000000;
+    --sidebar-border: #999999;
+    --sidebar-ring: #a8842c;
+    --gold: #a8842c;
+    --gold-foreground: #ffffff;
+    --silver: #6b6b6b;
+    --bronze: #8a6a45;
+    --surface-container-low: #f5f5f5;
+    --surface-container: #eeeeee;
+    --surface-container-high: #e5e5e5;
+    --surface-container-highest: #dcdcdc;
+    --success: #1e7e34;
+    --success-foreground: #ffffff;
+    --warning: #8a5a00;
+    --warning-foreground: #ffffff;
+    --outline: #666666;
+    --outline-variant: #cccccc;
+    --primary-container: #f0f0f0;
+    --on-primary-container: #000000;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

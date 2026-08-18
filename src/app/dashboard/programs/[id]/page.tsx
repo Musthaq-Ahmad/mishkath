@@ -4,6 +4,7 @@ import { requireRole } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
 import {
   Card,
+  CardAction,
   CardContent,
   CardHeader,
   CardTitle,
@@ -330,6 +331,15 @@ export default async function ProgramDetailPage({
                 Judges score on paper during the event — enter each participant&apos;s
                 final score here.
               </CardDescription>
+              <CardAction>
+                <Link
+                  href={`/dashboard/programs/${id}/scoresheet`}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                >
+                  <span className="material-symbols-outlined text-[18px]">print</span>
+                  Print Judge Sheet
+                </Link>
+              </CardAction>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
               <ScoreCompletionBanner
@@ -382,9 +392,6 @@ export default async function ProgramDetailPage({
                       <TableHead>When</TableHead>
                       <TableHead>Participant</TableHead>
                       <TableHead>Action</TableHead>
-                      <TableHead>Presentation</TableHead>
-                      <TableHead>Content</TableHead>
-                      <TableHead>Overall</TableHead>
                       <TableHead>Total</TableHead>
                       <TableHead>Changed By</TableHead>
                     </TableRow>
@@ -405,9 +412,6 @@ export default async function ProgramDetailPage({
                           </TableCell>
                           <TableCell className="font-medium">{name}</TableCell>
                           <TableCell className="capitalize">{entry.action}</TableCell>
-                          <TableCell>{entry.presentation ?? "—"}</TableCell>
-                          <TableCell>{entry.content ?? "—"}</TableCell>
-                          <TableCell>{entry.overall ?? "—"}</TableCell>
                           <TableCell className="font-semibold">{entry.total ?? "—"}</TableCell>
                           <TableCell className="text-muted-foreground">
                             {entry.changed_by
@@ -419,7 +423,7 @@ export default async function ProgramDetailPage({
                     })}
                     {!auditLog?.length && (
                       <TableRow>
-                        <TableCell colSpan={8} className="text-center text-muted-foreground">
+                        <TableCell colSpan={5} className="text-center text-muted-foreground">
                           No score changes recorded yet.
                         </TableCell>
                       </TableRow>

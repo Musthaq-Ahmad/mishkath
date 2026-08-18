@@ -131,6 +131,53 @@ const BACKDROP_LOGOS: BackdropLogoMark[] = (() => {
   return marks;
 })();
 
+type ConfettiPiece = {
+  left: number;
+  width: number;
+  height: number;
+  rotate: number;
+  color: string;
+  delay: number;
+  duration: number;
+};
+
+// A light confetti drizzle, not a cannon — the podium is meant to be read
+// from across a room, so this stays a quiet "something's celebrating"
+// texture rather than competing with the names/photos. Negative
+// animation-delay staggers each piece to a different point in its fall on
+// first paint, instead of every piece starting stacked at the top.
+const CONFETTI: ConfettiPiece[] = (() => {
+  const rand = createSeededRandom(7);
+  return Array.from({ length: 14 }, () => ({
+    left: rand() * 100,
+    width: 3 + rand() * 3,
+    height: 8 + rand() * 6,
+    rotate: rand() * 360,
+    color: BACKDROP_LOGO_COLORS[Math.floor(rand() * BACKDROP_LOGO_COLORS.length)],
+    delay: -rand() * 9,
+    duration: 6 + rand() * 5,
+  }));
+})();
+
+type Sparkle = {
+  left: number;
+  top: number;
+  size: number;
+  delay: number;
+  duration: number;
+};
+
+const SPARKLES: Sparkle[] = (() => {
+  const rand = createSeededRandom(13);
+  return Array.from({ length: 10 }, () => ({
+    left: rand() * 100,
+    top: rand() * 100,
+    size: 3 + rand() * 5,
+    delay: -rand() * 4,
+    duration: 2 + rand() * 2.5,
+  }));
+})();
+
 // Podium backdrop: a soft breathing gold wash behind a scattered field of
 // small logo marks, each recolored via a CSS mask (the logo PNG's alpha
 // shape masking a solid-color div) so every mark can take a different
@@ -172,6 +219,35 @@ const PodiumBackdrop = memo(function PodiumBackdrop() {
             WebkitMaskSize: "contain",
             WebkitMaskRepeat: "no-repeat",
             WebkitMaskPosition: "center",
+          }}
+        />
+      ))}
+      {CONFETTI.map((piece, index) => (
+        <span
+          key={index}
+          className="leaderboard-confetti-piece"
+          style={{
+            left: `${piece.left}%`,
+            width: `${piece.width}px`,
+            height: `${piece.height}px`,
+            backgroundColor: piece.color,
+            animationDelay: `${piece.delay}s`,
+            animationDuration: `${piece.duration}s`,
+            ["--confetti-rotate" as string]: `${piece.rotate}deg`,
+          }}
+        />
+      ))}
+      {SPARKLES.map((sparkle, index) => (
+        <span
+          key={index}
+          className="leaderboard-sparkle"
+          style={{
+            left: `${sparkle.left}%`,
+            top: `${sparkle.top}%`,
+            width: `${sparkle.size}px`,
+            height: `${sparkle.size}px`,
+            animationDelay: `${sparkle.delay}s`,
+            animationDuration: `${sparkle.duration}s`,
           }}
         />
       ))}
@@ -374,7 +450,7 @@ export function PublishedResultsFeed({
             headline of this screen, centered and oversized like an event
             poster, with the division as a gold ticket badge */}
         <div className="flex flex-col items-center gap-[clamp(0.25rem,1cqh,0.5rem)] text-center">
-          <p className="bg-linear-to-b from-foreground to-foreground/60 bg-clip-text font-heading text-[clamp(1.25rem,5cqh,3rem)] leading-tight font-black tracking-tight text-balance text-transparent">
+          <p className="bg-linear-to-b from-foreground to-foreground/60 bg-clip-text font-heading text-[clamp(1.25rem,5cqh,3rem)] leading-tight font-extrabold tracking-tight text-balance text-transparent">
             {hero.program_name}
           </p>
           <p className="rounded-full border border-gold/30 bg-gold/10 px-4 py-0.5 text-[clamp(0.7rem,1.7cqh,0.875rem)] font-bold tracking-[0.25em] text-gold uppercase">
