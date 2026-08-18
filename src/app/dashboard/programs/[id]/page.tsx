@@ -25,6 +25,7 @@ import type {
   Profile,
   Program,
   ProgramGroupParticipant,
+  ProgramJudge,
   ProgramParticipant,
   ScoreAuditLogRow,
   ScoreRow,
@@ -34,6 +35,7 @@ import { addGroupParticipant, removeGroupParticipant } from "../actions";
 import { ToggleCheckbox } from "./toggle-checkbox";
 import { ParticipantSearch } from "./participant-search";
 import { CodesPanel } from "./codes-panel";
+import { JudgesPanel } from "./judges-panel";
 import { StatusControl } from "./status-control";
 import { ScoreEntryPanel } from "./score-entry-panel";
 import { ScoreCompletionBanner } from "./score-completion-banner";
@@ -67,6 +69,7 @@ export default async function ProgramDetailPage({
     { data: groupParticipants },
     { data: scores },
     { data: groupScores },
+    { data: judges },
   ] = await Promise.all([
     supabase.from("students").select("*").order("name").returns<Student[]>(),
     supabase.from("groups").select("*").returns<Group[]>(),
@@ -86,6 +89,12 @@ export default async function ProgramDetailPage({
       .select("*")
       .eq("program_id", id)
       .returns<GroupScoreRow[]>(),
+    supabase
+      .from("program_judges")
+      .select("*")
+      .eq("program_id", id)
+      .order("created_at")
+      .returns<ProgramJudge[]>(),
   ]);
 
   const { data: auditLog } = await supabase
@@ -198,6 +207,10 @@ export default async function ProgramDetailPage({
             <TabsTrigger value="codes" className="gap-1.5 rounded-lg py-2">
               <span className="material-symbols-outlined text-[18px]">tag</span>
               Codes
+            </TabsTrigger>
+            <TabsTrigger value="judges" className="gap-1.5 rounded-lg py-2">
+              <span className="material-symbols-outlined text-[18px]">gavel</span>
+              Judges
             </TabsTrigger>
             <TabsTrigger value="scores" className="gap-1.5 rounded-lg py-2">
               <span className="material-symbols-outlined text-[18px]">edit_note</span>
@@ -320,6 +333,19 @@ export default async function ProgramDetailPage({
                 </TableBody>
               </Table>
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="judges" className="mt-4">
+          <Card className="card-elevated">
+            <CardHeader>
+              <CardTitle>Judges</CardTitle>
+              <CardDescription>
+                Names of the judging panel for this program — printed on the judge scoresheet.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <JudgesPanel programId={id} judges={judges ?? []} />
             </CardContent>
           </Card>
         </TabsContent>

@@ -7,7 +7,12 @@ import { PrintButton } from "@/components/print-button";
 import { indexForCode } from "@/lib/codes";
 import { GENDER_CATEGORY_LABELS } from "@/lib/validations/program";
 import { STUDENT_DIVISION_LABELS } from "@/lib/validations/student";
-import type { Program, ProgramGroupParticipant, ProgramParticipant } from "@/lib/types";
+import type {
+  Program,
+  ProgramGroupParticipant,
+  ProgramJudge,
+  ProgramParticipant,
+} from "@/lib/types";
 
 // One consolidated final marksheet per program — not a separate copy per
 // judge. The judging panel shares this single sheet, noting their names/
@@ -35,18 +40,27 @@ export default async function ProgramScoresheetPage({
     notFound();
   }
 
-  const { data: participants } =
+  const [{ data: participants }, { data: judges }] = await Promise.all([
     program.program_type === "group"
-      ? await supabase
+      ? supabase
           .from("program_group_participants")
           .select("id, code")
           .eq("program_id", id)
           .returns<Pick<ProgramGroupParticipant, "id" | "code">[]>()
-      : await supabase
+      : supabase
           .from("program_participants")
           .select("id, code")
           .eq("program_id", id)
-          .returns<Pick<ProgramParticipant, "id" | "code">[]>();
+          .returns<Pick<ProgramParticipant, "id" | "code">[]>(),
+    supabase
+      .from("program_judges")
+      .select("*")
+      .eq("program_id", id)
+      .order("created_at")
+      .returns<ProgramJudge[]>(),
+  ]);
+
+  const judgeNames = (judges ?? []).map((j) => j.name);
 
   const codes = (participants ?? [])
     .map((p) => p.code)
@@ -102,10 +116,16 @@ export default async function ProgramScoresheetPage({
             Judges (name)
           </span>
           <div className="flex flex-col gap-2">
-            {[1, 2, 3].map((n) => (
-              <span key={n} className="flex items-center gap-2">
-                <span className="text-muted-foreground">{n}.</span>
-                <span className="inline-block flex-1 border-b border-foreground/40">&nbsp;</span>
+            {(judgeNames.length ? judgeNames : ["", "", ""]).map((name, index) => (
+              <span key={index} className="flex items-center gap-2">
+                <span className="text-muted-foreground">{index + 1}.</span>
+                {name ? (
+                  <span className="font-medium">{name}</span>
+                ) : (
+                  <span className="inline-block flex-1 border-b border-foreground/40">
+                    &nbsp;
+                  </span>
+                )}
               </span>
             ))}
           </div>
@@ -142,12 +162,14 @@ export default async function ProgramScoresheetPage({
         </table>
 
         <div className="flex flex-wrap gap-x-8 gap-y-3 text-xs text-muted-foreground">
-          {[1, 2, 3].map((n) => (
-            <span key={n}>
-              Judge {n} signature:{" "}
-              <span className="inline-block w-40 border-b border-foreground/40">&nbsp;</span>
-            </span>
-          ))}
+          {(judgeNames.length ? judgeNames : ["Judge 1", "Judge 2", "Judge 3"]).map(
+            (name, index) => (
+              <span key={index}>
+                {name} signature:{" "}
+                <span className="inline-block w-40 border-b border-foreground/40">&nbsp;</span>
+              </span>
+            ),
+          )}
         </div>
       </div>
     </div>

@@ -53,6 +53,13 @@ export type Program = {
   created_at: string;
 };
 
+export type ProgramJudge = {
+  id: string;
+  program_id: string;
+  name: string;
+  created_at: string;
+};
+
 export type ProgramParticipant = {
   id: string;
   program_id: string;

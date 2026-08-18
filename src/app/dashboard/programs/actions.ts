@@ -387,3 +387,50 @@ export async function removeParticipant(
   revalidatePath(`/dashboard/programs/${programId}`);
   return undefined;
 }
+
+export async function addProgramJudge(
+  programId: string,
+  name: string,
+): Promise<{ error?: string } | undefined> {
+  await requireRole("admin");
+
+  const trimmed = name.trim();
+  if (!trimmed) {
+    return { error: "Enter a name." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("program_judges")
+    .insert({ program_id: programId, name: trimmed });
+
+  if (error) {
+    return { error: "Could not add judge." };
+  }
+
+  revalidatePath(`/dashboard/programs/${programId}`);
+  revalidatePath(`/dashboard/programs/${programId}/scoresheet`);
+  return undefined;
+}
+
+export async function removeProgramJudge(
+  programId: string,
+  judgeId: string,
+): Promise<{ error?: string } | undefined> {
+  await requireRole("admin");
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("program_judges")
+    .delete()
+    .eq("id", judgeId)
+    .eq("program_id", programId);
+
+  if (error) {
+    return { error: "Could not remove judge." };
+  }
+
+  revalidatePath(`/dashboard/programs/${programId}`);
+  revalidatePath(`/dashboard/programs/${programId}/scoresheet`);
+  return undefined;
+}
