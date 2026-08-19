@@ -73,9 +73,9 @@
   /* A genuine, overridable custom property (not baked in by @theme inline)
      so scoped subtrees could swap the heading font independently of the
      body font by setting --font-heading locally, if ever needed. Site-wide
-     default is the Poppins/Baloo Chettan 2 display pairing (see
-     src/app/layout.tsx), falling back to the body sans font. */
-  --font-heading: var(--font-poppins), var(--font-baloo-chettan), var(--font-sans);
+     default matches the body font (Exo 2, see src/app/layout.tsx), with
+     Baloo Chettan 2 as a Malayalam-script fallback. */
+  --font-heading: var(--font-sans), var(--font-baloo-chettan);
   --background: oklch(94.5% 0.008 30);
   --foreground: oklch(24% 0.006 40);
   --card: oklch(97.5% 0.006 40);

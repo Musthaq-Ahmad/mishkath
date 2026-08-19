@@ -203,11 +203,11 @@ const PodiumBackdrop = memo(function PodiumBackdrop() {
       {BACKDROP_LOGOS.map((mark, index) => (
         <span
           key={index}
-          className="absolute aspect-[2011/1220]"
+          className="leaderboard-backdrop-logo absolute aspect-[2011/1220]"
           style={{
             left: `${mark.left}%`,
             top: `${mark.top}%`,
-            width: `${mark.size}px`,
+            ["--logo-size" as string]: `${mark.size}px`,
             opacity: mark.opacity,
             backgroundColor: mark.color,
             transform: `translate(-50%, -50%) rotate(${mark.rotate}deg)`,
@@ -458,7 +458,80 @@ export function PublishedResultsFeed({
           </p>
         </div>
 
-        <div className="flex flex-wrap items-start justify-center gap-6 md:gap-10">
+        {/* Mobile: a flat list of rows (one per placed person, rank badge
+            overlaid on a small avatar) — no card chrome at all, matching
+            the density of the row list on the "all results" page instead
+            of the desktop's poster-style "trophy case" cards. podiumColumns
+            is ordered [2,1,3] (silver/gold/bronze) for the desktop podium's
+            visual centering, so it's re-sorted back to rank order here —
+            straight 1st/2nd/3rd reading order down the list. */}
+        <div className="flex flex-col gap-2 md:hidden">
+          {[...podiumColumns]
+            .sort((a, b) => a.rank - b.rank)
+            .flatMap((column) =>
+            column.items.map((place) => (
+              <div
+                key={place.id}
+                className={cn(
+                  "flex items-center gap-3 rounded-xl border px-3 py-2",
+                  column.rank === 1
+                    ? "border-gold/30 bg-gold/5"
+                    : "border-sidebar-foreground/10 bg-sidebar/60",
+                )}
+              >
+                <div className="relative shrink-0">
+                  <span
+                    className={cn(
+                      "relative flex size-10 items-center justify-center overflow-hidden rounded-full bg-white/10",
+                      PODIUM_STYLE[column.rank]?.ring,
+                    )}
+                  >
+                    <PlaceAvatar
+                      photoUrl={place.photoUrl}
+                      isGroup={hero.program_type === "group"}
+                      category={place.category}
+                      imageSizes="40px"
+                    />
+                  </span>
+                  <span
+                    className={cn(
+                      "absolute -right-1 -bottom-1 flex size-[18px] items-center justify-center rounded-full text-[10px] font-black ring-2 ring-sidebar",
+                      column.rank === 1
+                        ? "bg-gold text-background"
+                        : "bg-sidebar-foreground/20 text-sidebar-foreground",
+                    )}
+                  >
+                    {column.rank}
+                  </span>
+                </div>
+                <div className="min-w-0 flex-1 text-left">
+                  <p className="truncate font-heading text-sm font-bold text-sidebar-foreground">
+                    {place.name}
+                  </p>
+                  {hero.program_type === "individual" && groupNames[place.groupId] && (
+                    <p
+                      className={cn(
+                        "truncate text-[11px] font-medium",
+                        groupTextColor(place.groupId),
+                      )}
+                    >
+                      {groupNames[place.groupId]}
+                    </p>
+                  )}
+                </div>
+                {column.items.length > 1 && (
+                  <span className="shrink-0 text-[9px] font-semibold tracking-widest text-sidebar-foreground/50 uppercase">
+                    {t("tie")}
+                  </span>
+                )}
+              </div>
+            )),
+          )}
+        </div>
+
+        {/* Desktop/tablet: the original poster-style podium with "trophy
+            case" cards per rank. */}
+        <div className="hidden items-start justify-center gap-10 md:flex md:flex-wrap">
           {podiumColumns.map((column) => {
             const style = PODIUM_STYLE[column.rank];
             const isChampion = column.rank === 1;
@@ -467,17 +540,9 @@ export function PublishedResultsFeed({
               <div
                 key={column.rank}
                 className={cn(
-                  // Full-width basis below md forces each card onto its own
-                  // line no matter the exact pixel arithmetic — a fixed
-                  // 180px basis let two cards fit on the same cramped row
-                  // together on narrow phones instead of stacking cleanly.
-                  // Uses grow/grow-[n] (grow-only) rather than flex-1/
-                  // flex-[1.6] — those are `flex` shorthand utilities that
-                  // also set flex-basis, which was silently overriding the
-                  // basis-* below regardless of this className's order.
-                  "flex basis-full flex-col md:basis-[180px]",
+                  "flex basis-[180px] flex-col",
                   isChampion
-                    ? "w-full max-w-[420px] grow-[1.6] md:-translate-y-[clamp(0px,2.5cqh,1.25rem)]"
+                    ? "w-full max-w-[420px] grow-[1.6] -translate-y-[clamp(0px,2.5cqh,1.25rem)]"
                     : "w-full max-w-[240px] grow",
                   MOBILE_ORDER[column.rank],
                 )}
@@ -498,8 +563,8 @@ export function PublishedResultsFeed({
                     className={cn(
                       "relative flex w-full flex-col items-center overflow-hidden rounded-[1.625rem] bg-sidebar px-4 text-center",
                       isChampion
-                        ? "min-h-[180px] gap-[clamp(0.375rem,1.2cqh,0.75rem)] py-7 md:min-h-[clamp(200px,34cqh,360px)]"
-                        : "min-h-[140px] gap-[clamp(0.3rem,1cqh,0.6rem)] py-5 md:min-h-[clamp(160px,28cqh,280px)]",
+                        ? "min-h-[clamp(200px,34cqh,360px)] gap-[clamp(0.375rem,1.2cqh,0.75rem)] py-7"
+                        : "min-h-[clamp(160px,28cqh,280px)] gap-[clamp(0.3rem,1cqh,0.6rem)] py-5",
                     )}
                   >
                     <div

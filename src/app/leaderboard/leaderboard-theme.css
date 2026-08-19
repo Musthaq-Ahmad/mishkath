@@ -54,12 +54,19 @@
   --outline-variant: color-mix(in srgb, #f7bd48 20%, transparent);
   --primary-container: color-mix(in srgb, #f7bd48 22%, #131313);
   --on-primary-container: #fde9b8;
+}
 
-  /* Libre Caslon Text (editorial serif) for headings, Montserrat for body —
-     both keep the Baloo Chettan 2 fallback so Malayalam leaderboard text
-     still renders correctly (neither Google font covers that script). */
-  --font-heading: var(--font-libre-caslon), var(--font-baloo-chettan), Georgia, serif;
-  --font-sans: var(--font-montserrat), var(--font-baloo-chettan), Arial, sans-serif;
+/* Scattered backdrop logo marks (PodiumBackdrop, published-results-feed.tsx)
+   render at roughly half their desktop size on mobile — sized generously
+   for a large screen, they otherwise crowd/dominate a narrow phone
+   viewport. --logo-size is set per-mark inline. */
+.leaderboard-backdrop-logo {
+  width: var(--logo-size);
+}
+@media (max-width: 767px) {
+  .leaderboard-backdrop-logo {
+    width: calc(var(--logo-size) * 0.5);
+  }
 }
 
 /* Print override: the festival theme above is near-white text on a

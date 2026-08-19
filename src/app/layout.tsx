@@ -1,22 +1,17 @@
 import type { Metadata } from "next";
-import { Baloo_Chettan_2, Inter, Poppins } from "next/font/google";
+import { Baloo_Chettan_2, Exo_2 } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 
-const inter = Inter({
+// Site-wide font, used for both body text and headings (via --font-sans /
+// --font-heading) — Baloo Chettan 2 stays paired in as a Malayalam-script
+// fallback so bilingual leaderboard content still renders in a matching
+// weight/style instead of falling back to a generic system font (Exo 2
+// itself has no Malayalam glyphs).
+const exo2 = Exo_2({
   variable: "--font-sans",
   subsets: ["latin"],
-});
-
-// Display font pairing (headings, stat numbers, podium/rank text) used
-// site-wide via the --font-heading token — Poppins for latin script, Baloo
-// Chettan 2 as a Malayalam-script fallback so bilingual leaderboard content
-// renders in a matching weight/style instead of falling back to a generic
-// system font.
-const poppins = Poppins({
-  variable: "--font-poppins",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
 });
 
 const balooChettan = Baloo_Chettan_2({
@@ -38,7 +33,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${poppins.variable} ${balooChettan.variable} h-full antialiased`}
+      className={`${exo2.variable} ${balooChettan.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>
