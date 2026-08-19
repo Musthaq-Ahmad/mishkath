@@ -2,9 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { ClockCard } from "./clock-card";
-import { LanguageToggle } from "./language-toggle";
 import { ResultsQrCode } from "./results-qr-code";
 import { useLanguage } from "./i18n";
 
@@ -70,25 +67,16 @@ export function LeaderboardHeader({
           )}
         </div>
 
-        <div className="flex items-center gap-1 rounded-full bg-muted p-1">
-          <Link
-            href="/leaderboard/results"
-            className="flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-muted-foreground transition-colors hover:bg-card hover:text-primary"
-          >
-            <span className="material-symbols-outlined text-[20px]">history</span>
-            <span className="hidden font-medium sm:inline">{t("allResults")}</span>
-          </Link>
-          <LanguageToggle />
-        </div>
+        <Link
+          href="/leaderboard/results"
+          className="flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1.5 text-muted-foreground transition-colors hover:bg-card hover:text-primary"
+        >
+          <span className="material-symbols-outlined text-[20px]">history</span>
+          <span className="font-medium">{t("allResults")}</span>
+        </Link>
 
         <div className="flex items-center gap-2 rounded-full border border-border px-3 py-1.5">
-          <ClockCard />
-          <span aria-hidden className="hidden h-4 w-px bg-border sm:block" />
-          <div className="hidden sm:block">
-            <ResultsQrCode />
-          </div>
-          <span aria-hidden className="h-4 w-px bg-border" />
-          <ThemeToggle className="size-7 rounded-full hover:bg-muted" />
+          <ResultsQrCode size={56} showLabel={false} />
         </div>
       </div>
     </header>

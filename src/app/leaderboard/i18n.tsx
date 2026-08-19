@@ -26,7 +26,12 @@ type TranslationKey =
   | "announcements"
   | "noPreviousResults"
   | "backToLive"
-  | "programsPublishedSoFar";
+  | "programsPublishedSoFar"
+  | "upNext"
+  | "allCategories"
+  | "individual"
+  | "group"
+  | "noResultsForFilter";
 
 const TRANSLATIONS: Record<TranslationKey, Record<Lang, string>> = {
   liveResults: { en: "Live Results", ml: "തത്സമയ ഫലങ്ങൾ" },
@@ -61,6 +66,14 @@ const TRANSLATIONS: Record<TranslationKey, Record<Lang, string>> = {
   programsPublishedSoFar: {
     en: "programs published so far",
     ml: "പ്രോഗ്രാമുകൾ ഇതുവരെ പ്രസിദ്ധീകരിച്ചു",
+  },
+  upNext: { en: "Up next", ml: "അടുത്തത്" },
+  allCategories: { en: "All", ml: "എല്ലാം" },
+  individual: { en: "Individual", ml: "വ്യക്തിഗതം" },
+  group: { en: "Group", ml: "ഗ്രൂപ്പ്" },
+  noResultsForFilter: {
+    en: "No results published yet for this filter.",
+    ml: "ഈ ഫിൽട്ടറിനായി ഇതുവരെ ഫലങ്ങൾ പ്രസിദ്ധീകരിച്ചിട്ടില്ല.",
   },
 };
 

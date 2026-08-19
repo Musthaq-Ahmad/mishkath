@@ -261,6 +261,39 @@
   }
 }
 
+/* One-shot burst, denser and faster than the ambient drizzle above —
+   plays once when a new result rotates onto the podium (see
+   ConfettiBurst in published-results-feed.tsx), instead of looping. */
+.leaderboard-confetti-burst-piece {
+  position: absolute;
+  top: -10%;
+  border-radius: 1px;
+  opacity: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .leaderboard-confetti-burst-piece {
+    animation-name: leaderboard-confetti-burst-fall;
+    animation-timing-function: ease-out;
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
+  }
+}
+@keyframes leaderboard-confetti-burst-fall {
+  0% {
+    top: -10%;
+    opacity: 0;
+    transform: rotate(var(--confetti-rotate, 0deg)) translateX(0) scale(0.6);
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    top: 70%;
+    opacity: 0;
+    transform: rotate(calc(var(--confetti-rotate, 0deg) + 540deg)) translateX(24px) scale(1);
+  }
+}
+
 .leaderboard-sparkle {
   position: absolute;
   border-radius: 9999px;

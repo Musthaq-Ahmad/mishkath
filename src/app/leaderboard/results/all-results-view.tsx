@@ -6,7 +6,6 @@ import { groupTextColor } from "@/lib/group-color";
 import { cn } from "@/lib/utils";
 import type { ProgramPlacements } from "@/lib/types";
 import { PlaceholderAvatar } from "@/components/gender-avatar";
-import { LanguageToggle } from "../language-toggle";
 import { useLanguage } from "../i18n";
 
 // Same restrained accent used on the podium's PODIUM_STYLE (gold ring for
@@ -31,16 +30,13 @@ export function AllResultsView({
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-8">
-      <div className="flex items-center justify-between">
-        <Link
-          href="/leaderboard"
-          className="inline-flex w-fit items-center gap-1 text-base font-semibold tracking-wide text-muted-foreground uppercase transition-colors hover:text-primary"
-        >
-          <span className="material-symbols-outlined text-[20px]">arrow_back</span>
-          {t("backToLive")}
-        </Link>
-        <LanguageToggle />
-      </div>
+      <Link
+        href="/leaderboard"
+        className="inline-flex w-fit items-center gap-1 text-base font-semibold tracking-wide text-muted-foreground uppercase transition-colors hover:text-primary"
+      >
+        <span className="material-symbols-outlined text-[20px]">arrow_back</span>
+        {t("backToLive")}
+      </Link>
 
       <div className="flex flex-col items-center gap-2 text-center">
         <h1 className="font-heading text-4xl font-bold tracking-tight sm:text-5xl">

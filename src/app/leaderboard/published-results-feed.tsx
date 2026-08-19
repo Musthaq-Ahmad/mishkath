@@ -7,7 +7,9 @@ import { groupPlacements } from "@/lib/leaderboard";
 import type {
   EventPlacementRow,
   ProgramPlacements,
+  ProgramType,
   StudentCategory,
+  StudentDivision,
 } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { groupTextColor } from "@/lib/group-color";
@@ -255,6 +257,57 @@ const PodiumBackdrop = memo(function PodiumBackdrop() {
   );
 });
 
+// A denser, one-shot burst layered on top of PodiumBackdrop's ambient
+// drizzle — mounted with `key={hero.program_id}` by the caller so it
+// remounts (and replays) every time the podium swaps to a different
+// result. Starts empty and fills in from a mount effect rather than
+// generating pieces at module scope like CONFETTI: this needs a fresh
+// randomized burst on every remount instead of one fixed pattern reused
+// forever, and since it never renders on the server (first paint is
+// always empty), there's no hydration mismatch to guard against.
+function ConfettiBurst() {
+  const [pieces, setPieces] = useState<ConfettiPiece[] | null>(null);
+
+  useEffect(() => {
+    const id = setTimeout(() => {
+      setPieces(
+        Array.from({ length: 24 }, () => ({
+          left: Math.random() * 100,
+          width: 3 + Math.random() * 3,
+          height: 8 + Math.random() * 6,
+          rotate: Math.random() * 360,
+          color: BACKDROP_LOGO_COLORS[Math.floor(Math.random() * BACKDROP_LOGO_COLORS.length)],
+          delay: Math.random() * 0.2,
+          duration: 0.9 + Math.random() * 0.5,
+        })),
+      );
+    }, 0);
+    return () => clearTimeout(id);
+  }, []);
+
+  if (!pieces) return null;
+
+  return (
+    <div aria-hidden className="pointer-events-none absolute inset-0 z-20 overflow-hidden">
+      {pieces.map((piece, index) => (
+        <span
+          key={index}
+          className="leaderboard-confetti-burst-piece"
+          style={{
+            left: `${piece.left}%`,
+            width: `${piece.width}px`,
+            height: `${piece.height}px`,
+            backgroundColor: piece.color,
+            animationDelay: `${piece.delay}s`,
+            animationDuration: `${piece.duration}s`,
+            ["--confetti-rotate" as string]: `${piece.rotate}deg`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 function PlaceAvatar({
   photoUrl,
   isGroup,
@@ -312,6 +365,37 @@ function nextRotationIndex(current: number, total: number) {
   return next >= total ? 1 : next;
 }
 
+const DIVISION_ORDER: StudentDivision[] = ["senior", "junior", "sub_junior", "general"];
+
+// Small pill toggle for the category/type filter row above the podium —
+// selecting one pins the podium to the latest matching result instead of
+// auto-rotating; selecting it again (or "All") returns to normal rotation.
+function FilterChip({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "rounded-full px-2.5 py-1 text-[11px] font-bold tracking-wide uppercase transition-colors",
+        active
+          ? "bg-gold text-background"
+          : "bg-muted text-muted-foreground hover:bg-muted/70",
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
 export function PublishedResultsFeed({
   initialPlacements,
   groupNames,
@@ -322,6 +406,8 @@ export function PublishedResultsFeed({
   const { t, divisionLabel, rankLabel } = useLanguage();
   const [placements, setPlacements] = useState(initialPlacements);
   const [displayIndex, setDisplayIndex] = useState(0);
+  const [filterDivision, setFilterDivision] = useState<StudentDivision | "all">("all");
+  const [filterType, setFilterType] = useState<ProgramType | "all">("all");
   const heroIdRef = useRef(initialPlacements[0]?.program_id ?? null);
   const lastNewResultAtRef = useRef<number | null>(null);
 
@@ -379,14 +465,77 @@ export function PublishedResultsFeed({
     return () => clearInterval(id);
   }, [placements.length]);
 
-  const hero = placements[displayIndex] ?? placements[0];
-  const isLatest = displayIndex === 0;
+  const isFiltering = filterDivision !== "all" || filterType !== "all";
+
+  // Selecting a category/type chip pins the podium to the latest result
+  // matching it (placements is already ordered published_at desc) instead
+  // of threading the filter through displayIndex/rotation bookkeeping —
+  // clearing the filter (back to "all") returns to normal auto-rotation
+  // untouched.
+  const hero = isFiltering
+    ? (placements.find(
+        (p) =>
+          (filterDivision === "all" || p.category === filterDivision) &&
+          (filterType === "all" || p.program_type === filterType),
+      ) ?? null)
+    : (placements[displayIndex] ?? placements[0] ?? null);
+  const isLatest = !isFiltering && displayIndex === 0;
+
+  const availableDivisions = DIVISION_ORDER.filter((division) =>
+    placements.some((p) => p.category === division),
+  );
+  const hasIndividual = placements.some((p) => p.program_type === "individual");
+  const hasGroup = placements.some((p) => p.program_type === "group");
+
+  function clearFilters() {
+    setFilterDivision("all");
+    setFilterType("all");
+  }
+
+  const filterChipsRow = availableDivisions.length > 0 && (
+    <div className="relative z-10 flex flex-wrap items-center justify-center gap-1.5">
+      <FilterChip active={!isFiltering} onClick={clearFilters}>
+        {t("allCategories")}
+      </FilterChip>
+      {availableDivisions.map((division) => (
+        <FilterChip
+          key={division}
+          active={filterDivision === division}
+          onClick={() =>
+            setFilterDivision((current) => (current === division ? "all" : division))
+          }
+        >
+          {divisionLabel(division)}
+        </FilterChip>
+      ))}
+      {hasIndividual && hasGroup && (
+        <>
+          <span aria-hidden className="mx-0.5 h-3 w-px bg-border" />
+          <FilterChip
+            active={filterType === "individual"}
+            onClick={() =>
+              setFilterType((current) => (current === "individual" ? "all" : "individual"))
+            }
+          >
+            {t("individual")}
+          </FilterChip>
+          <FilterChip
+            active={filterType === "group"}
+            onClick={() => setFilterType((current) => (current === "group" ? "all" : "group"))}
+          >
+            {t("group")}
+          </FilterChip>
+        </>
+      )}
+    </div>
+  );
 
   if (!hero) {
     return (
-      <div className="card-elevated flex flex-1 items-center justify-center rounded-lg border border-border bg-card p-16 text-center">
+      <div className="card-elevated flex flex-1 flex-col items-center justify-center gap-4 rounded-lg border border-border bg-card p-16 text-center">
+        {filterChipsRow}
         <p className="font-heading text-xl text-muted-foreground">
-          {t("resultsWillAppear")}
+          {t(isFiltering ? "noResultsForFilter" : "resultsWillAppear")}
         </p>
       </div>
     );
@@ -399,6 +548,14 @@ export function PublishedResultsFeed({
     }))
     .filter((column) => column.items.length > 0);
 
+  // Only meaningful while the podium is auto-rotating on its own — while a
+  // category/type filter is pinning it to one result, there's no "next"
+  // to tease.
+  const nextItem =
+    !isFiltering && placements.length > 1
+      ? placements[nextRotationIndex(displayIndex, placements.length)]
+      : null;
+
   return (
     // The card is a size container at md+ (it has a definite h-full there),
     // so the podium sizes below use cqh — a percentage of the card itself —
@@ -407,6 +564,7 @@ export function PublishedResultsFeed({
     // units, which is fine because the page scrolls there.
     <div className="card-elevated relative isolate flex flex-col gap-[clamp(0.5rem,2vh,1.5rem)] rounded-xl border border-border bg-card p-[clamp(1rem,2.5vh,1.5rem)] md:h-full md:min-h-0 md:overflow-y-auto md:@container-size">
       <PodiumBackdrop />
+      <ConfettiBurst key={hero.program_id} />
       {/* floats over the card corner instead of taking a flex row, so its
           height never competes with the podium's budget */}
       <div className="absolute inset-x-[clamp(1rem,2.5vh,1.5rem)] top-[clamp(1rem,2.5vh,1.5rem)] z-10 flex items-center justify-between gap-3">
@@ -436,21 +594,27 @@ export function PublishedResultsFeed({
         </span>
       </div>
 
-      {/* Keying on program_id remounts this block whenever the podium swaps
-          to a different result (new publish or rotation), replaying the
-          fade/slide-in animation as a lightweight transition. pt- reserves
-          clearance for the floating status badge above (which is
-          absolutely positioned and out of flow), so on shorter viewports
-          the centered title never renders underneath it. */}
-      <div
-        key={hero.program_id}
-        className="animate-fade-in-up flex flex-1 flex-col justify-center gap-[clamp(1rem,2.5cqh,1.5rem)] pt-[clamp(2.75rem,7cqh,3.5rem)]"
-      >
+      {/* pt- reserves clearance for the floating status badge above (which
+          is absolutely positioned and out of flow), so on shorter
+          viewports neither the filter chips nor the centered title render
+          underneath it. This wrapper stays unkeyed (filter chips and the
+          "up next" ticker shouldn't replay their animation on every
+          rotation) — only the title/podium block below it remounts. */}
+      <div className="flex flex-1 flex-col gap-[clamp(0.5rem,1.5cqh,0.75rem)] pt-[clamp(2.75rem,7cqh,3.5rem)]">
+        {filterChipsRow}
+
+        {/* Keying on program_id remounts this block whenever the podium
+            swaps to a different result (new publish or rotation), replaying
+            the fade/slide-in animation as a lightweight transition. */}
+        <div
+          key={hero.program_id}
+          className="animate-fade-in-up flex flex-1 flex-col justify-center gap-[clamp(1rem,2.5cqh,1.5rem)]"
+        >
         {/* hero title: read from across the room — the program name is the
             headline of this screen, centered and oversized like an event
             poster, with the division as a gold ticket badge */}
         <div className="flex flex-col items-center gap-[clamp(0.25rem,1cqh,0.5rem)] text-center">
-          <p className="bg-linear-to-b from-foreground to-foreground/60 bg-clip-text font-heading text-[clamp(1.25rem,5cqh,3rem)] leading-tight font-extrabold tracking-tight text-balance text-transparent">
+          <p className="bg-linear-to-b from-foreground to-foreground/60 bg-clip-text font-heading text-lg leading-tight font-extrabold tracking-tight text-balance text-transparent md:text-[clamp(1.5rem,6cqh,3.25rem)]">
             {hero.program_name}
           </p>
           <p className="rounded-full border border-gold/30 bg-gold/10 px-4 py-0.5 text-[clamp(0.7rem,1.7cqh,0.875rem)] font-bold tracking-[0.25em] text-gold uppercase">
@@ -661,6 +825,15 @@ export function PublishedResultsFeed({
             );
           })}
         </div>
+        </div>
+
+        {nextItem && (
+          <p className="relative z-10 text-center text-[11px] font-medium text-muted-foreground">
+            <span className="font-semibold text-foreground/70 uppercase">{t("upNext")}</span>
+            {" · "}
+            {nextItem.program_name}
+          </p>
+        )}
       </div>
     </div>
   );
