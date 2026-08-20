@@ -653,7 +653,7 @@ export function PublishedResultsFeed({
           underneath it. This wrapper stays unkeyed (filter chips and the
           "up next" ticker shouldn't replay their animation on every
           rotation) — only the title/podium block below it remounts. */}
-      <div className="flex flex-1 flex-col gap-[clamp(0.25rem,0.8cqh,0.5rem)] pt-[clamp(2.75rem,7cqh,3.5rem)]">
+      <div className="flex min-h-0 flex-1 flex-col gap-[clamp(0.25rem,0.8cqh,0.5rem)] pt-[clamp(2.75rem,7cqh,3.5rem)]">
         {filterChipsRow}
 
         {/* Keying on program_id remounts this block whenever the podium
@@ -661,7 +661,7 @@ export function PublishedResultsFeed({
             the fade/slide-in animation as a lightweight transition. */}
         <div
           key={hero.program_id}
-          className="animate-fade-in-up flex flex-1 flex-col justify-center gap-[clamp(1rem,2.5cqh,1.5rem)]"
+          className="animate-fade-in-up flex min-h-0 flex-1 flex-col justify-center gap-[clamp(1rem,2.5cqh,1.5rem)]"
         >
         {/* hero title: read from across the room — the program name is the
             headline of this screen, centered and oversized like an event
