@@ -324,6 +324,78 @@
   }
 }
 
+/* "Unboxing" pop-in for each podium card / mobile row, used instead of a
+   plain fade whenever a new result appears — a quick glow burst (::before)
+   behind the card, then the card itself scales up from small to its exact
+   final size, like it's materializing out of a box rather than just fading
+   onto the screen. Applied per-card with a staggered animation-delay (see
+   published-results-feed.tsx) so cards pop one after another instead of
+   all at once. Wraps an inner element rather than the card's own
+   positioned wrapper so it doesn't fight any static transform already on
+   that wrapper (e.g. the champion card's permanent lift).
+
+   Deliberately never scales past 1, never rotates, and the glow's inset is
+   0 rather than negative — every one of those would paint outside the
+   element's own layout box, and an `overflow-y-auto` ancestor (the podium
+   card) factors a transformed descendant's *painted* bounds into its
+   scrollable area, not just its layout box. That's what was pulling the
+   scrollbar back in: a purely cosmetic overshoot was silently growing the
+   card's scroll height for the duration of the animation. */
+.leaderboard-card-unbox {
+  position: relative;
+  opacity: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .leaderboard-card-unbox {
+    animation: leaderboard-card-unbox-pop 550ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .leaderboard-card-unbox::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: radial-gradient(
+      circle,
+      color-mix(in srgb, var(--gold) 45%, transparent),
+      transparent 70%
+    );
+    opacity: 0;
+    animation: leaderboard-card-unbox-glow 550ms ease-out both;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .leaderboard-card-unbox {
+    opacity: 1;
+  }
+}
+@keyframes leaderboard-card-unbox-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+    filter: brightness(1.6) saturate(0.4);
+  }
+  60% {
+    opacity: 1;
+    filter: brightness(1.15) saturate(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: brightness(1) saturate(1);
+  }
+}
+@keyframes leaderboard-card-unbox-glow {
+  0% {
+    opacity: 0;
+  }
+  30% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 .leaderboard-sparkle {
   position: absolute;
   border-radius: 9999px;

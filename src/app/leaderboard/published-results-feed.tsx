@@ -699,17 +699,18 @@ export function PublishedResultsFeed({
         <div className="flex flex-col gap-2 md:hidden">
           {[...podiumColumns]
             .sort((a, b) => a.rank - b.rank)
-            .flatMap((column) =>
-            column.items.map((place) => {
+            .flatMap((column) => column.items.map((place) => ({ column, place })))
+            .map(({ column, place }, index) => {
               const accent = RANK_ROW_ACCENT[column.rank];
               return (
               <div
-                key={place.id}
+                key={`${hero.program_id}-${place.id}`}
                 className={cn(
-                  "flex items-center gap-3 rounded-xl border px-3 py-2",
+                  "leaderboard-card-unbox flex items-center gap-3 rounded-xl border px-3 py-2",
                   accent?.border,
                   accent?.bg,
                 )}
+                style={{ animationDelay: `${index * 100}ms` }}
               >
                 <div className="relative shrink-0">
                   <span
@@ -756,14 +757,13 @@ export function PublishedResultsFeed({
                 )}
               </div>
               );
-            }),
-          )}
+            })}
         </div>
 
         {/* Desktop/tablet: the original poster-style podium with "trophy
             case" cards per rank. */}
         <div className="hidden items-start justify-center gap-4 md:flex md:flex-wrap lg:gap-6 xl:gap-10">
-          {podiumColumns.map((column) => {
+          {podiumColumns.map((column, index) => {
             const style = PODIUM_STYLE[column.rank];
             const isChampion = column.rank === 1;
             const tied = column.items.length > 1;
@@ -778,6 +778,15 @@ export function PublishedResultsFeed({
                   MOBILE_ORDER[column.rank],
                 )}
               >
+                {/* Isolates the "unboxing" pop animation's own transform to
+                    this inner wrapper instead of the column div above, so it
+                    doesn't fight that column's static translate-y (the
+                    champion's permanent lift). */}
+                <div
+                  key={hero.program_id}
+                  className="leaderboard-card-unbox"
+                  style={{ animationDelay: `${index * 120}ms` }}
+                >
                 {/* "trophy case" card: an outer gradient-bordered shell (the
                     gradient shows through as an even ring via the padding)
                     wrapping a fixed-dark inner core — same always-dark
@@ -887,6 +896,7 @@ export function PublishedResultsFeed({
                       )}
                     </div>
                   </div>
+                </div>
                 </div>
               </div>
             );
