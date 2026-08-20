@@ -77,6 +77,34 @@ const PODIUM_STYLE: Record<
   },
 };
 
+// Per-rank gold/silver/bronze accent for the compact mobile row list —
+// reuses the same --gold/--silver/--bronze theme tokens the desktop
+// "trophy case" cards are built from, so each row reads at a glance
+// instead of only the champion standing out.
+const RANK_ROW_ACCENT: Record<
+  number,
+  { border: string; bg: string; badge: string; ring: string }
+> = {
+  1: {
+    border: "border-gold/40",
+    bg: "bg-gold/5",
+    badge: "bg-gold text-background",
+    ring: "ring-2 ring-gold/50",
+  },
+  2: {
+    border: "border-silver/40",
+    bg: "bg-silver/10",
+    badge: "bg-silver text-background",
+    ring: "ring-1 ring-silver/60",
+  },
+  3: {
+    border: "border-bronze/40",
+    bg: "bg-bronze/10",
+    badge: "bg-bronze text-background",
+    ring: "ring-1 ring-bronze/60",
+  },
+};
+
 // Small deterministic PRNG (not Math.random()) so the "random" scatter
 // below renders identically on the server and on client hydration — using
 // Math.random() directly would reseed differently in each environment and
@@ -242,7 +270,7 @@ const PodiumBackdrop = memo(function PodiumBackdrop() {
       {SPARKLES.map((sparkle, index) => (
         <span
           key={index}
-          className="leaderboard-sparkle"
+          className="leaderboard-sparkle hidden md:block"
           style={{
             left: `${sparkle.left}%`,
             top: `${sparkle.top}%`,
@@ -271,14 +299,14 @@ function ConfettiBurst() {
   useEffect(() => {
     const id = setTimeout(() => {
       setPieces(
-        Array.from({ length: 24 }, () => ({
+        Array.from({ length: 6 }, () => ({
           left: Math.random() * 100,
           width: 3 + Math.random() * 3,
           height: 8 + Math.random() * 6,
           rotate: Math.random() * 360,
           color: BACKDROP_LOGO_COLORS[Math.floor(Math.random() * BACKDROP_LOGO_COLORS.length)],
-          delay: Math.random() * 0.2,
-          duration: 0.9 + Math.random() * 0.5,
+          delay: Math.random() * 0.1,
+          duration: 0.6 + Math.random() * 0.3,
         })),
       );
     }, 0);
@@ -288,7 +316,10 @@ function ConfettiBurst() {
   if (!pieces) return null;
 
   return (
-    <div aria-hidden className="pointer-events-none absolute inset-0 z-20 overflow-hidden">
+    <div
+      aria-hidden
+      className="pointer-events-none absolute inset-0 z-20 hidden overflow-hidden md:block"
+    >
       {pieces.map((piece, index) => (
         <span
           key={index}
@@ -385,7 +416,7 @@ function FilterChip({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "rounded-full px-2.5 py-1 text-[11px] font-bold tracking-wide uppercase transition-colors",
+        "rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase transition-colors",
         active
           ? "bg-gold text-background"
           : "bg-muted text-muted-foreground hover:bg-muted/70",
@@ -408,8 +439,16 @@ export function PublishedResultsFeed({
   const [displayIndex, setDisplayIndex] = useState(0);
   const [filterDivision, setFilterDivision] = useState<StudentDivision | "all">("all");
   const [filterType, setFilterType] = useState<ProgramType | "all">("all");
+  const [filteredIndex, setFilteredIndex] = useState(0);
   const heroIdRef = useRef(initialPlacements[0]?.program_id ?? null);
   const lastNewResultAtRef = useRef<number | null>(null);
+
+  const isFiltering = filterDivision !== "all" || filterType !== "all";
+  const filteredPlacements = placements.filter(
+    (p) =>
+      (filterDivision === "all" || p.category === filterDivision) &&
+      (filterType === "all" || p.program_type === filterType),
+  );
 
   useEffect(() => {
     lastNewResultAtRef.current = Date.now();
@@ -465,21 +504,35 @@ export function PublishedResultsFeed({
     return () => clearInterval(id);
   }, [placements.length]);
 
-  const isFiltering = filterDivision !== "all" || filterType !== "all";
+  // Picking a category/type chip narrows rotation to just the matching
+  // results instead of freezing on a single one — reset back to the latest
+  // match whenever the filter itself changes. Adjusted during render
+  // (React's documented pattern for resetting state when an input changes)
+  // rather than in an effect, which would need an extra render pass and
+  // trip the "don't setState synchronously in an effect" lint rule.
+  const filterKey = `${filterDivision}:${filterType}`;
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  if (filterKey !== prevFilterKey) {
+    setPrevFilterKey(filterKey);
+    setFilteredIndex(0);
+  }
 
-  // Selecting a category/type chip pins the podium to the latest result
-  // matching it (placements is already ordered published_at desc) instead
-  // of threading the filter through displayIndex/rotation bookkeeping —
-  // clearing the filter (back to "all") returns to normal auto-rotation
-  // untouched.
+  // ...then cycle through that filtered set the same way the unfiltered
+  // podium cycles through everything, on the same interval.
+  useEffect(() => {
+    if (!isFiltering) return;
+    const id = setInterval(() => {
+      setFilteredIndex((current) =>
+        filteredPlacements.length <= 1 ? 0 : (current + 1) % filteredPlacements.length,
+      );
+    }, ROTATION_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, [isFiltering, filteredPlacements.length]);
+
   const hero = isFiltering
-    ? (placements.find(
-        (p) =>
-          (filterDivision === "all" || p.category === filterDivision) &&
-          (filterType === "all" || p.program_type === filterType),
-      ) ?? null)
+    ? (filteredPlacements[filteredIndex] ?? filteredPlacements[0] ?? null)
     : (placements[displayIndex] ?? placements[0] ?? null);
-  const isLatest = !isFiltering && displayIndex === 0;
+  const isLatest = isFiltering ? filteredIndex === 0 : displayIndex === 0;
 
   const availableDivisions = DIVISION_ORDER.filter((division) =>
     placements.some((p) => p.category === division),
@@ -562,7 +615,7 @@ export function PublishedResultsFeed({
     // and always fit regardless of how much height the header/footer take.
     // Below md the card grows with content and cqh falls back to viewport
     // units, which is fine because the page scrolls there.
-    <div className="card-elevated relative isolate flex flex-col gap-[clamp(0.5rem,2vh,1.5rem)] rounded-xl border border-border bg-card p-[clamp(1rem,2.5vh,1.5rem)] md:h-full md:min-h-0 md:overflow-y-auto md:@container-size">
+    <div className="card-elevated relative isolate flex flex-col gap-[clamp(0.5rem,2vh,1.5rem)] overflow-x-hidden rounded-xl border border-border bg-card p-[clamp(1rem,2.5vh,1.5rem)] md:h-full md:min-h-0 md:overflow-y-auto md:@container-size">
       <PodiumBackdrop />
       <ConfettiBurst key={hero.program_id} />
       {/* floats over the card corner instead of taking a flex row, so its
@@ -600,7 +653,7 @@ export function PublishedResultsFeed({
           underneath it. This wrapper stays unkeyed (filter chips and the
           "up next" ticker shouldn't replay their animation on every
           rotation) — only the title/podium block below it remounts. */}
-      <div className="flex flex-1 flex-col gap-[clamp(0.5rem,1.5cqh,0.75rem)] pt-[clamp(2.75rem,7cqh,3.5rem)]">
+      <div className="flex flex-1 flex-col gap-[clamp(0.25rem,0.8cqh,0.5rem)] pt-[clamp(2.75rem,7cqh,3.5rem)]">
         {filterChipsRow}
 
         {/* Keying on program_id remounts this block whenever the podium
@@ -633,21 +686,22 @@ export function PublishedResultsFeed({
           {[...podiumColumns]
             .sort((a, b) => a.rank - b.rank)
             .flatMap((column) =>
-            column.items.map((place) => (
+            column.items.map((place) => {
+              const accent = RANK_ROW_ACCENT[column.rank];
+              return (
               <div
                 key={place.id}
                 className={cn(
                   "flex items-center gap-3 rounded-xl border px-3 py-2",
-                  column.rank === 1
-                    ? "border-gold/30 bg-gold/5"
-                    : "border-sidebar-foreground/10 bg-sidebar/60",
+                  accent?.border,
+                  accent?.bg,
                 )}
               >
                 <div className="relative shrink-0">
                   <span
                     className={cn(
                       "relative flex size-10 items-center justify-center overflow-hidden rounded-full bg-white/10",
-                      PODIUM_STYLE[column.rank]?.ring,
+                      accent?.ring,
                     )}
                   >
                     <PlaceAvatar
@@ -660,9 +714,7 @@ export function PublishedResultsFeed({
                   <span
                     className={cn(
                       "absolute -right-1 -bottom-1 flex size-[18px] items-center justify-center rounded-full text-[10px] font-black ring-2 ring-sidebar",
-                      column.rank === 1
-                        ? "bg-gold text-background"
-                        : "bg-sidebar-foreground/20 text-sidebar-foreground",
+                      accent?.badge,
                     )}
                   >
                     {column.rank}
@@ -689,13 +741,14 @@ export function PublishedResultsFeed({
                   </span>
                 )}
               </div>
-            )),
+              );
+            }),
           )}
         </div>
 
         {/* Desktop/tablet: the original poster-style podium with "trophy
             case" cards per rank. */}
-        <div className="hidden items-start justify-center gap-10 md:flex md:flex-wrap">
+        <div className="hidden items-start justify-center gap-4 md:flex md:flex-wrap lg:gap-6 xl:gap-10">
           {podiumColumns.map((column) => {
             const style = PODIUM_STYLE[column.rank];
             const isChampion = column.rank === 1;
@@ -704,10 +757,10 @@ export function PublishedResultsFeed({
               <div
                 key={column.rank}
                 className={cn(
-                  "flex basis-[180px] flex-col",
+                  "flex min-w-0 basis-[180px] flex-col",
                   isChampion
-                    ? "w-full max-w-[420px] grow-[1.6] -translate-y-[clamp(0px,2.5cqh,1.25rem)]"
-                    : "w-full max-w-[240px] grow",
+                    ? "max-w-[320px] grow-[1.6] -translate-y-[clamp(0px,2.5cqh,1.25rem)] lg:max-w-[420px]"
+                    : "max-w-[190px] grow lg:max-w-[240px]",
                   MOBILE_ORDER[column.rank],
                 )}
               >
@@ -727,8 +780,8 @@ export function PublishedResultsFeed({
                     className={cn(
                       "relative flex w-full flex-col items-center overflow-hidden rounded-[1.625rem] bg-sidebar px-4 text-center",
                       isChampion
-                        ? "min-h-[clamp(200px,34cqh,360px)] gap-[clamp(0.375rem,1.2cqh,0.75rem)] py-7"
-                        : "min-h-[clamp(160px,28cqh,280px)] gap-[clamp(0.3rem,1cqh,0.6rem)] py-5",
+                        ? "gap-[clamp(0.375rem,1.2cqh,0.75rem)] py-5"
+                        : "gap-[clamp(0.3rem,1cqh,0.6rem)] py-4",
                     )}
                   >
                     <div
