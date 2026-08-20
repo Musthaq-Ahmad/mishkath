@@ -339,6 +339,19 @@ function ConfettiBurst() {
   );
 }
 
+// One-shot gold light wash over the whole card, remounted (and replayed)
+// via `key={hero.program_id}` by the caller — no random pieces to
+// generate, so unlike ConfettiBurst this needs no state/effect at all,
+// the CSS animation just runs once from a fresh mount.
+function JackpotFlash() {
+  return (
+    <div
+      aria-hidden
+      className="leaderboard-jackpot-flash pointer-events-none absolute inset-0 z-30"
+    />
+  );
+}
+
 function PlaceAvatar({
   photoUrl,
   isGroup,
@@ -618,6 +631,7 @@ export function PublishedResultsFeed({
     <div className="card-elevated relative isolate flex flex-col gap-[clamp(0.5rem,2vh,1.5rem)] overflow-x-hidden rounded-xl border border-border bg-card p-[clamp(1rem,2.5vh,1.5rem)] md:h-full md:min-h-0 md:overflow-y-auto md:@container-size">
       <PodiumBackdrop />
       <ConfettiBurst key={hero.program_id} />
+      <JackpotFlash key={hero.program_id} />
       {/* floats over the card corner instead of taking a flex row, so its
           height never competes with the podium's budget */}
       <div className="absolute inset-x-[clamp(1rem,2.5vh,1.5rem)] top-[clamp(1rem,2.5vh,1.5rem)] z-10 flex items-center justify-between gap-3">

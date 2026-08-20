@@ -294,6 +294,36 @@
   }
 }
 
+/* A quick full-card gold light wash the instant a new result appears —
+   like a jackpot hit — layered above everything (including the podium
+   cards) for that split second, then fading out of the way. Remounted
+   with `key={hero.program_id}` (see JackpotFlash in
+   published-results-feed.tsx) so the animation replays on every swap. */
+.leaderboard-jackpot-flash {
+  background: radial-gradient(
+    circle at 50% 35%,
+    color-mix(in srgb, var(--gold) 55%, transparent),
+    transparent 70%
+  );
+  opacity: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .leaderboard-jackpot-flash {
+    animation: leaderboard-jackpot-flash-fade 900ms ease-out 1 forwards;
+  }
+}
+@keyframes leaderboard-jackpot-flash-fade {
+  0% {
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 .leaderboard-sparkle {
   position: absolute;
   border-radius: 9999px;
