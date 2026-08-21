@@ -4,8 +4,9 @@ import { createClient } from "@/lib/supabase/server";
 import { findScheduleConflicts, getCurrentAndNextProgram, getUpcomingPrograms } from "@/lib/schedule";
 import { groupPlacements } from "@/lib/leaderboard";
 import { cn } from "@/lib/utils";
-import { STUDENT_CATEGORY_LABELS, STUDENT_DIVISION_LABELS } from "@/lib/validations/student";
+import { STUDENT_CATEGORY_LABELS } from "@/lib/validations/student";
 import type {
+  Division,
   EventPlacementRow,
   GroupLeaderboardRow,
   Program,
@@ -57,9 +58,11 @@ function formatRelativeTime(isoString: string) {
 function CurrentNextPrograms({
   current,
   next,
+  divisionNameById,
 }: {
   current: Program | null;
   next: Program | null;
+  divisionNameById: Map<string, string>;
 }) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -73,7 +76,7 @@ function CurrentNextPrograms({
           <>
             <p className="font-heading text-xl font-semibold">{current.name}</p>
             <p className="text-sm text-muted-foreground">
-              {STUDENT_DIVISION_LABELS[current.category]}
+              {divisionNameById.get(current.category) ?? "—"}
               {current.scheduled_start && ` · Started ${formatTime(current.scheduled_start)}`}
             </p>
           </>
@@ -91,7 +94,7 @@ function CurrentNextPrograms({
           <>
             <p className="font-heading text-xl font-semibold">{next.name}</p>
             <p className="text-sm text-muted-foreground">
-              {STUDENT_DIVISION_LABELS[next.category]}
+              {divisionNameById.get(next.category) ?? "—"}
               {next.scheduled_start && ` · ${formatTime(next.scheduled_start)}`}
             </p>
           </>
@@ -170,13 +173,17 @@ export default async function DashboardPage() {
   });
 
   const supabase = await createClient();
-  const { data: scheduledPrograms } = await supabase
-    .from("programs")
-    .select("*")
-    .not("scheduled_start", "is", null)
-    .order("scheduled_start")
-    .returns<Program[]>();
+  const [{ data: scheduledPrograms }, { data: divisions }] = await Promise.all([
+    supabase
+      .from("programs")
+      .select("*")
+      .not("scheduled_start", "is", null)
+      .order("scheduled_start")
+      .returns<Program[]>(),
+    supabase.from("divisions").select("*").order("sort_order").returns<Division[]>(),
+  ]);
 
+  const divisionNameById = new Map((divisions ?? []).map((d) => [d.id, d.name]));
   const { current, next } = getCurrentAndNextProgram(scheduledPrograms ?? []);
 
   if (profile.role === "judge") {
@@ -188,7 +195,7 @@ export default async function DashboardPage() {
           </h1>
           <p className="text-sm text-muted-foreground">{today}</p>
         </div>
-        <CurrentNextPrograms current={current} next={next} />
+        <CurrentNextPrograms current={current} next={next} divisionNameById={divisionNameById} />
         <div className="card-elevated rounded-xl bg-card p-6 text-muted-foreground ring-1 ring-border">
           Scoring is recorded on paper during judging and entered into the system by
           festival admins. Head to <span className="font-medium text-foreground">Results</span>{" "}
@@ -379,7 +386,7 @@ export default async function DashboardPage() {
         ))}
       </div>
 
-      <CurrentNextPrograms current={current} next={next} />
+      <CurrentNextPrograms current={current} next={next} divisionNameById={divisionNameById} />
 
       <div>
         <h2 className="mb-3 text-xs font-semibold tracking-widest text-muted-foreground uppercase">
@@ -508,7 +515,7 @@ export default async function DashboardPage() {
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium">{program.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {STUDENT_DIVISION_LABELS[program.category]}
+                    {divisionNameById.get(program.category) ?? "—"}
                   </p>
                 </div>
                 <span className="shrink-0 text-xs font-semibold tabular-nums text-gold">
@@ -529,14 +536,16 @@ export default async function DashboardPage() {
             Students by Division
           </h2>
           <div className="flex flex-col gap-3">
-            {Object.entries(STUDENT_DIVISION_LABELS).map(([key, label]) => {
-              const count = divisionCounts.get(key) ?? 0;
+            {(divisions ?? []).map((division) => {
+              const count = divisionCounts.get(division.id) ?? 0;
               const pct = totalStudentsForBreakdown
                 ? Math.round((count / totalStudentsForBreakdown) * 100)
                 : 0;
               return (
-                <div key={key} className="flex items-center gap-3">
-                  <span className="w-24 shrink-0 text-sm text-muted-foreground">{label}</span>
+                <div key={division.id} className="flex items-center gap-3">
+                  <span className="w-24 shrink-0 truncate text-sm text-muted-foreground">
+                    {division.name}
+                  </span>
                   <div className="h-2 flex-1 overflow-hidden rounded-full bg-surface-container-low">
                     <div
                       className="h-full rounded-full bg-primary transition-all"
@@ -597,7 +606,7 @@ export default async function DashboardPage() {
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">{program.program_name}</p>
                     <p className="text-xs text-muted-foreground">
-                      {STUDENT_DIVISION_LABELS[program.category]} ·{" "}
+                      {divisionNameById.get(program.category) ?? "—"} ·{" "}
                       {program.places[0]?.name ?? "—"}
                     </p>
                   </div>

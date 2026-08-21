@@ -6,8 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { codeForIndex, indexForCode } from "@/lib/codes";
 import { notifyWhatsAppGroup } from "@/lib/whatsapp";
 import { ProgramSchema, type ProgramFormState } from "@/lib/validations/program";
-import { STUDENT_DIVISION_LABELS } from "@/lib/validations/student";
-import type { EventPlacementRow, ProgramStatus, ProgramType } from "@/lib/types";
+import type { Division, EventPlacementRow, ProgramStatus, ProgramType } from "@/lib/types";
 
 export async function createProgram(
   _state: ProgramFormState,
@@ -142,11 +141,16 @@ async function announceResultsOnWhatsApp(
   if (!placements?.length) return;
 
   const { program_name, category } = placements[0];
+  const { data: division } = await supabase
+    .from("divisions")
+    .select("name")
+    .eq("id", category)
+    .single<Pick<Division, "name">>();
   const lines = placements.map(
     (row) => `${RANK_MEDALS[row.rank - 1] ?? `${row.rank}.`} ${row.place_name}`,
   );
   const text = [
-    `📢 Results Published: ${program_name} (${STUDENT_DIVISION_LABELS[category]})`,
+    `📢 Results Published: ${program_name} (${division?.name ?? "—"})`,
     ...lines,
   ].join("\n");
 

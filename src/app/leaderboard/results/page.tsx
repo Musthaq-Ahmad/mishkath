@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { groupPlacements } from "@/lib/leaderboard";
-import type { EventPlacementRow, Group } from "@/lib/types";
+import type { Division, EventPlacementRow, Group } from "@/lib/types";
 import { AllResultsView } from "./all-results-view";
 
 export const dynamic = "force-dynamic";
@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export default async function AllResultsPage() {
   const supabase = await createClient();
 
-  const [{ data: placementRows }, { data: groups }] = await Promise.all([
+  const [{ data: placementRows }, { data: groups }, { data: divisions }] = await Promise.all([
     supabase
       .from("public_event_top3")
       .select("*")
@@ -16,6 +16,7 @@ export default async function AllResultsPage() {
       .order("rank", { ascending: true })
       .returns<EventPlacementRow[]>(),
     supabase.from("groups").select("id, name").returns<Pick<Group, "id" | "name">[]>(),
+    supabase.from("divisions").select("*").order("sort_order").returns<Division[]>(),
   ]);
 
   const placements = groupPlacements(placementRows ?? []);
@@ -25,7 +26,7 @@ export default async function AllResultsPage() {
 
   return (
     <div className="min-h-screen bg-background px-4 py-10 text-foreground sm:px-8">
-      <AllResultsView placements={placements} groupNames={groupNames} />
+      <AllResultsView placements={placements} groupNames={groupNames} divisions={divisions ?? []} />
     </div>
   );
 }

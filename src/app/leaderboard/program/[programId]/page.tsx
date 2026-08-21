@@ -3,12 +3,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
-import type { Group, GroupProgramResult, Program, ProgramResult } from "@/lib/types";
+import type { Division, Group, GroupProgramResult, Program, ProgramResult } from "@/lib/types";
 import { groupRingColor } from "@/lib/group-color";
 import { cn } from "@/lib/utils";
 import { PrintButton } from "@/components/print-button";
 import { PROGRAM_TYPE_LABELS } from "@/lib/validations/program";
-import { DIVISION_LABELS, RANK_LABEL } from "../../labels";
+import { RANK_LABEL } from "../../labels";
 import { PlaceholderAvatar } from "@/components/gender-avatar";
 
 export const dynamic = "force-dynamic";
@@ -44,7 +44,7 @@ export default async function ProgramResultsPage({
 
   const isGroup = program.program_type === "group";
 
-  const [{ data: results }, { data: groups }] = await Promise.all([
+  const [{ data: results }, { data: groups }, { data: division }] = await Promise.all([
     isGroup
       ? supabase
           .from("public_group_program_results")
@@ -59,9 +59,15 @@ export default async function ProgramResultsPage({
           .order("rank")
           .returns<ProgramResult[]>(),
     supabase.from("groups").select("id, name").returns<Pick<Group, "id" | "name">[]>(),
+    supabase
+      .from("divisions")
+      .select("name")
+      .eq("id", program.category)
+      .single<Pick<Division, "name">>(),
   ]);
 
   const groupNameById = new Map((groups ?? []).map((g) => [g.id, g.name]));
+  const divisionName = division?.name ?? "—";
   const generatedOn = new Date().toLocaleString("en-US", {
     dateStyle: "medium",
     timeStyle: "short",
@@ -86,7 +92,7 @@ export default async function ProgramResultsPage({
           <div className="flex flex-col items-center gap-2 text-center">
             <h1 className="font-heading text-4xl font-bold tracking-tight sm:text-6xl">{program.name}</h1>
             <p className="text-xl text-muted-foreground">
-              {DIVISION_LABELS[program.category]} · {PROGRAM_TYPE_LABELS[program.program_type]}
+              {divisionName} · {PROGRAM_TYPE_LABELS[program.program_type]}
             </p>
           </div>
 
@@ -176,7 +182,7 @@ export default async function ProgramResultsPage({
             </p>
             <h1 className="font-heading text-3xl font-bold">{program.name}</h1>
             <p className="text-sm text-muted-foreground">
-              {DIVISION_LABELS[program.category]} · {PROGRAM_TYPE_LABELS[program.program_type]}
+              {divisionName} · {PROGRAM_TYPE_LABELS[program.program_type]}
             </p>
             <span aria-hidden className="mt-2 h-1 w-24 rounded-full bg-gold" />
           </div>

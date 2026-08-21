@@ -5,8 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { PrintButton } from "@/components/print-button";
 import { groupBgColor, groupTextColor } from "@/lib/group-color";
 import { cn } from "@/lib/utils";
-import { STUDENT_DIVISION_LABELS } from "@/lib/validations/student";
-import type { Group, Student } from "@/lib/types";
+import type { Division, Group, Student } from "@/lib/types";
 
 export default async function StudentBadgesPage({
   searchParams,
@@ -18,7 +17,7 @@ export default async function StudentBadgesPage({
   const { group: groupId } = await searchParams;
   const supabase = await createClient();
 
-  const [{ data: groups }, { data: students }] = await Promise.all([
+  const [{ data: groups }, { data: students }, { data: divisions }] = await Promise.all([
     supabase.from("groups").select("*").order("name").returns<Group[]>(),
     supabase
       .from("students")
@@ -26,10 +25,12 @@ export default async function StudentBadgesPage({
       .not("chest_number", "is", null)
       .order("chest_number")
       .returns<Student[]>(),
+    supabase.from("divisions").select("*").returns<Division[]>(),
   ]);
 
   const groupsList = groups ?? [];
   const groupNameById = new Map(groupsList.map((g) => [g.id, g.name]));
+  const divisionNameById = new Map((divisions ?? []).map((d) => [d.id, d.name]));
   const visibleStudents = groupId
     ? (students ?? []).filter((s) => s.group_id === groupId)
     : students ?? [];
@@ -114,7 +115,7 @@ export default async function StudentBadgesPage({
                   {student.name}
                 </p>
                 <p className="text-xs text-muted-foreground uppercase">
-                  {STUDENT_DIVISION_LABELS[student.division]} ·{" "}
+                  {divisionNameById.get(student.division) ?? "—"} ·{" "}
                   <span className={cn("font-semibold", groupTextColor(student.group_id))}>
                     {groupNameById.get(student.group_id) ?? "—"}
                   </span>

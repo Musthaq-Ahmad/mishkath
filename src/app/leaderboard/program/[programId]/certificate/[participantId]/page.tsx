@@ -5,8 +5,8 @@ import { requireRole } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
 import { PrintButton } from "@/components/print-button";
 import { cn } from "@/lib/utils";
-import { DIVISION_LABELS, RANK_LABEL } from "@/app/leaderboard/labels";
-import type { GroupProgramResult, Program, ProgramResult } from "@/lib/types";
+import { RANK_LABEL } from "@/app/leaderboard/labels";
+import type { Division, GroupProgramResult, Program, ProgramResult } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -54,6 +54,12 @@ export default async function CertificatePage({
   if (!result) {
     notFound();
   }
+
+  const { data: division } = await supabase
+    .from("divisions")
+    .select("name")
+    .eq("id", program.category)
+    .single<Pick<Division, "name">>();
 
   const name = isGroup
     ? (result as GroupProgramResult).group_name
@@ -155,7 +161,7 @@ export default async function CertificatePage({
                 "for participating in"
               )}{" "}
               <span className="font-semibold text-foreground">{program.name}</span> —{" "}
-              {DIVISION_LABELS[program.category]}
+              {division?.name ?? "—"}
             </p>
           </div>
 

@@ -13,14 +13,25 @@ export type Group = {
   created_at: string;
 };
 
-export type StudentDivision = "senior" | "junior" | "sub_junior" | "general";
+// Admin-editable — see the `divisions` table. Every "division" field below
+// is a division id (uuid), not a fixed set of known strings anymore.
+export type Division = {
+  id: string;
+  name: string;
+  name_ml: string | null;
+  sort_order: number;
+  base_chest_number: number;
+  is_active: boolean;
+  created_at: string;
+};
+
 export type StudentCategory = "boy" | "girl";
 
 export type Student = {
   id: string;
   name: string;
   group_id: string;
-  division: StudentDivision;
+  division: string;
   class: string;
   category: StudentCategory;
   guardian_name: string | null;
@@ -42,7 +53,7 @@ export type ProgramStatus = "draft" | "scheduled" | "running" | "completed";
 export type Program = {
   id: string;
   name: string;
-  category: StudentDivision;
+  category: string;
   program_type: ProgramType;
   gender_category: GenderCategory;
   status: ProgramStatus;
@@ -133,7 +144,7 @@ export type GroupLeaderboardRow = {
 export type EventPlacementRow = {
   program_id: string;
   program_name: string;
-  category: StudentDivision;
+  category: string;
   program_type: ProgramType;
   published_at: string | null;
   rank: number;
@@ -147,7 +158,7 @@ export type EventPlacementRow = {
 export type ProgramPlacements = {
   program_id: string;
   program_name: string;
-  category: StudentDivision;
+  category: string;
   program_type: ProgramType;
   published_at: string | null;
   places: {

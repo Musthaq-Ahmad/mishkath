@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { groupPlacements } from "@/lib/leaderboard";
 import { getUpcomingPrograms } from "@/lib/schedule";
-import type { EventPlacementRow, Group, GroupLeaderboardRow, Program } from "@/lib/types";
+import type { Division, EventPlacementRow, Group, GroupLeaderboardRow, Program } from "@/lib/types";
 import { CelebrationLayout } from "./celebration-layout";
 import { ChampionshipSidebar } from "./championship-sidebar";
 import { InfoCardsRow } from "./info-cards-row";
@@ -19,6 +19,7 @@ export default async function LeaderboardPage() {
     { data: scheduledPrograms },
     { data: allPrograms },
     { data: groups },
+    { data: divisions },
   ] = await Promise.all([
     supabase.from("public_group_leaderboard").select("*").returns<GroupLeaderboardRow[]>(),
     supabase
@@ -35,7 +36,10 @@ export default async function LeaderboardPage() {
       .returns<Program[]>(),
     supabase.from("programs").select("published").returns<Pick<Program, "published">[]>(),
     supabase.from("groups").select("id, name").returns<Pick<Group, "id" | "name">[]>(),
+    supabase.from("divisions").select("*").order("sort_order").returns<Division[]>(),
   ]);
+
+  const divisionsList = divisions ?? [];
 
   const placements = groupPlacements(placementRows ?? []);
   const nextProgram = getUpcomingPrograms(scheduledPrograms ?? [])[0] ?? null;
@@ -56,13 +60,25 @@ export default async function LeaderboardPage() {
 
         <CelebrationLayout
           initialHeroId={placements[0]?.program_id ?? null}
-          podium={<PublishedResultsFeed initialPlacements={placements} groupNames={groupNames} />}
+          podium={
+            <PublishedResultsFeed
+              initialPlacements={placements}
+              groupNames={groupNames}
+              divisions={divisionsList}
+            />
+          }
           sidebar={
             <div className="flex w-full flex-col gap-4 md:h-full md:min-h-0 md:overflow-y-auto">
               <ChampionshipSidebar initialGroupRows={groupRows ?? []} />
             </div>
           }
-          infoCards={<InfoCardsRow initialPlacements={placements} initialNextProgram={nextProgram} />}
+          infoCards={
+            <InfoCardsRow
+              initialPlacements={placements}
+              initialNextProgram={nextProgram}
+              divisions={divisionsList}
+            />
+          }
         />
       </div>
     </div>

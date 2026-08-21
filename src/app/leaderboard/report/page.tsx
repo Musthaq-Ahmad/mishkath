@@ -5,8 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 import { groupPlacements } from "@/lib/leaderboard";
 import { PrintButton } from "@/components/print-button";
 import { cn } from "@/lib/utils";
-import { DIVISION_LABELS, RANK_LABEL } from "../labels";
-import type { EventPlacementRow, Group, GroupLeaderboardRow } from "@/lib/types";
+import { RANK_LABEL } from "../labels";
+import type { Division, EventPlacementRow, Group, GroupLeaderboardRow } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -35,22 +35,25 @@ export default async function FestivalReportPage() {
   await requireRole("admin");
 
   const supabase = await createClient();
-  const [{ data: groupRows }, { data: placementRows }, { data: groups }] = await Promise.all([
-    supabase
-      .from("public_group_leaderboard")
-      .select("*")
-      .order("points", { ascending: false })
-      .returns<GroupLeaderboardRow[]>(),
-    supabase
-      .from("public_event_top3")
-      .select("*")
-      .order("published_at", { ascending: true })
-      .order("rank", { ascending: true })
-      .returns<EventPlacementRow[]>(),
-    supabase.from("groups").select("id, name").returns<Pick<Group, "id" | "name">[]>(),
-  ]);
+  const [{ data: groupRows }, { data: placementRows }, { data: groups }, { data: divisions }] =
+    await Promise.all([
+      supabase
+        .from("public_group_leaderboard")
+        .select("*")
+        .order("points", { ascending: false })
+        .returns<GroupLeaderboardRow[]>(),
+      supabase
+        .from("public_event_top3")
+        .select("*")
+        .order("published_at", { ascending: true })
+        .order("rank", { ascending: true })
+        .returns<EventPlacementRow[]>(),
+      supabase.from("groups").select("id, name").returns<Pick<Group, "id" | "name">[]>(),
+      supabase.from("divisions").select("*").returns<Division[]>(),
+    ]);
 
   const groupNameById = new Map((groups ?? []).map((g) => [g.id, g.name]));
+  const divisionNameById = new Map((divisions ?? []).map((d) => [d.id, d.name]));
   const programs = groupPlacements(placementRows ?? []);
   const generatedOn = new Date().toLocaleString("en-US", {
     dateStyle: "medium",
@@ -140,7 +143,7 @@ export default async function FestivalReportPage() {
               <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-foreground pb-1">
                 <h3 className="font-heading text-base font-bold">{program.program_name}</h3>
                 <span className="text-xs text-muted-foreground uppercase">
-                  {DIVISION_LABELS[program.category]} ·{" "}
+                  {divisionNameById.get(program.category) ?? "—"} ·{" "}
                   {program.program_type === "group" ? "Group" : "Individual"}
                 </span>
               </div>

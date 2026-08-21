@@ -6,8 +6,8 @@ import { createClient } from "@/lib/supabase/server";
 import { PrintButton } from "@/components/print-button";
 import { indexForCode } from "@/lib/codes";
 import { GENDER_CATEGORY_LABELS } from "@/lib/validations/program";
-import { STUDENT_DIVISION_LABELS } from "@/lib/validations/student";
 import type {
+  Division,
   Program,
   ProgramGroupParticipant,
   ProgramJudge,
@@ -40,7 +40,7 @@ export default async function ProgramScoresheetPage({
     notFound();
   }
 
-  const [{ data: participants }, { data: judges }] = await Promise.all([
+  const [{ data: participants }, { data: judges }, { data: division }] = await Promise.all([
     program.program_type === "group"
       ? supabase
           .from("program_group_participants")
@@ -58,6 +58,11 @@ export default async function ProgramScoresheetPage({
       .eq("program_id", id)
       .order("created_at")
       .returns<ProgramJudge[]>(),
+    supabase
+      .from("divisions")
+      .select("name")
+      .eq("id", program.category)
+      .single<Pick<Division, "name">>(),
   ]);
 
   const judgeNames = (judges ?? []).map((j) => j.name);
@@ -106,8 +111,7 @@ export default async function ProgramScoresheetPage({
         <div className="flex flex-col items-center gap-1 border-b border-foreground pb-6 text-center">
           <h1 className="font-heading text-3xl font-bold text-balance">{program.name}</h1>
           <p className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">
-            {STUDENT_DIVISION_LABELS[program.category]} ·{" "}
-            {GENDER_CATEGORY_LABELS[program.gender_category]}
+            {division?.name ?? "—"} · {GENDER_CATEGORY_LABELS[program.gender_category]}
           </p>
         </div>
 

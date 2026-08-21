@@ -4,7 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { groupTextColor } from "@/lib/group-color";
 import { cn } from "@/lib/utils";
-import type { ProgramPlacements } from "@/lib/types";
+import type { Division, ProgramPlacements } from "@/lib/types";
+import { divisionLabel } from "@/lib/division-label";
 import { PlaceholderAvatar } from "@/components/gender-avatar";
 import { useLanguage } from "../i18n";
 
@@ -22,11 +23,14 @@ const RANK_RING: Record<number, string> = {
 export function AllResultsView({
   placements,
   groupNames,
+  divisions,
 }: {
   placements: ProgramPlacements[];
   groupNames: Record<string, string>;
+  divisions: Division[];
 }) {
-  const { t, divisionLabel, rankLabel } = useLanguage();
+  const { t, lang, rankLabel } = useLanguage();
+  const divisionById = new Map(divisions.map((division) => [division.id, division]));
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-8">
@@ -61,7 +65,7 @@ export function AllResultsView({
                   {program.program_name}
                 </h2>
                 <span className="rounded-full border border-gold/30 bg-gold/10 px-3 py-1 text-xs font-bold tracking-widest text-gold uppercase">
-                  {divisionLabel(program.category)}
+                  {divisionLabel(divisionById.get(program.category), lang)}
                 </span>
               </div>
 

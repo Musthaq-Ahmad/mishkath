@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireRole } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
-import type { Group, Student } from "@/lib/types";
+import type { Division, Group, Student } from "@/lib/types";
 import { StudentForm } from "./student-form";
 import { StudentImportDialog } from "./student-import-dialog";
 import { StudentsTable } from "./students-table";
@@ -16,19 +16,14 @@ export default async function StudentsPage({
   const { q } = await searchParams;
   const supabase = await createClient();
 
-  const { data: groups } = await supabase
-    .from("groups")
-    .select("*")
-    .order("created_at")
-    .returns<Group[]>();
-
-  const { data: students } = await supabase
-    .from("students")
-    .select("*")
-    .order("created_at")
-    .returns<Student[]>();
+  const [{ data: groups }, { data: students }, { data: divisions }] = await Promise.all([
+    supabase.from("groups").select("*").order("created_at").returns<Group[]>(),
+    supabase.from("students").select("*").order("created_at").returns<Student[]>(),
+    supabase.from("divisions").select("*").order("sort_order").returns<Division[]>(),
+  ]);
 
   const groupsList = groups ?? [];
+  const divisionsList = divisions ?? [];
 
   return (
     <div className="flex flex-col gap-6">
@@ -56,11 +51,16 @@ export default async function StudentsPage({
             Print Badges
           </Link>
           <StudentImportDialog />
-          <StudentForm groups={groupsList} />
+          <StudentForm groups={groupsList} divisions={divisionsList} />
         </div>
       </div>
 
-      <StudentsTable students={students ?? []} groups={groupsList} initialQuery={q ?? ""} />
+      <StudentsTable
+        students={students ?? []}
+        groups={groupsList}
+        divisions={divisionsList}
+        initialQuery={q ?? ""}
+      />
     </div>
   );
 }

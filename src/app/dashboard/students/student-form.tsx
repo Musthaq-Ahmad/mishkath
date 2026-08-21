@@ -23,20 +23,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  STUDENT_CATEGORIES,
-  STUDENT_CATEGORY_LABELS,
-  STUDENT_DIVISIONS,
-  STUDENT_DIVISION_LABELS,
-} from "@/lib/validations/student";
-import type { Group, Student } from "@/lib/types";
+import { STUDENT_CATEGORIES, STUDENT_CATEGORY_LABELS } from "@/lib/validations/student";
+import type { Division, Group, Student } from "@/lib/types";
 
 export function StudentForm({
   student,
   groups,
+  divisions,
 }: {
   student?: Student;
   groups: Group[];
+  divisions: Division[];
 }) {
   const [open, setOpen] = useState(false);
   const action = student ? updateStudent.bind(null, student.id) : createStudent;
@@ -45,7 +42,9 @@ export function StudentForm({
   const [selectedGroupId, setSelectedGroupId] = useState(
     student?.group_id ?? groups[0]?.id ?? "",
   );
-  const [selectedDivision, setSelectedDivision] = useState(student?.division ?? "senior");
+  const [selectedDivision, setSelectedDivision] = useState(
+    student?.division ?? divisions[0]?.id ?? "",
+  );
   const [selectedCategory, setSelectedCategory] = useState(student?.category ?? "boy");
   const [isActive, setIsActive] = useState(student?.is_active ?? true);
   const [photoUrl, setPhotoUrl] = useState(student?.photo_url ?? "");
@@ -193,19 +192,19 @@ export function StudentForm({
               <input type="hidden" name="division" value={selectedDivision} />
               <Select
                 value={selectedDivision}
-                onValueChange={(value) =>
-                  setSelectedDivision((value ?? "senior") as typeof selectedDivision)
-                }
+                onValueChange={(value) => setSelectedDivision(value ?? "")}
               >
                 <SelectTrigger id="division" className="w-full">
                   <SelectValue placeholder="Select a division" />
                 </SelectTrigger>
                 <SelectContent>
-                  {STUDENT_DIVISIONS.map((division) => (
-                    <SelectItem key={division} value={division}>
-                      {STUDENT_DIVISION_LABELS[division]}
-                    </SelectItem>
-                  ))}
+                  {divisions
+                    .filter((division) => division.is_active || division.id === student?.division)
+                    .map((division) => (
+                      <SelectItem key={division.id} value={division.id}>
+                        {division.name}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
               {state?.errors?.division && (

@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import type { StudentDivision } from "@/lib/types";
 
 export type Lang = "en" | "ml";
 
@@ -77,13 +76,6 @@ const TRANSLATIONS: Record<TranslationKey, Record<Lang, string>> = {
   },
 };
 
-const DIVISION_LABELS_BILINGUAL: Record<StudentDivision, Record<Lang, string>> = {
-  senior: { en: "Senior", ml: "സീനിയർ" },
-  junior: { en: "Junior", ml: "ജൂനിയർ" },
-  sub_junior: { en: "Sub-Junior", ml: "സബ് ജൂനിയർ" },
-  general: { en: "General", ml: "ജനറൽ" },
-};
-
 const RANK_LABEL_BILINGUAL: Record<number, Record<Lang, string>> = {
   1: { en: "1st Place", ml: "ഒന്നാം സ്ഥാനം" },
   2: { en: "2nd Place", ml: "രണ്ടാം സ്ഥാനം" },
@@ -94,7 +86,6 @@ type LanguageContextValue = {
   lang: Lang;
   setLang: (lang: Lang) => void;
   t: (key: TranslationKey) => string;
-  divisionLabel: (division: StudentDivision) => string;
   rankLabel: (rank: number) => string | undefined;
   startsIn: (countdown: string) => string;
 };
@@ -134,7 +125,6 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     lang,
     setLang,
     t: (key) => TRANSLATIONS[key][lang],
-    divisionLabel: (division) => DIVISION_LABELS_BILINGUAL[division][lang],
     rankLabel: (rank) => RANK_LABEL_BILINGUAL[rank]?.[lang],
     startsIn: (countdown) => (lang === "ml" ? `${countdown} ൽ ആരംഭിക്കും` : `Starts in ${countdown}`),
   };

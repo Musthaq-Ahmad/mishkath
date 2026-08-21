@@ -20,6 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type {
+  Division,
   Group,
   GroupScoreRow,
   Profile,
@@ -40,7 +41,6 @@ import { StatusControl } from "./status-control";
 import { ScoreEntryPanel } from "./score-entry-panel";
 import { ScoreCompletionBanner } from "./score-completion-banner";
 import { GENDER_CATEGORY_LABELS, PROGRAM_TYPE_LABELS } from "@/lib/validations/program";
-import { STUDENT_DIVISION_LABELS } from "@/lib/validations/student";
 
 export default async function ProgramDetailPage({
   params,
@@ -70,6 +70,7 @@ export default async function ProgramDetailPage({
     { data: scores },
     { data: groupScores },
     { data: judges },
+    { data: divisions },
   ] = await Promise.all([
     supabase.from("students").select("*").order("name").returns<Student[]>(),
     supabase.from("groups").select("*").returns<Group[]>(),
@@ -95,7 +96,10 @@ export default async function ProgramDetailPage({
       .eq("program_id", id)
       .order("created_at")
       .returns<ProgramJudge[]>(),
+    supabase.from("divisions").select("*").returns<Division[]>(),
   ]);
+
+  const divisionNameById = new Map((divisions ?? []).map((d) => [d.id, d.name]));
 
   const { data: auditLog } = await supabase
     .from("score_audit_log")
@@ -188,7 +192,7 @@ export default async function ProgramDetailPage({
               <CardDescription>
                 Max score {program.max_score} ·{" "}
                 {PROGRAM_TYPE_LABELS[program.program_type]} ·{" "}
-                {STUDENT_DIVISION_LABELS[program.category]} ·{" "}
+                {divisionNameById.get(program.category) ?? "—"} ·{" "}
                 {GENDER_CATEGORY_LABELS[program.gender_category]}
               </CardDescription>
             </div>

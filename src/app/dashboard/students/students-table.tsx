@@ -14,12 +14,8 @@ import { DeleteButton } from "@/components/delete-button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { downloadCsv, toCsv } from "@/lib/csv";
-import type { Group, Student } from "@/lib/types";
-import {
-  STUDENT_CATEGORY_LABELS,
-  STUDENT_DIVISION_LABELS,
-  STUDENT_DIVISIONS,
-} from "@/lib/validations/student";
+import type { Division, Group, Student } from "@/lib/types";
+import { STUDENT_CATEGORY_LABELS } from "@/lib/validations/student";
 import { CheckInToggle } from "./check-in-toggle";
 import { StudentForm } from "./student-form";
 import { deleteStudent } from "./actions";
@@ -27,10 +23,12 @@ import { deleteStudent } from "./actions";
 export function StudentsTable({
   students,
   groups,
+  divisions,
   initialQuery = "",
 }: {
   students: Student[];
   groups: Group[];
+  divisions: Division[];
   initialQuery?: string;
 }) {
   const [groupId, setGroupId] = useState("");
@@ -40,6 +38,10 @@ export function StudentsTable({
   const groupNameById = useMemo(
     () => new Map(groups.map((group) => [group.id, group.name])),
     [groups],
+  );
+  const divisionNameById = useMemo(
+    () => new Map(divisions.map((division) => [division.id, division.name])),
+    [divisions],
   );
 
   const hasActiveFilters = groupId !== "" || division !== "" || query.trim() !== "";
@@ -101,9 +103,9 @@ export function StudentsTable({
               className="h-9 w-full rounded-lg border-none bg-muted px-2.5 text-sm text-foreground"
             >
               <option value="">All Divisions</option>
-              {STUDENT_DIVISIONS.map((d) => (
-                <option key={d} value={d}>
-                  {STUDENT_DIVISION_LABELS[d]}
+              {divisions.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.name}
                 </option>
               ))}
             </select>
@@ -173,7 +175,7 @@ export function StudentsTable({
                 ],
                 filteredStudents.map((s) => [
                   s.name,
-                  STUDENT_DIVISION_LABELS[s.division],
+                  divisionNameById.get(s.division) ?? "",
                   STUDENT_CATEGORY_LABELS[s.category],
                   groupNameById.get(s.group_id) ?? "",
                   s.chest_number ?? "",
@@ -248,7 +250,7 @@ export function StudentsTable({
                     </div>
                   </TableCell>
                   <TableCell className="py-3 text-sm text-muted-foreground">
-                    {STUDENT_DIVISION_LABELS[student.division]}
+                    {divisionNameById.get(student.division) ?? "—"}
                   </TableCell>
                   <TableCell className="py-3 text-sm text-muted-foreground">
                     {STUDENT_CATEGORY_LABELS[student.category]}
@@ -282,7 +284,7 @@ export function StudentsTable({
                   </TableCell>
                   <TableCell className="py-3">
                     <div className="flex justify-end gap-1">
-                      <StudentForm student={student} groups={groups} />
+                      <StudentForm student={student} groups={groups} divisions={divisions} />
                       <DeleteButton
                         action={deleteStudent.bind(null, student.id)}
                         size="icon-sm"

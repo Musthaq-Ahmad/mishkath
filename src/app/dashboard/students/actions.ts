@@ -3,13 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
-import {
-  STUDENT_CATEGORIES,
-  STUDENT_DIVISIONS,
-  StudentSchema,
-  type StudentFormState,
-} from "@/lib/validations/student";
-import type { StudentCategory, StudentDivision } from "@/lib/types";
+import { STUDENT_CATEGORIES, StudentSchema, type StudentFormState } from "@/lib/validations/student";
+import type { StudentCategory } from "@/lib/types";
 
 function parseStudentForm(formData: FormData) {
   return StudentSchema.safeParse({
@@ -199,9 +194,19 @@ export async function bulkImportStudents(rows: BulkImportRow[]): Promise<BulkImp
   await requireRole("admin");
 
   const supabase = await createClient();
-  const { data: groups } = await supabase.from("groups").select("id, name");
+  const [{ data: groups }, { data: divisions }] = await Promise.all([
+    supabase.from("groups").select("id, name"),
+    supabase.from("divisions").select("id, name, name_ml"),
+  ]);
   const groupIdByName = new Map(
     (groups ?? []).map((g) => [g.name.trim().toLowerCase(), g.id as string]),
+  );
+  const divisionIdByName = new Map(
+    (divisions ?? []).flatMap((d) => {
+      const entries: [string, string][] = [[d.name.trim().toLowerCase(), d.id as string]];
+      if (d.name_ml) entries.push([(d.name_ml as string).trim().toLowerCase(), d.id as string]);
+      return entries;
+    }),
   );
 
   const errors: BulkImportResult["errors"] = [];
@@ -217,12 +222,9 @@ export async function bulkImportStudents(rows: BulkImportRow[]): Promise<BulkImp
       continue;
     }
 
-    const division = row.division.trim().toLowerCase();
-    if (!STUDENT_DIVISIONS.includes(division as StudentDivision)) {
-      errors.push({
-        row: rowNumber,
-        message: `Invalid division "${row.division}". Expected one of: ${STUDENT_DIVISIONS.join(", ")}.`,
-      });
+    const divisionId = divisionIdByName.get(row.division.trim().toLowerCase());
+    if (!divisionId) {
+      errors.push({ row: rowNumber, message: `Unknown division "${row.division}".` });
       continue;
     }
 
@@ -238,7 +240,7 @@ export async function bulkImportStudents(rows: BulkImportRow[]): Promise<BulkImp
     const validatedFields = StudentSchema.safeParse({
       name: row.name,
       group_id: groupId,
-      division,
+      division: divisionId,
       class: row.class,
       category,
       guardian_name: row.guardian_name,

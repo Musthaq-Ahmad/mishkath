@@ -5,14 +5,15 @@ import { memo, useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { groupPlacements } from "@/lib/leaderboard";
 import type {
+  Division,
   EventPlacementRow,
   ProgramPlacements,
   ProgramType,
   StudentCategory,
-  StudentDivision,
 } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { groupTextColor } from "@/lib/group-color";
+import { divisionLabel } from "@/lib/division-label";
 import { PlaceholderAvatar } from "@/components/gender-avatar";
 import { useLanguage } from "./i18n";
 
@@ -409,8 +410,6 @@ function nextRotationIndex(current: number, total: number) {
   return next >= total ? 1 : next;
 }
 
-const DIVISION_ORDER: StudentDivision[] = ["senior", "junior", "sub_junior", "general"];
-
 // Small pill toggle for the category/type filter row above the podium —
 // selecting one pins the podium to the latest matching result instead of
 // auto-rotating; selecting it again (or "All") returns to normal rotation.
@@ -443,14 +442,17 @@ function FilterChip({
 export function PublishedResultsFeed({
   initialPlacements,
   groupNames,
+  divisions,
 }: {
   initialPlacements: ProgramPlacements[];
   groupNames: Record<string, string>;
+  divisions: Division[];
 }) {
-  const { t, divisionLabel, rankLabel } = useLanguage();
+  const { t, lang, rankLabel } = useLanguage();
+  const divisionById = new Map(divisions.map((division) => [division.id, division]));
   const [placements, setPlacements] = useState(initialPlacements);
   const [displayIndex, setDisplayIndex] = useState(0);
-  const [filterDivision, setFilterDivision] = useState<StudentDivision | "all">("all");
+  const [filterDivision, setFilterDivision] = useState<string>("all");
   const [filterType, setFilterType] = useState<ProgramType | "all">("all");
   const [filteredIndex, setFilteredIndex] = useState(0);
   const heroIdRef = useRef(initialPlacements[0]?.program_id ?? null);
@@ -547,8 +549,8 @@ export function PublishedResultsFeed({
     : (placements[displayIndex] ?? placements[0] ?? null);
   const isLatest = isFiltering ? filteredIndex === 0 : displayIndex === 0;
 
-  const availableDivisions = DIVISION_ORDER.filter((division) =>
-    placements.some((p) => p.category === division),
+  const availableDivisions = divisions.filter((division) =>
+    placements.some((p) => p.category === division.id),
   );
   const hasIndividual = placements.some((p) => p.program_type === "individual");
   const hasGroup = placements.some((p) => p.program_type === "group");
@@ -565,13 +567,13 @@ export function PublishedResultsFeed({
       </FilterChip>
       {availableDivisions.map((division) => (
         <FilterChip
-          key={division}
-          active={filterDivision === division}
+          key={division.id}
+          active={filterDivision === division.id}
           onClick={() =>
-            setFilterDivision((current) => (current === division ? "all" : division))
+            setFilterDivision((current) => (current === division.id ? "all" : division.id))
           }
         >
-          {divisionLabel(division)}
+          {divisionLabel(division, lang)}
         </FilterChip>
       ))}
       {hasIndividual && hasGroup && (
@@ -685,7 +687,7 @@ export function PublishedResultsFeed({
             {hero.program_name}
           </p>
           <p className="rounded-full border border-gold/30 bg-gold/10 px-4 py-0.5 text-[clamp(0.7rem,1.7cqh,0.875rem)] font-bold tracking-[0.25em] text-gold uppercase">
-            {divisionLabel(hero.category)}
+            {divisionLabel(divisionById.get(hero.category), lang)}
           </p>
         </div>
 

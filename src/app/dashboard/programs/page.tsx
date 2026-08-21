@@ -11,9 +11,8 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DeleteButton } from "@/components/delete-button";
-import type { Program, ProgramParticipant } from "@/lib/types";
+import type { Division, Program, ProgramParticipant } from "@/lib/types";
 import { PROGRAM_STATUS_LABELS } from "@/lib/validations/program";
-import { STUDENT_DIVISION_LABELS } from "@/lib/validations/student";
 import { findScheduleConflicts, formatScheduleTime } from "@/lib/schedule";
 import { ProgramForm } from "./program-form";
 import { deleteProgram } from "./actions";
@@ -22,13 +21,17 @@ export default async function ProgramsPage() {
   await requireRole("admin");
 
   const supabase = await createClient();
-  const [{ data: programs }, { data: participants }] = await Promise.all([
+  const [{ data: programs }, { data: participants }, { data: divisions }] = await Promise.all([
     supabase.from("programs").select("*").order("created_at").returns<Program[]>(),
     supabase
       .from("program_participants")
       .select("*")
       .returns<ProgramParticipant[]>(),
+    supabase.from("divisions").select("*").order("sort_order").returns<Division[]>(),
   ]);
+
+  const divisionsList = divisions ?? [];
+  const divisionNameById = new Map(divisionsList.map((d) => [d.id, d.name]));
 
   const participantCountByProgram = new Map<string, number>();
   for (const p of participants ?? []) {
@@ -60,6 +63,7 @@ export default async function ProgramsPage() {
           </p>
         </div>
         <ProgramForm
+          divisions={divisionsList}
           trigger={
             <span className="inline-flex items-center gap-1.5">
               <span className="material-symbols-outlined text-[18px]">add</span>
@@ -170,7 +174,7 @@ export default async function ProgramsPage() {
                   </TableCell>
                   <TableCell>
                     <span className="rounded-md bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">
-                      {STUDENT_DIVISION_LABELS[program.category]}
+                      {divisionNameById.get(program.category) ?? "—"}
                     </span>
                   </TableCell>
                   <TableCell>
@@ -204,6 +208,7 @@ export default async function ProgramsPage() {
                     <div className="flex justify-end gap-1">
                       <ProgramForm
                         program={program}
+                        divisions={divisionsList}
                         trigger={
                           <span className="material-symbols-outlined text-[18px]">
                             edit

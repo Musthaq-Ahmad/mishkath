@@ -11,16 +11,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import { STUDENT_DIVISIONS, STUDENT_DIVISION_LABELS } from "@/lib/validations/student";
 import { PublishToggle } from "./publish-toggle";
 import { ResultsExportButton } from "./results-export-button";
 import type {
+  Division,
   GroupScoreRow,
   Program,
   ProgramGroupParticipant,
   ProgramParticipant,
   ScoreRow,
-  StudentDivision,
 } from "@/lib/types";
 
 export default async function ResultsPage({
@@ -30,11 +29,7 @@ export default async function ResultsPage({
 }) {
   await verifySession();
 
-  const { division: divisionParam } = await searchParams;
-  const activeDivision =
-    divisionParam && STUDENT_DIVISIONS.includes(divisionParam as StudentDivision)
-      ? (divisionParam as StudentDivision)
-      : null;
+  const { division: activeDivision = null } = await searchParams;
 
   const supabase = await createClient();
   const [
@@ -43,6 +38,7 @@ export default async function ResultsPage({
     { data: groupParticipants },
     { data: scores },
     { data: groupScores },
+    { data: divisions },
   ] = await Promise.all([
     supabase.from("programs").select("*").order("name").returns<Program[]>(),
     supabase
@@ -58,7 +54,11 @@ export default async function ResultsPage({
       .from("group_scores")
       .select("program_id")
       .returns<Pick<GroupScoreRow, "program_id">[]>(),
+    supabase.from("divisions").select("*").order("sort_order").returns<Division[]>(),
   ]);
+
+  const divisionsList = divisions ?? [];
+  const divisionNameById = new Map(divisionsList.map((d) => [d.id, d.name]));
 
   const countBy = (rows: { program_id: string }[] | null) => {
     const map = new Map<string, number>();
@@ -92,7 +92,7 @@ export default async function ResultsPage({
       : (scoreCounts.get(program.id) ?? 0);
     return {
       name: program.name,
-      category: STUDENT_DIVISION_LABELS[program.category],
+      category: divisionNameById.get(program.category) ?? "—",
       scored,
       total,
       evaluationStatus: program.status === "completed" ? "Complete" : "In Progress",
@@ -152,18 +152,18 @@ export default async function ResultsPage({
           >
             All Categories
           </Link>
-          {STUDENT_DIVISIONS.map((division) => (
+          {divisionsList.map((division) => (
             <Link
-              key={division}
-              href={`/dashboard/results?division=${division}`}
+              key={division.id}
+              href={`/dashboard/results?division=${division.id}`}
               className={cn(
                 "rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
-                activeDivision === division
+                activeDivision === division.id
                   ? "border-primary bg-primary/10 text-primary"
                   : "border-border text-muted-foreground hover:bg-muted",
               )}
             >
-              {STUDENT_DIVISION_LABELS[division]}
+              {division.name}
             </Link>
           ))}
         </div>
@@ -241,7 +241,7 @@ export default async function ResultsPage({
                     )}
                   </TableCell>
                   <TableCell className="py-4 text-muted-foreground">
-                    {STUDENT_DIVISION_LABELS[program.category]}
+                    {divisionNameById.get(program.category) ?? "—"}
                   </TableCell>
                   <TableCell className="py-4">
                     <div className="flex items-center gap-2">

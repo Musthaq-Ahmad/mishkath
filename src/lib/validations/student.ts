@@ -1,14 +1,5 @@
 import * as z from "zod";
 
-export const STUDENT_DIVISIONS = ["senior", "junior", "sub_junior", "general"] as const;
-
-export const STUDENT_DIVISION_LABELS: Record<(typeof STUDENT_DIVISIONS)[number], string> = {
-  senior: "Senior",
-  junior: "Junior",
-  sub_junior: "Sub-Junior",
-  general: "General",
-};
-
 export const STUDENT_CATEGORIES = ["boy", "girl"] as const;
 
 export const STUDENT_CATEGORY_LABELS: Record<(typeof STUDENT_CATEGORIES)[number], string> = {
@@ -19,7 +10,7 @@ export const STUDENT_CATEGORY_LABELS: Record<(typeof STUDENT_CATEGORIES)[number]
 export const StudentSchema = z.object({
   name: z.string().min(1, { error: "Name is required." }).trim(),
   group_id: z.string().min(1, { error: "Group is required." }),
-  division: z.enum(STUDENT_DIVISIONS, { error: "Division is required." }),
+  division: z.string().min(1, { error: "Division is required." }),
   class: z.string().min(1, { error: "Class is required." }).trim(),
   category: z.enum(STUDENT_CATEGORIES, { error: "Category is required." }),
   guardian_name: z.string().trim().optional(),

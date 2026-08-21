@@ -1,5 +1,4 @@
 import * as z from "zod";
-import { STUDENT_DIVISIONS } from "./student";
 
 export const PROGRAM_TYPES = ["individual", "group"] as const;
 
@@ -27,7 +26,7 @@ export const PROGRAM_STATUS_LABELS: Record<(typeof PROGRAM_STATUSES)[number], st
 
 export const ProgramSchema = z.object({
   name: z.string().min(1, { error: "Name is required." }).trim(),
-  category: z.enum(STUDENT_DIVISIONS, { error: "Category is required." }),
+  category: z.string().min(1, { error: "Category is required." }),
   program_type: z.enum(PROGRAM_TYPES, { error: "Program type is required." }),
   gender_category: z.enum(GENDER_CATEGORIES, { error: "Category is required." }),
   max_score: z.coerce

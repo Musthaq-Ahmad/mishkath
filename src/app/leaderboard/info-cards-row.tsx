@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { groupPlacements } from "@/lib/leaderboard";
 import { getUpcomingPrograms, formatScheduleTime } from "@/lib/schedule";
-import type { EventPlacementRow, Program, ProgramPlacements } from "@/lib/types";
+import type { Division, EventPlacementRow, Program, ProgramPlacements } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { divisionLabel } from "@/lib/division-label";
 import { useLanguage } from "./i18n";
 
 async function fetchPlacements(): Promise<ProgramPlacements[]> {
@@ -88,11 +89,14 @@ function InfoCard({
 export function InfoCardsRow({
   initialPlacements,
   initialNextProgram,
+  divisions,
 }: {
   initialPlacements: ProgramPlacements[];
   initialNextProgram: Program | null;
+  divisions: Division[];
 }) {
-  const { t, divisionLabel, startsIn } = useLanguage();
+  const { t, lang, startsIn } = useLanguage();
+  const divisionById = new Map(divisions.map((division) => [division.id, division]));
   const [placements, setPlacements] = useState(initialPlacements);
   const [nextProgram, setNextProgram] = useState(initialNextProgram);
   const [now, setNow] = useState<number | null>(null);
@@ -145,7 +149,7 @@ export function InfoCardsRow({
         tone="primary"
         label={t("currentProgram")}
         title={current ? current.program_name : "—"}
-        subtitle={current ? divisionLabel(current.category) : undefined}
+        subtitle={current ? divisionLabel(divisionById.get(current.category), lang) : undefined}
       />
       <InfoCard
         icon="menu_book"

@@ -27,11 +27,7 @@ import {
   PROGRAM_TYPES,
   PROGRAM_TYPE_LABELS,
 } from "@/lib/validations/program";
-import {
-  STUDENT_DIVISIONS,
-  STUDENT_DIVISION_LABELS,
-} from "@/lib/validations/student";
-import type { Program } from "@/lib/types";
+import type { Division, Program } from "@/lib/types";
 import type { ReactNode } from "react";
 
 function toDatetimeLocalValue(isoString: string | null) {
@@ -44,16 +40,18 @@ function toDatetimeLocalValue(isoString: string | null) {
 export function ProgramForm({
   program,
   trigger,
+  divisions,
 }: {
   program?: Program;
   trigger?: ReactNode;
+  divisions: Division[];
 }) {
   const [open, setOpen] = useState(false);
   const action = program ? updateProgram.bind(null, program.id) : createProgram;
   const [state, formAction, pending] = useActionState(action, undefined);
   const submittedRef = useRef(false);
   const [programType, setProgramType] = useState(program?.program_type ?? "individual");
-  const [category, setCategory] = useState(program?.category ?? "senior");
+  const [category, setCategory] = useState(program?.category ?? divisions[0]?.id ?? "");
   const [genderCategory, setGenderCategory] = useState(program?.gender_category ?? "mixed");
 
   useEffect(() => {
@@ -138,19 +136,18 @@ export function ProgramForm({
             <div className="flex flex-col gap-2">
               <Label htmlFor="category">Category</Label>
               <input type="hidden" name="category" value={category} />
-              <Select
-                value={category}
-                onValueChange={(value) => setCategory((value ?? "senior") as typeof category)}
-              >
+              <Select value={category} onValueChange={(value) => setCategory(value ?? "")}>
                 <SelectTrigger id="category" className="w-full">
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {STUDENT_DIVISIONS.map((d) => (
-                    <SelectItem key={d} value={d}>
-                      {STUDENT_DIVISION_LABELS[d]}
-                    </SelectItem>
-                  ))}
+                  {divisions
+                    .filter((d) => d.is_active || d.id === program?.category)
+                    .map((d) => (
+                      <SelectItem key={d.id} value={d.id}>
+                        {d.name}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
               {state?.errors?.category && (
