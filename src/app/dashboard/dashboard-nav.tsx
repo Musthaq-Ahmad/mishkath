@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -13,6 +14,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { logout } from "@/app/login/actions";
 import { NAV_ITEMS } from "./nav-items";
@@ -26,6 +28,12 @@ export function DashboardNav({
   fullName: string;
 }) {
   const pathname = usePathname();
+  const { setOpenMobile } = useSidebar();
+
+  useEffect(() => {
+    setOpenMobile(false);
+  }, [pathname, setOpenMobile]);
+
   const items = NAV_ITEMS.filter((item) => item.roles.includes(role));
   const initials = fullName
     .split(" ")
