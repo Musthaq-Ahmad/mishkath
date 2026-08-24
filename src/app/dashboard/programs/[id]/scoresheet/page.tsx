@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
@@ -13,6 +14,22 @@ import type {
   ProgramJudge,
   ProgramParticipant,
 } from "@/lib/types";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("programs")
+    .select("name")
+    .eq("id", id)
+    .maybeSingle<Pick<Program, "name">>();
+
+  return { title: data ? `Scoresheet — ${data.name}` : "Scoresheet" };
+}
 
 // One consolidated final marksheet per program — not a separate copy per
 // judge. The judging panel shares this single sheet, noting their names/

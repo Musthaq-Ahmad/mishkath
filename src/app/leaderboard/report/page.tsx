@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { requireRole } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
 import { groupPlacements } from "@/lib/leaderboard";
@@ -9,6 +10,10 @@ import { RANK_LABEL } from "../labels";
 import type { Division, EventPlacementRow, Group, GroupLeaderboardRow } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Full Festival Report",
+};
 
 const RANK_BADGE: Record<number, string> = {
   1: "bg-gold text-[#251a00]",

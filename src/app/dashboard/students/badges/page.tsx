@@ -1,11 +1,30 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { requireRole } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
 import { PrintButton } from "@/components/print-button";
 import { groupBgColor, groupTextColor } from "@/lib/group-color";
 import { cn } from "@/lib/utils";
 import type { Division, Group, Student } from "@/lib/types";
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ group?: string }>;
+}): Promise<Metadata> {
+  const { group: groupId } = await searchParams;
+  if (!groupId) return { title: "Chest Number Badges — All Groups" };
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("groups")
+    .select("name")
+    .eq("id", groupId)
+    .maybeSingle<Pick<Group, "name">>();
+
+  return { title: `Chest Number Badges — ${data?.name ?? "Group"}` };
+}
 
 export default async function StudentBadgesPage({
   searchParams,
@@ -80,11 +99,11 @@ export default async function StudentBadgesPage({
       </div>
 
       {visibleStudents.length ? (
-        <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4 print:grid-cols-3 print:gap-4">
+        <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4 print:flex print:flex-wrap print:gap-4">
           {visibleStudents.map((student) => (
             <div
               key={student.id}
-              className="card-elevated relative flex aspect-[3/4] flex-col overflow-hidden rounded-2xl border border-border bg-card break-inside-avoid [-webkit-print-color-adjust:exact] [print-color-adjust:exact]"
+              className="card-elevated relative flex aspect-[3/4] flex-col overflow-hidden rounded-2xl border border-border bg-card break-inside-avoid [-webkit-print-color-adjust:exact] [print-color-adjust:exact] print:w-[calc(33.333%-0.667rem)] print:shrink-0 print:grow-0"
             >
               <span className={cn("absolute inset-x-0 top-0 h-2", groupBgColor(student.group_id))} />
 

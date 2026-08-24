@@ -38,6 +38,20 @@ const GROUP_TEXT_COLORS = [
   "text-[#f87171]", // red
 ];
 
+// Same palette/order as GROUP_RING_COLORS above, as raw hex — for contexts
+// that can't use Tailwind arbitrary-value classes (e.g. inline styles fed to
+// Satori/ImageResponse when rendering the shareable results poster).
+const GROUP_HEX_COLORS = [
+  "#f472b6", // pink
+  "#67e8f9", // cyan
+  "#fbbf24", // amber
+  "#a78bfa", // violet
+  "#34d399", // emerald
+  "#fb923c", // orange
+  "#60a5fa", // blue
+  "#f87171", // red
+];
+
 function groupColorIndex(groupId: string): number {
   let hash = 0;
   for (let i = 0; i < groupId.length; i++) {
@@ -63,4 +77,9 @@ export function groupBgColor(groupId: string | null | undefined): string {
 export function groupTextColor(groupId: string | null | undefined): string {
   if (!groupId) return "text-muted-foreground";
   return GROUP_TEXT_COLORS[groupColorIndex(groupId)];
+}
+
+export function groupAccentHex(groupId: string | null | undefined): string {
+  if (!groupId) return "#9a9a9a";
+  return GROUP_HEX_COLORS[groupColorIndex(groupId)];
 }

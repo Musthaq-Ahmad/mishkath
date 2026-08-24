@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
@@ -10,8 +11,25 @@ import { PrintButton } from "@/components/print-button";
 import { PROGRAM_TYPE_LABELS } from "@/lib/validations/program";
 import { RANK_LABEL } from "../../labels";
 import { PlaceholderAvatar } from "@/components/gender-avatar";
+import { PosterPreview } from "./poster-preview";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ programId: string }>;
+}): Promise<Metadata> {
+  const { programId } = await params;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("programs")
+    .select("name")
+    .eq("id", programId)
+    .maybeSingle<Pick<Program, "name">>();
+
+  return { title: data ? `Results — ${data.name}` : "Program Results" };
+}
 
 const RANK_BADGE: Record<number, string> = {
   1: "bg-gold text-[#251a00]",
@@ -86,6 +104,10 @@ export default async function ProgramResultsPage({
           </Link>
           <PrintButton label="Print Results Sheet" />
         </div>
+
+        {Boolean(results?.length) && (
+          <PosterPreview programId={programId} programName={program.name} />
+        )}
 
         {/* On-screen view */}
         <div className="flex flex-col gap-10 print:hidden">

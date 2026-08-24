@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
@@ -9,6 +10,44 @@ import { RANK_LABEL } from "@/app/leaderboard/labels";
 import type { Division, GroupProgramResult, Program, ProgramResult } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ programId: string; participantId: string }>;
+}): Promise<Metadata> {
+  const { programId, participantId } = await params;
+  const supabase = await createClient();
+
+  const { data: program } = await supabase
+    .from("programs")
+    .select("name, program_type")
+    .eq("id", programId)
+    .maybeSingle<Pick<Program, "name" | "program_type">>();
+
+  if (!program) return { title: "Certificate" };
+
+  const isGroup = program.program_type === "group";
+  const { data: result } = isGroup
+    ? await supabase
+        .from("public_group_program_results")
+        .select("group_name")
+        .eq("program_id", programId)
+        .eq("group_id", participantId)
+        .maybeSingle<Pick<GroupProgramResult, "group_name">>()
+    : await supabase
+        .from("public_program_results")
+        .select("student_name")
+        .eq("program_id", programId)
+        .eq("student_id", participantId)
+        .maybeSingle<Pick<ProgramResult, "student_name">>();
+
+  const name = isGroup
+    ? (result as Pick<GroupProgramResult, "group_name"> | null)?.group_name
+    : (result as Pick<ProgramResult, "student_name"> | null)?.student_name;
+
+  return { title: name ? `Certificate — ${name} — ${program.name}` : `Certificate — ${program.name}` };
+}
 
 const RANK_BADGE: Record<number, string> = {
   1: "bg-gold text-[#251a00]",
