@@ -9,6 +9,7 @@ export type ResultsExportRow = {
   total: number;
   evaluationStatus: string;
   publishedStatus: string;
+  mementoStatus: string;
 };
 
 export function ResultsExportButton({ rows }: { rows: ResultsExportRow[] }) {
@@ -19,8 +20,24 @@ export function ResultsExportButton({ rows }: { rows: ResultsExportRow[] }) {
         downloadCsv(
           "programs-results.csv",
           toCsv(
-            ["Program Name", "Category", "Scored", "Total", "Evaluation Status", "Published Status"],
-            rows.map((r) => [r.name, r.category, r.scored, r.total, r.evaluationStatus, r.publishedStatus]),
+            [
+              "Program Name",
+              "Category",
+              "Scored",
+              "Total",
+              "Evaluation Status",
+              "Published Status",
+              "Memento Given",
+            ],
+            rows.map((r) => [
+              r.name,
+              r.category,
+              r.scored,
+              r.total,
+              r.evaluationStatus,
+              r.publishedStatus,
+              r.mementoStatus,
+            ]),
           ),
         )
       }

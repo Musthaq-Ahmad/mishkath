@@ -175,6 +175,51 @@ export async function unpublishResults(programId: string): Promise<{ message?: s
   return undefined;
 }
 
+export async function markMementoGiven(programId: string): Promise<{ message?: string } | undefined> {
+  await requireRole("admin");
+
+  const supabase = await createClient();
+
+  const { data: program } = await supabase
+    .from("programs")
+    .select("published")
+    .eq("id", programId)
+    .single<{ published: boolean }>();
+
+  if (!program?.published) {
+    return { message: "Results must be published before the memento can be marked as given." };
+  }
+
+  const { error } = await supabase
+    .from("programs")
+    .update({ memento_given: true, memento_given_at: new Date().toISOString() })
+    .eq("id", programId);
+
+  if (error) {
+    return { message: error.message };
+  }
+
+  revalidatePath("/dashboard/results");
+  return undefined;
+}
+
+export async function unmarkMementoGiven(programId: string): Promise<{ message?: string } | undefined> {
+  await requireRole("admin");
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("programs")
+    .update({ memento_given: false, memento_given_at: null })
+    .eq("id", programId);
+
+  if (error) {
+    return { message: error.message };
+  }
+
+  revalidatePath("/dashboard/results");
+  return undefined;
+}
+
 async function isJudgingLocked(
   supabase: Awaited<ReturnType<typeof createClient>>,
   programId: string,

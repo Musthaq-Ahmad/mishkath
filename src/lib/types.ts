@@ -60,6 +60,8 @@ export type Program = {
   max_score: number;
   published: boolean;
   published_at: string | null;
+  memento_given: boolean;
+  memento_given_at: string | null;
   scheduled_start: string | null;
   created_at: string;
 };

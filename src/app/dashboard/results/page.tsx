@@ -1,7 +1,12 @@
 import Link from "next/link";
 import { verifySession } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
-import { publishResults, unpublishResults } from "@/app/dashboard/programs/actions";
+import {
+  markMementoGiven,
+  publishResults,
+  unmarkMementoGiven,
+  unpublishResults,
+} from "@/app/dashboard/programs/actions";
 import {
   Table,
   TableBody,
@@ -11,6 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import { MementoToggle } from "./memento-toggle";
 import { PublishToggle } from "./publish-toggle";
 import { ResultsExportButton } from "./results-export-button";
 import type {
@@ -97,6 +103,7 @@ export default async function ResultsPage({
       total,
       evaluationStatus: program.status === "completed" ? "Complete" : "In Progress",
       publishedStatus: program.published ? "Published" : "Draft",
+      mementoStatus: program.memento_given ? "Given" : "Pending",
     };
   });
 
@@ -204,6 +211,9 @@ export default async function ResultsPage({
               <TableHead className="py-3 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                 Published Status
               </TableHead>
+              <TableHead className="py-3 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                Memento Given
+              </TableHead>
               <TableHead className="py-3 text-right text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                 Actions
               </TableHead>
@@ -289,6 +299,19 @@ export default async function ResultsPage({
                       {program.published ? "Published" : "Draft"}
                     </span>
                   </TableCell>
+                  <TableCell className="py-4">
+                    {program.published ? (
+                      <MementoToggle
+                        given={program.memento_given}
+                        onGive={markMementoGiven.bind(null, program.id)}
+                        onUndo={unmarkMementoGiven.bind(null, program.id)}
+                      />
+                    ) : (
+                      <span className="text-xs text-muted-foreground">
+                        Awaiting publish
+                      </span>
+                    )}
+                  </TableCell>
                   <TableCell className="py-4 text-right">
                     {isCompleted || program.published ? (
                       <PublishToggle
@@ -307,7 +330,7 @@ export default async function ResultsPage({
             })}
             {!visiblePrograms.length && (
               <TableRow>
-                <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
+                <TableCell colSpan={7} className="py-10 text-center text-muted-foreground">
                   No programs match this filter.
                 </TableCell>
               </TableRow>
