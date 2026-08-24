@@ -1,7 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Baloo_Chettan_2, Exo_2 } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import { ServiceWorkerRegistration } from "./service-worker-registration";
 
 // Site-wide font, used for both body text and headings (via --font-sans /
 // --font-heading) — Baloo Chettan 2 stays paired in as a Malayalam-script
@@ -23,6 +24,13 @@ const balooChettan = Baloo_Chettan_2({
 export const metadata: Metadata = {
   title: "Mehfile Meem — Festival Management",
   description: "Festival management platform for groups, students, programs, judging and live results.",
+  icons: {
+    apple: "/apple-touch-icon.png",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#171310",
 };
 
 export default function RootLayout({
@@ -49,6 +57,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
+        <ServiceWorkerRegistration />
         <Providers>{children}</Providers>
       </body>
     </html>
