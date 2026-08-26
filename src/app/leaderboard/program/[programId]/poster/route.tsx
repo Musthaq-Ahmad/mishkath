@@ -11,7 +11,7 @@ import type { Division, EventPlacementRow, Group, Program } from "@/lib/types";
 
 const CANVAS_SIZE = 1080;
 const CARD_WIDTH = 1000;
-const CARD_HEIGHT = 1020;
+const CARD_HEIGHT = 1050;
 
 let logoDataUrlPromise: Promise<string> | null = null;
 function getLogoDataUrl() {
@@ -36,17 +36,27 @@ function getPatternDataUrl() {
 // Classic podium order: 2nd on the left, 1st in the center (tallest), 3rd on
 // the right — matches the physical medal-ceremony layout.
 const PODIUM_ORDER = [2, 1, 3];
-const PEDESTAL_HEIGHT: Record<number, number> = { 1: 190, 2: 144, 3: 108 };
-const AVATAR_SIZE: Record<number, number> = { 1: 152, 2: 122, 3: 108 };
+const PEDESTAL_HEIGHT: Record<number, number> = { 1: 210, 2: 172, 3: 132 };
+const AVATAR_SIZE: Record<number, number> = { 1: 192, 2: 150, 3: 134 };
 const MEDAL_EMOJI: Record<number, string> = { 1: "🥇", 2: "🥈", 3: "🥉" };
 
-// Fixed (not random) decorative dot positions — Math.random() isn't
+// Fixed (not random) confetti positions/shapes — Math.random() isn't
 // available in this environment and would break resumability anyway.
-const CONFETTI: { top: number; left: number; size?: number }[] = [
-  { top: 70, left: 70, size: 8 },
-  { top: 120, left: 940 },
-  { top: 500, left: 60, size: 8 },
-  { top: 480, left: 960, size: 10 },
+// Spread across the whole card (not just the corners) with a mix of dots
+// and rotated-square "sparkle" pieces for a proper confetti-fall feel.
+const CONFETTI: { top: number; left: number; size?: number; kind?: "dot" | "sparkle" }[] = [
+  { top: 60, left: 90, size: 9 },
+  { top: 40, left: 860, size: 12, kind: "sparkle" },
+  { top: 130, left: 940, size: 7 },
+  { top: 150, left: 60, size: 11, kind: "sparkle" },
+  { top: 280, left: 40, size: 8 },
+  { top: 260, left: 960, size: 9, kind: "sparkle" },
+  { top: 420, left: 920, size: 7 },
+  { top: 460, left: 45, size: 10, kind: "sparkle" },
+  { top: 640, left: 55, size: 8 },
+  { top: 600, left: 950, size: 11, kind: "sparkle" },
+  { top: 780, left: 900, size: 8 },
+  { top: 820, left: 65, size: 9, kind: "sparkle" },
 ];
 
 function initials(name: string) {
@@ -167,7 +177,8 @@ export async function GET(
             }}
           />
 
-          {/* Decorative confetti */}
+          {/* Decorative confetti — a mix of round dots and rotated-square
+              sparkles, alternating accent/white for a festive scatter. */}
           {CONFETTI.map((c, i) => (
             <div
               key={`confetti${i}`}
@@ -177,10 +188,11 @@ export async function GET(
                 left: c.left,
                 width: c.size ?? 10,
                 height: c.size ?? 10,
-                borderRadius: c.size ?? 10,
+                borderRadius: c.kind === "sparkle" ? 3 : (c.size ?? 10),
                 background: i % 2 === 0 ? variant.accent : "#ffffff",
-                opacity: 0.45,
+                opacity: 0.55,
                 display: "flex",
+                ...(c.kind === "sparkle" ? { transform: "rotate(45deg)" } : {}),
               }}
             />
           ))}
@@ -252,11 +264,11 @@ export async function GET(
             <div
               style={{
                 display: "flex",
-                fontSize: 50,
+                fontSize: 58,
                 fontWeight: 800,
                 textAlign: "center",
                 lineHeight: 1.15,
-                maxWidth: 820,
+                maxWidth: 860,
               }}
             >
               {program.name}
@@ -278,15 +290,16 @@ export async function GET(
             </div>
           </div>
 
-          {/* Podium */}
+          {/* Podium — fixed marginTop (not flex:1) so it sits close to the
+              title instead of floating in a dead gap; the spacer after it
+              absorbs any leftover height before the footer instead. */}
           <div
             style={{
               display: "flex",
-              flex: 1,
               alignItems: "flex-end",
               justifyContent: "center",
               gap: 24,
-              marginTop: 18,
+              marginTop: 28,
             }}
           >
             {PODIUM_ORDER.map((rank) => {
@@ -317,19 +330,31 @@ export async function GET(
                         <div
                           style={{
                             position: "absolute",
-                            top: -10,
+                            top: -40,
                             left: "50%",
                             transform: "translateX(-50%)",
-                            width: 260,
-                            height: 260,
-                            borderRadius: 260,
-                            background: `radial-gradient(circle, ${accentHex}55 0%, rgba(0,0,0,0) 70%)`,
+                            width: 340,
+                            height: 340,
+                            borderRadius: 340,
+                            background: `radial-gradient(circle, ${accentHex}66 0%, rgba(0,0,0,0) 70%)`,
                             display: "flex",
                           }}
                         />
                       )}
                       {isChampion && (
-                        <div style={{ display: "flex", fontSize: 38, marginBottom: -4 }}>👑</div>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 14,
+                            fontSize: 30,
+                            marginBottom: -6,
+                          }}
+                        >
+                          <div style={{ display: "flex" }}>🎉</div>
+                          <div style={{ display: "flex", fontSize: 50 }}>👑</div>
+                          <div style={{ display: "flex" }}>🎉</div>
+                        </div>
                       )}
                       <div
                         style={{
@@ -417,7 +442,7 @@ export async function GET(
                       paddingTop: 14,
                     }}
                   >
-                    <div style={{ display: "flex", fontSize: 44 }}>{MEDAL_EMOJI[rank]}</div>
+                    <div style={{ display: "flex", fontSize: 52 }}>{MEDAL_EMOJI[rank]}</div>
                     <div
                       style={{
                         display: "flex",
@@ -436,6 +461,10 @@ export async function GET(
               );
             })}
           </div>
+
+          {/* Absorbs leftover height so the footer stays near the bottom
+              without the podium itself floating in a dead gap above it. */}
+          <div style={{ display: "flex", flex: 1 }} />
 
           {/* Footer */}
           <div

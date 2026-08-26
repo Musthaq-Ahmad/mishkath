@@ -92,9 +92,9 @@ export default async function ProgramResultsPage({
   });
 
   return (
-    <div className="flex min-h-screen flex-col bg-background px-8 py-12 text-foreground print:bg-white">
-      <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-10">
-        <div className="flex w-full items-center justify-between print:hidden">
+    <div className="flex min-h-screen flex-col bg-background px-4 py-8 text-foreground sm:px-8 sm:py-12 print:bg-white">
+      <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 sm:gap-10">
+        <div className="flex flex-col gap-3 print:hidden sm:flex-row sm:items-center sm:justify-between">
           <Link
             href="/leaderboard"
             className="inline-flex w-fit items-center gap-1 text-base font-semibold tracking-wide text-muted-foreground uppercase transition-colors hover:text-primary"
@@ -136,13 +136,13 @@ export default async function ProgramResultsPage({
                   key={key}
                   style={{ animationDelay: `${Math.min(index, 8) * 60}ms` }}
                   className={cn(
-                    "animate-fade-in-up flex items-center gap-6 border-t border-border px-8 py-6 first:border-t-0",
+                    "animate-fade-in-up flex items-center gap-3 border-t border-border px-4 py-4 first:border-t-0 sm:gap-6 sm:px-8 sm:py-6",
                     result.rank === 1 && "bg-muted/40",
                   )}
                 >
                   <span
                     className={cn(
-                      "flex size-14 shrink-0 items-center justify-center rounded-full font-heading text-2xl font-bold tabular-nums",
+                      "flex size-10 shrink-0 items-center justify-center rounded-full font-heading text-lg font-bold tabular-nums sm:size-14 sm:text-2xl",
                       RANK_BADGE[result.rank] ?? "bg-muted text-muted-foreground",
                     )}
                   >
@@ -150,7 +150,7 @@ export default async function ProgramResultsPage({
                   </span>
                   <span
                     className={cn(
-                      "relative flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted ring-2",
+                      "relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted ring-2 sm:size-14",
                       groupRingColor(groupId),
                     )}
                   >
@@ -161,21 +161,21 @@ export default async function ProgramResultsPage({
                     )}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate font-heading text-3xl font-semibold text-foreground">
+                    <span className="block truncate font-heading text-lg font-semibold text-foreground sm:text-3xl">
                       {name}
                     </span>
                     {RANK_LABEL[result.rank] && (
-                      <span className="text-sm font-medium tracking-wide text-muted-foreground uppercase">
+                      <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase sm:text-sm">
                         {RANK_LABEL[result.rank]}
                       </span>
                     )}
                   </span>
                   <Link
                     href={`/leaderboard/program/${programId}/certificate/${key}`}
-                    className="flex shrink-0 items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                    className="flex shrink-0 items-center gap-1.5 rounded-full border border-border px-2.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:border-primary hover:text-primary sm:px-3"
                   >
                     <span className="material-symbols-outlined text-[16px]">workspace_premium</span>
-                    Certificate
+                    <span className="hidden sm:inline">Certificate</span>
                   </Link>
                 </div>
               );

@@ -57,15 +57,15 @@ export function PosterPreview({
   }
 
   return (
-    <div className="card-elevated flex flex-col items-center gap-4 rounded-xl border border-border bg-card p-6 print:hidden">
-      <div className="flex w-full items-center justify-between">
+    <div className="card-elevated flex flex-col items-center gap-4 rounded-xl border border-border bg-card p-4 sm:p-6 print:hidden">
+      <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="font-heading text-lg font-semibold text-primary">Results Poster</h2>
           <p className="text-sm text-muted-foreground">
             {POSTER_VARIANTS[variant].name} design — shareable on WhatsApp &amp; Instagram
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={shuffle}

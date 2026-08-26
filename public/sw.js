@@ -1,4 +1,4 @@
-const CACHE_NAME = "mehfile-meem-shell-v1";
+const CACHE_NAME = "mehfile-meem-shell-v2";
 const PRECACHE_URLS = [
   "/offline",
   "/icon-192.png",
@@ -47,18 +47,22 @@ self.addEventListener("fetch", (event) => {
   }
 
   if (isCacheableAsset(request)) {
+    // Network-first, falling back to cache only when the network is
+    // unavailable — a pure cache-first strategy here would (and did) serve a
+    // stale JS/CSS bundle forever once cached, since this cache's key never
+    // changes on its own between deploys. Matches the navigate-mode strategy
+    // above: always prefer the live version, cache is purely the offline
+    // fallback.
     event.respondWith(
-      caches.match(request).then(
-        (cached) =>
-          cached ??
-          fetch(request).then((response) => {
-            if (response.ok) {
-              const clone = response.clone();
-              caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-            }
-            return response;
-          }),
-      ),
+      fetch(request)
+        .then((response) => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          }
+          return response;
+        })
+        .catch(() => caches.match(request).then((res) => res ?? Response.error())),
     );
   }
 });

@@ -41,6 +41,24 @@ export const POSTER_VARIANTS: PosterVariant[] = [
     ink: "#fdf1ee",
     inkSoft: "rgba(253, 241, 238, 0.72)",
   },
+  {
+    name: "Royal Sapphire",
+    frame: "#06090f",
+    background: "linear-gradient(160deg, #0e1c3a 0%, #163259 45%, #0a1526 100%)",
+    accent: "#f2c94c",
+    accentSoft: "rgba(242, 201, 76, 0.16)",
+    ink: "#f3f6fd",
+    inkSoft: "rgba(243, 246, 253, 0.72)",
+  },
+  {
+    name: "Sunset Amber",
+    frame: "#1a0e05",
+    background: "linear-gradient(160deg, #5a2a0d 0%, #7a3a12 45%, #2e1408 100%)",
+    accent: "#ffd873",
+    accentSoft: "rgba(255, 216, 115, 0.18)",
+    ink: "#fff6e8",
+    inkSoft: "rgba(255, 246, 232, 0.74)",
+  },
 ];
 
 export function defaultVariantIndex(seed: string): number {
