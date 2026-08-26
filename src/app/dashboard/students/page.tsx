@@ -42,7 +42,7 @@ export default async function StudentsPage({
             Manage and monitor student enrollments and program participations.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
           <Link
             href="/dashboard/students/badges"
             className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:border-primary hover:text-primary"

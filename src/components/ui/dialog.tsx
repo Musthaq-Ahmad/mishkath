@@ -53,11 +53,18 @@ function DialogContent({
       <DialogPrimitive.Popup
         data-slot="dialog-content"
         className={cn(
-          "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl bg-popover p-4 text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+          // Mobile: a bottom sheet pinned to the bottom edge, full width,
+          // rounded top corners only, sliding up from off-screen — the
+          // native-app "drawer" pattern instead of a centered popup.
+          "fixed inset-x-0 bottom-0 z-50 flex max-h-[85vh] w-full max-w-none flex-col gap-4 overflow-y-auto rounded-t-2xl bg-popover p-4 text-sm text-popover-foreground ring-1 ring-foreground/10 outline-none transition duration-200 ease-in-out data-ending-style:translate-y-full data-ending-style:opacity-0 data-starting-style:translate-y-full data-starting-style:opacity-0",
+          // sm and up: revert to the original centered dialog.
+          "sm:inset-x-auto sm:top-1/2 sm:left-1/2 sm:right-auto sm:bottom-auto sm:grid sm:max-h-none sm:w-full sm:max-w-sm sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-xl sm:data-ending-style:translate-y-0 sm:data-ending-style:scale-95 sm:data-starting-style:translate-y-0 sm:data-starting-style:scale-95",
           className
         )}
         {...props}
       >
+        {/* Drag-handle affordance, mobile bottom sheet only */}
+        <div className="mx-auto -mt-1 h-1.5 w-10 shrink-0 rounded-full bg-foreground/15 sm:hidden" />
         {children}
         {showCloseButton && (
           <DialogPrimitive.Close

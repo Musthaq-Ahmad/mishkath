@@ -3,6 +3,7 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/s
 import { ThemeToggle } from "@/components/theme-toggle";
 import { DashboardNav } from "./dashboard-nav";
 import { GlobalSearch } from "./global-search";
+import { MobileBottomNav } from "./mobile-bottom-nav";
 
 export default async function DashboardLayout({
   children,
@@ -26,11 +27,19 @@ export default async function DashboardLayout({
           <GlobalSearch />
           <div className="ml-auto flex items-center gap-1.5 sm:gap-3">
             <ThemeToggle />
-            <span className="material-symbols-outlined hidden text-muted-foreground sm:inline">
-              notifications
+            {/* Wrap in a plain span rather than hiding the icon span itself —
+                the Material Symbols stylesheet sets `display: inline-block`
+                directly on `.material-symbols-outlined`, which wins the
+                specificity tie against Tailwind's `.hidden` when both land
+                on the same element, so `hidden sm:inline` on the icon never
+                actually hid it. */}
+            <span className="hidden sm:inline-flex">
+              <span className="material-symbols-outlined text-muted-foreground">
+                notifications
+              </span>
             </span>
-            <span className="material-symbols-outlined hidden text-muted-foreground sm:inline">
-              help
+            <span className="hidden sm:inline-flex">
+              <span className="material-symbols-outlined text-muted-foreground">help</span>
             </span>
             <div className="flex items-center gap-2 border-l border-border pl-1.5 sm:pl-3">
               <div className="hidden flex-col text-right leading-tight md:flex">
@@ -45,8 +54,9 @@ export default async function DashboardLayout({
             </div>
           </div>
         </header>
-        <main className="flex flex-1 flex-col gap-4 p-6">{children}</main>
+        <main className="flex flex-1 flex-col gap-4 p-4 pb-24 sm:p-6 md:pb-6">{children}</main>
       </SidebarInset>
+      <MobileBottomNav role={profile.role} />
     </SidebarProvider>
   );
 }

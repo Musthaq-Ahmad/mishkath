@@ -193,6 +193,7 @@ export default async function ResultsPage({
       </div>
 
       <div className="card-elevated overflow-hidden rounded-xl bg-card">
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
@@ -337,6 +338,7 @@ export default async function ResultsPage({
             )}
           </TableBody>
         </Table>
+        </div>
       </div>
     </div>
   );

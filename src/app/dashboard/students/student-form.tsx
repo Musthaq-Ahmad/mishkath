@@ -269,51 +269,6 @@ export function StudentForm({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="guardian_name">Guardian name</Label>
-              <Input
-                id="guardian_name"
-                name="guardian_name"
-                defaultValue={student?.guardian_name ?? ""}
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="admission_number">Admission number</Label>
-              <Input
-                id="admission_number"
-                name="admission_number"
-                defaultValue={student?.admission_number ?? ""}
-              />
-              {state?.errors?.admission_number && (
-                <p className="text-sm text-destructive">
-                  {state.errors.admission_number[0]}
-                </p>
-              )}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="date_of_birth">Date of birth</Label>
-              <Input
-                id="date_of_birth"
-                name="date_of_birth"
-                type="date"
-                defaultValue={student?.date_of_birth ?? ""}
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="phone_number">Phone number</Label>
-              <Input
-                id="phone_number"
-                name="phone_number"
-                type="tel"
-                defaultValue={student?.phone_number ?? ""}
-              />
-            </div>
-          </div>
-
           <label className="flex items-center gap-2 text-sm">
             <input
               type="checkbox"
