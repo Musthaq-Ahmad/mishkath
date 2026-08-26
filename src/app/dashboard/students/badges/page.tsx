@@ -103,7 +103,7 @@ export default async function StudentBadgesPage({
           {visibleStudents.map((student) => (
             <div
               key={student.id}
-              className="relative flex aspect-[3/4] flex-col overflow-hidden rounded-2xl shadow-lg break-inside-avoid [-webkit-print-color-adjust:exact] [print-color-adjust:exact] print:w-[calc(33.333%-0.667rem)] print:shrink-0 print:grow-0"
+              className="relative flex flex-col overflow-hidden rounded-2xl shadow-lg break-inside-avoid [-webkit-print-color-adjust:exact] [print-color-adjust:exact] print:w-[calc(33.333%-0.667rem)] print:shrink-0 print:grow-0"
               style={{
                 background:
                   "radial-gradient(circle at 30% 12%, #8a4fc0 0%, #6b34a0 35%, #4a2280 68%, #341864 100%)",
@@ -200,18 +200,16 @@ export default async function StudentBadgesPage({
                 മിലാദ് ഫെസ്റ്റ് 2K26
               </p>
 
-              <div className="relative z-10 flex-1" />
-
               {/* Name panel */}
               <div
-                className="relative z-10 mx-4 mb-1.5 overflow-hidden rounded-lg px-3 py-1.5 shadow-sm"
+                className="relative z-10 mx-4 mt-3 mb-1.5 overflow-hidden rounded-lg px-3 py-1.5 shadow-sm"
                 style={{
                   background: "linear-gradient(180deg, #fdfbf6 0%, #f1e9d2 100%)",
                   border: "2px solid #c9a24c",
                 }}
               >
                 <p
-                  className="truncate text-center text-sm font-bold"
+                  className="text-center text-sm font-bold break-words"
                   style={{ color: "#2c1657" }}
                 >
                   {student.name}

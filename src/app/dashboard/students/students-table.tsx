@@ -14,6 +14,7 @@ import { DeleteButton } from "@/components/delete-button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { downloadCsv, toCsv } from "@/lib/csv";
+import { PrintButton } from "@/components/print-button";
 import type { Division, Group, Student } from "@/lib/types";
 import { STUDENT_CATEGORY_LABELS } from "@/lib/validations/student";
 import { CheckInToggle } from "./check-in-toggle";
@@ -73,8 +74,22 @@ export function StudentsTable({
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Print-only letterhead — shown only when printing/saving as PDF */}
+      <div className="hidden flex-col items-center gap-2 pb-4 text-center print:flex">
+        <Image
+          src="/mehfile-meem-logo-indigo.png"
+          alt="Mehfile Meem — Meelad Fest 2K26"
+          width={220}
+          height={131}
+          className="h-auto w-[170px]"
+        />
+        <p className="text-xs font-bold tracking-[0.2em] text-muted-foreground uppercase">
+          Students Directory
+        </p>
+      </div>
+
       {/* Filters & stats */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 print:hidden">
         <div className="card-elevated flex flex-col gap-4 rounded-xl bg-card p-4 sm:flex-row sm:items-end lg:col-span-8">
           <div className="flex-1">
             <label className="mb-1 block text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
@@ -155,7 +170,7 @@ export function StudentsTable({
         </div>
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex items-center justify-end gap-4 print:hidden">
         <button
           type="button"
           onClick={() =>
@@ -192,6 +207,7 @@ export function StudentsTable({
           <span className="material-symbols-outlined text-[18px]">download</span>
           Export {hasActiveFilters ? "filtered" : "all"} to CSV
         </button>
+        <PrintButton label="Download PDF" />
       </div>
 
       {/* Data table */}
@@ -218,10 +234,10 @@ export function StudentsTable({
                 <TableHead className="py-4 text-xs font-semibold uppercase tracking-wider text-primary-foreground">
                   Status
                 </TableHead>
-                <TableHead className="py-4 text-xs font-semibold uppercase tracking-wider text-primary-foreground">
+                <TableHead className="py-4 text-xs font-semibold uppercase tracking-wider text-primary-foreground print:hidden">
                   Checked In
                 </TableHead>
-                <TableHead className="w-28 py-4 text-right text-xs font-semibold uppercase tracking-wider text-primary-foreground">
+                <TableHead className="w-28 py-4 text-right text-xs font-semibold uppercase tracking-wider text-primary-foreground print:hidden">
                   Actions
                 </TableHead>
               </TableRow>
@@ -279,10 +295,10 @@ export function StudentsTable({
                       </span>
                     </Badge>
                   </TableCell>
-                  <TableCell className="py-3">
+                  <TableCell className="py-3 print:hidden">
                     <CheckInToggle studentId={student.id} checkedIn={student.checked_in} />
                   </TableCell>
-                  <TableCell className="py-3">
+                  <TableCell className="py-3 print:hidden">
                     <div className="flex justify-end gap-1">
                       <StudentForm student={student} groups={groups} divisions={divisions} />
                       <DeleteButton
