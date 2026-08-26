@@ -53,6 +53,9 @@ export function ProgramForm({
   const [programType, setProgramType] = useState(program?.program_type ?? "individual");
   const [category, setCategory] = useState(program?.category ?? divisions[0]?.id ?? "");
   const [genderCategory, setGenderCategory] = useState(program?.gender_category ?? "mixed");
+  const visibleCategoryDivisions = divisions.filter(
+    (d) => d.is_active || d.id === program?.category,
+  );
 
   useEffect(() => {
     if (!submittedRef.current || pending) return;
@@ -116,6 +119,10 @@ export function ProgramForm({
                 onValueChange={(value) =>
                   setProgramType((value ?? "individual") as typeof programType)
                 }
+                items={PROGRAM_TYPES.map((type) => ({
+                  value: type,
+                  label: PROGRAM_TYPE_LABELS[type],
+                }))}
               >
                 <SelectTrigger id="program_type" className="w-full">
                   <SelectValue placeholder="Select a program type" />
@@ -136,18 +143,20 @@ export function ProgramForm({
             <div className="flex flex-col gap-2">
               <Label htmlFor="category">Category</Label>
               <input type="hidden" name="category" value={category} />
-              <Select value={category} onValueChange={(value) => setCategory(value ?? "")}>
+              <Select
+                value={category}
+                onValueChange={(value) => setCategory(value ?? "")}
+                items={visibleCategoryDivisions.map((d) => ({ value: d.id, label: d.name }))}
+              >
                 <SelectTrigger id="category" className="w-full">
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {divisions
-                    .filter((d) => d.is_active || d.id === program?.category)
-                    .map((d) => (
-                      <SelectItem key={d.id} value={d.id}>
-                        {d.name}
-                      </SelectItem>
-                    ))}
+                  {visibleCategoryDivisions.map((d) => (
+                    <SelectItem key={d.id} value={d.id}>
+                      {d.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               {state?.errors?.category && (
@@ -164,6 +173,10 @@ export function ProgramForm({
               onValueChange={(value) =>
                 setGenderCategory((value ?? "mixed") as typeof genderCategory)
               }
+              items={GENDER_CATEGORIES.map((category) => ({
+                value: category,
+                label: GENDER_CATEGORY_LABELS[category],
+              }))}
             >
               <SelectTrigger id="gender_category" className="w-full">
                 <SelectValue placeholder="Select gender eligibility" />

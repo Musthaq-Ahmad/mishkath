@@ -46,6 +46,9 @@ export function StudentForm({
     student?.division ?? divisions[0]?.id ?? "",
   );
   const [selectedCategory, setSelectedCategory] = useState(student?.category ?? "boy");
+  const visibleDivisions = divisions.filter(
+    (division) => division.is_active || division.id === student?.division,
+  );
   const [isActive, setIsActive] = useState(student?.is_active ?? true);
   const [photoUrl, setPhotoUrl] = useState(student?.photo_url ?? "");
   const [uploading, setUploading] = useState(false);
@@ -170,6 +173,7 @@ export function StudentForm({
               <Select
                 value={selectedGroupId}
                 onValueChange={(value) => setSelectedGroupId(value ?? "")}
+                items={groups.map((group) => ({ value: group.id, label: group.name }))}
               >
                 <SelectTrigger id="group_id" className="w-full">
                   <SelectValue placeholder="Select a group" />
@@ -193,18 +197,20 @@ export function StudentForm({
               <Select
                 value={selectedDivision}
                 onValueChange={(value) => setSelectedDivision(value ?? "")}
+                items={visibleDivisions.map((division) => ({
+                  value: division.id,
+                  label: division.name,
+                }))}
               >
                 <SelectTrigger id="division" className="w-full">
                   <SelectValue placeholder="Select a division" />
                 </SelectTrigger>
                 <SelectContent>
-                  {divisions
-                    .filter((division) => division.is_active || division.id === student?.division)
-                    .map((division) => (
-                      <SelectItem key={division.id} value={division.id}>
-                        {division.name}
-                      </SelectItem>
-                    ))}
+                  {visibleDivisions.map((division) => (
+                    <SelectItem key={division.id} value={division.id}>
+                      {division.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               {state?.errors?.division && (
@@ -241,6 +247,10 @@ export function StudentForm({
                 onValueChange={(value) =>
                   setSelectedCategory((value ?? "boy") as typeof selectedCategory)
                 }
+                items={STUDENT_CATEGORIES.map((category) => ({
+                  value: category,
+                  label: STUDENT_CATEGORY_LABELS[category],
+                }))}
               >
                 <SelectTrigger id="category" className="w-full">
                   <SelectValue placeholder="Select a category" />

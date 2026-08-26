@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { requireRole } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
 import { PrintButton } from "@/components/print-button";
-import { groupBgColor, groupTextColor } from "@/lib/group-color";
+import { groupTextColor } from "@/lib/group-color";
 import { cn } from "@/lib/utils";
 import type { Division, Group, Student } from "@/lib/types";
 
@@ -103,42 +103,140 @@ export default async function StudentBadgesPage({
           {visibleStudents.map((student) => (
             <div
               key={student.id}
-              className="card-elevated relative flex aspect-[3/4] flex-col overflow-hidden rounded-2xl border border-border bg-card break-inside-avoid [-webkit-print-color-adjust:exact] [print-color-adjust:exact] print:w-[calc(33.333%-0.667rem)] print:shrink-0 print:grow-0"
+              className="relative flex aspect-[3/4] flex-col overflow-hidden rounded-2xl shadow-lg break-inside-avoid [-webkit-print-color-adjust:exact] [print-color-adjust:exact] print:w-[calc(33.333%-0.667rem)] print:shrink-0 print:grow-0"
+              style={{
+                background:
+                  "radial-gradient(circle at 30% 12%, #8a4fc0 0%, #6b34a0 35%, #4a2280 68%, #341864 100%)",
+              }}
             >
-              <span className={cn("absolute inset-x-0 top-0 h-2", groupBgColor(student.group_id))} />
+              {/* Islamic geometric texture, tiled across the whole card */}
+              <span
+                aria-hidden
+                className="pointer-events-none absolute inset-0 opacity-[0.08]"
+                style={{
+                  backgroundImage: "url(/poster-pattern.png)",
+                  backgroundSize: "45px 45px",
+                  backgroundRepeat: "repeat",
+                }}
+              />
 
-              <div className="flex flex-col items-center gap-1.5 px-4 pt-6 pb-3">
-                <Image
-                  src="/mehfile-meem-logo-indigo.png"
-                  alt=""
-                  width={140}
-                  height={83}
-                  className="h-7 w-auto opacity-90"
+              {/* Arch frame around the logo, echoing a mihrab silhouette */}
+              <div className="relative z-10 flex justify-center pt-2">
+                <div
+                  className="flex items-center justify-center px-5 pt-2 pb-1"
+                  style={{
+                    width: "76%",
+                    background: "linear-gradient(180deg, #7d47bd 0%, #613399 100%)",
+                    border: "2px solid #d9b872",
+                    borderRadius: "50% 50% 8px 8px / 42% 42% 8px 8px",
+                  }}
+                >
+                  <Image
+                    src="/mehfile-meem-logo-gold.png"
+                    alt="Mehfile Meem — Meelad Fest 2K26"
+                    width={180}
+                    height={107}
+                    className="h-10 w-auto"
+                    priority
+                  />
+                </div>
+              </div>
+
+              {/* Flourish divider */}
+              <div className="relative z-10 flex items-center justify-center gap-2 py-1">
+                <span
+                  className="h-px w-9"
+                  style={{ background: "linear-gradient(to left, #d9b872, transparent)" }}
                 />
-                <p className="text-[9px] font-bold tracking-[0.25em] text-muted-foreground uppercase">
-                  Meelad Fest 2K26
-                </p>
+                <span style={{ color: "#d9b872", fontSize: 12 }}>✦</span>
+                <span
+                  className="h-px w-9"
+                  style={{ background: "linear-gradient(to right, #d9b872, transparent)" }}
+                />
               </div>
 
-              <div className="flex flex-1 flex-col items-center justify-center gap-1 border-y border-border/60 bg-muted/40 px-4">
-                <span className="font-heading text-6xl font-black text-primary tabular-nums">
-                  {student.chest_number}
-                </span>
-                <span className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
-                  Chest No.
-                </span>
+              {/* Chest number panel */}
+              <div className="relative z-10 flex flex-col items-center gap-1 px-5">
+                <div
+                  className="flex w-full flex-col items-center gap-0.5 rounded-xl px-4 py-2 shadow-md"
+                  style={{
+                    background: "linear-gradient(180deg, #fdfbf6 0%, #f1e9d2 100%)",
+                    border: "2px solid #c9a24c",
+                  }}
+                >
+                  <span
+                    className="font-heading text-5xl font-black tabular-nums"
+                    style={{
+                      backgroundImage:
+                        "linear-gradient(180deg, #f8e3a8 0%, #caa03e 55%, #8a6a2c 100%)",
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      backgroundClip: "text",
+                      color: "transparent",
+                      textShadow: "0 1px 0 rgba(255,255,255,0.5)",
+                    }}
+                  >
+                    {student.chest_number}
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="h-px w-6" style={{ background: "rgba(201,162,76,0.5)" }} />
+                    <span className="size-2 rotate-45" style={{ background: "#c9a24c" }} />
+                    <span className="h-px w-6" style={{ background: "rgba(201,162,76,0.5)" }} />
+                  </div>
+                  <span
+                    className="text-[9px] font-bold tracking-widest uppercase"
+                    style={{ color: "#3d2260" }}
+                  >
+                    Chest No.
+                  </span>
+                </div>
               </div>
 
-              <div className="flex flex-col items-center gap-1 px-3 py-3 text-center">
-                <p className="w-full truncate text-base font-semibold text-foreground">
+              {/* Secondary event caption */}
+              <p
+                className="relative z-10 mt-1 text-center text-sm font-bold"
+                style={{ color: "#e7c25a" }}
+              >
+                മിലാദ് ഫെസ്റ്റ് 2K26
+              </p>
+
+              <div className="relative z-10 flex-1" />
+
+              {/* Name panel */}
+              <div
+                className="relative z-10 mx-4 mb-1.5 overflow-hidden rounded-lg px-3 py-1.5 shadow-sm"
+                style={{
+                  background: "linear-gradient(180deg, #fdfbf6 0%, #f1e9d2 100%)",
+                  border: "2px solid #c9a24c",
+                }}
+              >
+                <p
+                  className="truncate text-center text-sm font-bold"
+                  style={{ color: "#2c1657" }}
+                >
                   {student.name}
                 </p>
-                <p className="text-xs text-muted-foreground uppercase">
-                  {divisionNameById.get(student.division) ?? "—"} ·{" "}
-                  <span className={cn("font-semibold", groupTextColor(student.group_id))}>
-                    {groupNameById.get(student.group_id) ?? "—"}
-                  </span>
-                </p>
+              </div>
+
+              <div className="relative z-10 flex items-center justify-center gap-2 px-3 pb-2">
+                <span
+                  className="text-[11px] font-bold tracking-wide uppercase"
+                  style={{ color: "#e7c25a", textShadow: "0 1px 2px rgba(0,0,0,0.7)" }}
+                >
+                  {divisionNameById.get(student.division) ?? "—"}
+                </span>
+                <span style={{ color: "rgba(231,194,90,0.5)", textShadow: "0 1px 2px rgba(0,0,0,0.7)" }}>
+                  ·
+                </span>
+                <span
+                  className={cn(
+                    "text-[11px] font-bold tracking-wide uppercase",
+                    groupTextColor(student.group_id),
+                  )}
+                  style={{ textShadow: "0 1px 2px rgba(0,0,0,0.7)" }}
+                >
+                  {groupNameById.get(student.group_id) ?? "—"}
+                </span>
               </div>
             </div>
           ))}

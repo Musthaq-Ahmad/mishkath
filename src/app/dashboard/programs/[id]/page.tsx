@@ -26,14 +26,14 @@ import type {
   Profile,
   Program,
   ProgramGroupParticipant,
+  ProgramGroupParticipantMember,
   ProgramJudge,
   ProgramParticipant,
   ScoreAuditLogRow,
   ScoreRow,
   Student,
 } from "@/lib/types";
-import { addGroupParticipant, removeGroupParticipant } from "../actions";
-import { ToggleCheckbox } from "./toggle-checkbox";
+import { GroupParticipantCard } from "./group-participant-card";
 import { ParticipantSearch } from "./participant-search";
 import { CodesPanel } from "./codes-panel";
 import { JudgesPanel } from "./judges-panel";
@@ -67,6 +67,7 @@ export default async function ProgramDetailPage({
     { data: groups },
     { data: participants },
     { data: groupParticipants },
+    { data: groupParticipantMembers },
     { data: scores },
     { data: groupScores },
     { data: judges },
@@ -84,6 +85,11 @@ export default async function ProgramDetailPage({
       .select("*")
       .eq("program_id", id)
       .returns<ProgramGroupParticipant[]>(),
+    supabase
+      .from("program_group_participant_members")
+      .select("*")
+      .eq("program_id", id)
+      .returns<ProgramGroupParticipantMember[]>(),
     supabase.from("scores").select("*").eq("program_id", id).returns<ScoreRow[]>(),
     supabase
       .from("group_scores")
@@ -126,6 +132,12 @@ export default async function ProgramDetailPage({
   const groupParticipantIds = new Set(
     (groupParticipants ?? []).map((p) => p.group_id),
   );
+  const memberIdsByGroup = new Map<string, Set<string>>();
+  for (const member of groupParticipantMembers ?? []) {
+    const set = memberIdsByGroup.get(member.group_id) ?? new Set<string>();
+    set.add(member.student_id);
+    memberIdsByGroup.set(member.group_id, set);
+  }
   const locked = (scores?.length ?? 0) > 0 || (groupScores?.length ?? 0) > 0;
 
   const scoresByStudent: Record<string, ScoreRow> = {};
@@ -154,6 +166,13 @@ export default async function ProgramDetailPage({
   const eligibleGroups = (groups ?? []).filter(
     (g) => eligibleGroupIds.has(g.id) || groupParticipantIds.has(g.id),
   );
+
+  const eligibleMembersForGroup = (groupId: string) => {
+    const selected = memberIdsByGroup.get(groupId) ?? new Set<string>();
+    return (students ?? []).filter(
+      (s) => s.group_id === groupId && (matchesEligibility(s) || selected.has(s.id)),
+    );
+  };
 
   const hasCodes =
     program.program_type === "group"
@@ -232,28 +251,23 @@ export default async function ProgramDetailPage({
               <CardTitle>Participants</CardTitle>
               <CardDescription>
                 {program.program_type === "group"
-                  ? "Select which groups take part in this program."
+                  ? "Select which groups take part, then which of their students performed."
                   : "Select which students take part in this program."}
               </CardDescription>
             </CardHeader>
             <CardContent>
               {program.program_type === "group" ? (
-                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                  {eligibleGroups.map((group) => {
-                    const checked = groupParticipantIds.has(group.id);
-                    return (
-                      <ToggleCheckbox
-                        key={group.id}
-                        checked={checked}
-                        label={group.name}
-                        action={
-                          checked
-                            ? removeGroupParticipant.bind(null, id, group.id)
-                            : addGroupParticipant.bind(null, id, group.id)
-                        }
-                      />
-                    );
-                  })}
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {eligibleGroups.map((group) => (
+                    <GroupParticipantCard
+                      key={group.id}
+                      programId={id}
+                      group={group}
+                      checked={groupParticipantIds.has(group.id)}
+                      students={eligibleMembersForGroup(group.id)}
+                      selectedMemberIds={memberIdsByGroup.get(group.id) ?? new Set()}
+                    />
+                  ))}
                   {!eligibleGroups.length && (
                     <p className="text-sm text-muted-foreground">
                       No eligible groups for this division/category.

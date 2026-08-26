@@ -84,6 +84,17 @@ export async function deleteProgram(id: string): Promise<{ error?: string } | un
   await requireRole("admin");
 
   const supabase = await createClient();
+
+  const { data: program } = await supabase
+    .from("programs")
+    .select("published")
+    .eq("id", id)
+    .single<{ published: boolean }>();
+
+  if (program?.published) {
+    return { error: "Unpublish this program's results before deleting it." };
+  }
+
   const { error } = await supabase.from("programs").delete().eq("id", id);
 
   if (error) {
@@ -391,6 +402,49 @@ export async function removeGroupParticipant(
 
   if (error) {
     return { error: "Could not remove group." };
+  }
+
+  revalidatePath(`/dashboard/programs/${programId}`);
+  return undefined;
+}
+
+export async function addGroupParticipantMember(
+  programId: string,
+  groupId: string,
+  studentId: string,
+): Promise<{ error?: string } | undefined> {
+  await requireRole("admin");
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("program_group_participant_members")
+    .insert({ program_id: programId, group_id: groupId, student_id: studentId });
+
+  if (error) {
+    return { error: "Could not add participant." };
+  }
+
+  revalidatePath(`/dashboard/programs/${programId}`);
+  return undefined;
+}
+
+export async function removeGroupParticipantMember(
+  programId: string,
+  groupId: string,
+  studentId: string,
+): Promise<{ error?: string } | undefined> {
+  await requireRole("admin");
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("program_group_participant_members")
+    .delete()
+    .eq("program_id", programId)
+    .eq("group_id", groupId)
+    .eq("student_id", studentId);
+
+  if (error) {
+    return { error: "Could not remove participant." };
   }
 
   revalidatePath(`/dashboard/programs/${programId}`);

@@ -89,6 +89,14 @@ export type ProgramGroupParticipant = {
   created_at: string;
 };
 
+export type ProgramGroupParticipantMember = {
+  id: string;
+  program_id: string;
+  group_id: string;
+  student_id: string;
+  created_at: string;
+};
+
 export type ScoreRow = {
   id: string;
   program_id: string;
