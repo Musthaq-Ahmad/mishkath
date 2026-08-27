@@ -616,14 +616,6 @@ export function PublishedResultsFeed({
     }))
     .filter((column) => column.items.length > 0);
 
-  // Only meaningful while the podium is auto-rotating on its own — while a
-  // category/type filter is pinning it to one result, there's no "next"
-  // to tease.
-  const nextItem =
-    !isFiltering && placements.length > 1
-      ? placements[nextRotationIndex(displayIndex, placements.length)]
-      : null;
-
   return (
     // The card is a size container at md+ (it has a definite h-full there),
     // so the podium sizes below use cqh — a percentage of the card itself —
@@ -905,14 +897,6 @@ export function PublishedResultsFeed({
           })}
         </div>
         </div>
-
-        {nextItem && (
-          <p className="relative z-10 text-center text-[11px] font-medium text-muted-foreground">
-            <span className="font-semibold text-foreground/70 uppercase">{t("upNext")}</span>
-            {" · "}
-            {nextItem.program_name}
-          </p>
-        )}
       </div>
     </div>
   );
