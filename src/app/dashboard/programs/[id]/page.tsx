@@ -35,6 +35,7 @@ import type {
 } from "@/lib/types";
 import { GroupParticipantCard } from "./group-participant-card";
 import { ParticipantSearch } from "./participant-search";
+import { GroupedParticipantSearch } from "./grouped-participant-search";
 import { CodesPanel } from "./codes-panel";
 import { JudgesPanel } from "./judges-panel";
 import { StatusControl } from "./status-control";
@@ -152,8 +153,10 @@ export default async function ProgramDetailPage({
 
   const studentNameById = new Map((students ?? []).map((s) => [s.id, s.name]));
 
+  const isGeneralDivision = divisionNameById.get(program.category) === "General";
+
   const matchesEligibility = (student: Student) =>
-    student.division === program.category &&
+    (isGeneralDivision || student.division === program.category) &&
     (program.gender_category === "mixed" || student.category === program.gender_category);
 
   const eligibleStudents = (students ?? []).filter(
@@ -274,6 +277,13 @@ export default async function ProgramDetailPage({
                     </p>
                   )}
                 </div>
+              ) : isGeneralDivision ? (
+                <GroupedParticipantSearch
+                  students={eligibleStudents}
+                  groups={groups ?? []}
+                  participantStudentIds={participantStudentIds}
+                  programId={id}
+                />
               ) : (
                 <ParticipantSearch
                   students={eligibleStudents}
