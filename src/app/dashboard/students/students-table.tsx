@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
   Table,
@@ -66,6 +67,28 @@ export function StudentsTable({
     });
   }, [students, groupId, division, query, groupNameById]);
 
+  // Same "one section per division, name-sorted" grouping as the CSV
+  // export below, but rendered inline for the print-only report instead
+  // of split into separate downloads.
+  const groupedByDivisionForPrint = useMemo(() => {
+    const sortedDivisions = [...divisions].sort((a, b) => a.sort_order - b.sort_order);
+    const knownDivisionIds = new Set(sortedDivisions.map((d) => d.id));
+    const sections = [
+      ...sortedDivisions.map((d) => ({ id: d.id as string | null, label: d.name })),
+      { id: null as string | null, label: "Unassigned" },
+    ];
+    return sections
+      .map((section) => ({
+        ...section,
+        students: filteredStudents
+          .filter((s) =>
+            section.id === null ? !knownDivisionIds.has(s.division) : s.division === section.id,
+          )
+          .sort((a, b) => a.name.localeCompare(b.name)),
+      }))
+      .filter((section) => section.students.length > 0);
+  }, [divisions, filteredStudents]);
+
   function clearFilters() {
     setGroupId("");
     setDivision("");
@@ -74,18 +97,81 @@ export function StudentsTable({
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Suppresses the browser's own auto-inserted print header/footer
+          (URL, page title, date) — Chrome only prints those into the page
+          margin, so a zero margin leaves no room for them. Padding on the
+          letterhead/body below compensates for the lost page margin. */}
+      <style>{`
+        @page {
+          margin: 0;
+        }
+      `}</style>
+
       {/* Print-only letterhead — shown only when printing/saving as PDF */}
-      <div className="hidden flex-col items-center gap-2 pb-4 text-center print:flex">
+      <div className="hidden flex-col items-center gap-2 px-10 pt-10 pb-4 text-center print:flex">
         <Image
           src="/mehfile-meem-logo-indigo.png"
           alt="Mehfile Meem — Meelad Fest 2K26"
           width={220}
           height={131}
           className="h-auto w-[170px]"
+          priority
         />
-        <p className="text-xs font-bold tracking-[0.2em] text-muted-foreground uppercase">
-          Students Directory
-        </p>
+        <h1 className="font-heading text-2xl font-bold">Students List</h1>
+      </div>
+
+      {/* Print-only body — grouped by division, shown only when printing/
+          saving as PDF. The interactive table below is print:hidden. */}
+      <div className="hidden flex-col gap-6 px-10 pb-10 print:flex">
+        {groupedByDivisionForPrint.map((section) => (
+          <div
+            key={section.id ?? "unassigned"}
+            className="flex flex-col gap-1.5"
+            style={{ breakInside: "avoid" }}
+          >
+            <h2 className="border-b-2 border-foreground pb-1 text-sm font-bold tracking-wide uppercase">
+              {section.label}{" "}
+              <span className="font-normal text-muted-foreground">
+                ({section.students.length})
+              </span>
+            </h2>
+            <table className="w-full border-collapse text-left text-sm">
+              <thead>
+                <tr className="border-b border-border text-xs font-bold tracking-wide uppercase">
+                  <th className="py-1 pr-2">Name</th>
+                  <th className="py-1 pr-2">Category</th>
+                  <th className="py-1 pr-2">Group</th>
+                  <th className="py-1 pr-2">Chest #</th>
+                </tr>
+              </thead>
+              <tbody>
+                {section.students.map((student) => (
+                  <tr
+                    key={student.id}
+                    className="border-b border-border"
+                    style={{ breakInside: "avoid" }}
+                  >
+                    <td className="py-1.5 pr-2 font-medium">{student.name}</td>
+                    <td className="py-1.5 pr-2 text-muted-foreground">
+                      {STUDENT_CATEGORY_LABELS[student.category]}
+                    </td>
+                    <td className="py-1.5 pr-2 text-muted-foreground">
+                      {groupNameById.get(student.group_id) ?? "—"}
+                    </td>
+                    <td className="py-1.5 pr-2 tabular-nums text-muted-foreground">
+                      {student.chest_number ?? "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ))}
+        {!groupedByDivisionForPrint.length && (
+          <p className="text-center text-muted-foreground">
+            {students.length ? "No students match these filters." : "No students yet."}
+          </p>
+        )}
       </div>
 
       {/* Filters & stats */}
@@ -173,41 +259,55 @@ export function StudentsTable({
       <div className="flex items-center justify-end gap-4 print:hidden">
         <button
           type="button"
-          onClick={() =>
-            downloadCsv(
-              "students.csv",
-              toCsv(
-                [
-                  "Name",
-                  "Division",
-                  "Category",
-                  "Group",
-                  "Chest Number",
-                  "Status",
-                  "Checked In",
-                ],
-                filteredStudents.map((s) => [
-                  s.name,
-                  divisionNameById.get(s.division) ?? "",
-                  STUDENT_CATEGORY_LABELS[s.category],
-                  groupNameById.get(s.group_id) ?? "",
-                  s.chest_number ?? "",
-                  s.is_active ? "Active" : "Inactive",
-                  s.checked_in ? "Yes" : "No",
-                ]),
-              ),
-            )
-          }
+          onClick={() => {
+            // A separate CSV file per division (in division sort order),
+            // instead of one file with division sections — easier to hand
+            // a single division's list to whoever's running that stage.
+            const sortedDivisions = [...divisions].sort((a, b) => a.sort_order - b.sort_order);
+            const knownDivisionIds = new Set(sortedDivisions.map((d) => d.id));
+            const sections = [
+              ...sortedDivisions.map((d) => ({ label: d.name, id: d.id })),
+              { label: "Unassigned", id: null as string | null },
+            ];
+
+            for (const section of sections) {
+              const sectionStudents = filteredStudents
+                .filter((s) =>
+                  section.id === null ? !knownDivisionIds.has(s.division) : s.division === section.id,
+                )
+                .sort((a, b) => a.name.localeCompare(b.name));
+              if (!sectionStudents.length) continue;
+
+              const slug = section.label
+                .trim()
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, "-")
+                .replace(/^-|-$/g, "");
+
+              downloadCsv(
+                `students-${slug}.csv`,
+                toCsv(
+                  ["Name", "Category", "Group", "Chest Number"],
+                  sectionStudents.map((s) => [
+                    s.name,
+                    STUDENT_CATEGORY_LABELS[s.category],
+                    groupNameById.get(s.group_id) ?? "",
+                    s.chest_number ?? "",
+                  ]),
+                ),
+              );
+            }
+          }}
           className="flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
         >
           <span className="material-symbols-outlined text-[18px]">download</span>
-          Export {hasActiveFilters ? "filtered" : "all"} to CSV
+          Export {hasActiveFilters ? "filtered" : "all"} to CSV (by division)
         </button>
         <PrintButton label="Download PDF" />
       </div>
 
-      {/* Data table */}
-      <div className="card-elevated animate-fade-in-up overflow-hidden rounded-xl bg-card">
+      {/* Data table — replaced for print by the grouped-by-division report above */}
+      <div className="card-elevated animate-fade-in-up overflow-hidden rounded-xl bg-card print:hidden">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
@@ -257,7 +357,12 @@ export function StudentsTable({
                         )}
                       </div>
                       <div className="flex flex-col">
-                        <span className="font-semibold text-primary">{student.name}</span>
+                        <Link
+                          href={`/dashboard/students/${student.id}`}
+                          className="font-semibold text-primary hover:underline"
+                        >
+                          {student.name}
+                        </Link>
                       </div>
                     </div>
                   </TableCell>

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { groupPlacements } from "@/lib/leaderboard";
-import { getUpcomingPrograms, formatScheduleTime } from "@/lib/schedule";
+import { getCurrentAndNextProgram, formatScheduleTime } from "@/lib/schedule";
 import type { Division, EventPlacementRow, Program, ProgramPlacements } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { divisionLabel } from "@/lib/division-label";
@@ -20,15 +20,13 @@ async function fetchPlacements(): Promise<ProgramPlacements[]> {
   return groupPlacements(data ?? []);
 }
 
-async function fetchNextProgram(): Promise<Program | null> {
+async function fetchCurrentAndNextProgram(): Promise<{
+  current: Program | null;
+  next: Program | null;
+}> {
   const supabase = createClient();
-  const { data } = await supabase
-    .from("programs")
-    .select("*")
-    .not("scheduled_start", "is", null)
-    .order("scheduled_start", { ascending: true })
-    .returns<Program[]>();
-  return getUpcomingPrograms(data ?? [])[0] ?? null;
+  const { data } = await supabase.from("programs").select("*").returns<Program[]>();
+  return getCurrentAndNextProgram(data ?? []);
 }
 
 function formatCountdown(targetIso: string, nowMs: number): string | null {
@@ -88,16 +86,19 @@ function InfoCard({
 
 export function InfoCardsRow({
   initialPlacements,
+  initialCurrentProgram,
   initialNextProgram,
   divisions,
 }: {
   initialPlacements: ProgramPlacements[];
+  initialCurrentProgram: Program | null;
   initialNextProgram: Program | null;
   divisions: Division[];
 }) {
   const { t, lang, startsIn } = useLanguage();
   const divisionById = new Map(divisions.map((division) => [division.id, division]));
   const [placements, setPlacements] = useState(initialPlacements);
+  const [currentProgram, setCurrentProgram] = useState(initialCurrentProgram);
   const [nextProgram, setNextProgram] = useState(initialNextProgram);
   const [now, setNow] = useState<number | null>(null);
 
@@ -107,15 +108,17 @@ export function InfoCardsRow({
     async function refetchPlacements() {
       setPlacements(await fetchPlacements());
     }
-    async function refetchNext() {
-      setNextProgram(await fetchNextProgram());
+    async function refetchCurrentAndNext() {
+      const { current, next } = await fetchCurrentAndNextProgram();
+      setCurrentProgram(current);
+      setNextProgram(next);
     }
 
     const channel = supabase
       .channel("info-cards-row")
       .on("postgres_changes", { event: "*", schema: "public", table: "programs" }, () => {
         refetchPlacements();
-        refetchNext();
+        refetchCurrentAndNext();
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "scores" }, refetchPlacements)
       .on("postgres_changes", { event: "*", schema: "public", table: "group_scores" }, refetchPlacements)
@@ -129,9 +132,13 @@ export function InfoCardsRow({
     };
   }, []);
 
-  const current = placements[0] ?? null;
-  const previous = placements[1] ?? null;
-  const announcement = placements[2] ?? null;
+  // "Current Program" is now driven by live status ("running"), not by
+  // which result was most recently published — a program can be running
+  // for a while before its result is ever published. previous/announcement
+  // shift down one slot accordingly (they were previously placements[1]/[2]
+  // alongside a "current" that was really just the latest published result).
+  const previous = placements[0] ?? null;
+  const announcement = placements[1] ?? null;
 
   const countdown = nextProgram?.scheduled_start && now ? formatCountdown(nextProgram.scheduled_start, now) : null;
 
@@ -148,8 +155,10 @@ export function InfoCardsRow({
         icon="mic"
         tone="primary"
         label={t("currentProgram")}
-        title={current ? current.program_name : "—"}
-        subtitle={current ? divisionLabel(divisionById.get(current.category), lang) : undefined}
+        title={currentProgram ? currentProgram.name : "—"}
+        subtitle={
+          currentProgram ? divisionLabel(divisionById.get(currentProgram.category), lang) : undefined
+        }
       />
       <InfoCard
         icon="menu_book"

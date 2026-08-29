@@ -27,8 +27,9 @@ export default async function StudentsPage({
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Page header */}
-      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
+      {/* Page header — hidden for print, which shows its own letterhead
+          (logo + "Students List" title) instead. */}
+      <div className="flex flex-col items-start justify-between gap-4 print:hidden sm:flex-row sm:items-end">
         <div>
           <nav className="mb-1 flex items-center text-xs font-medium tracking-wide text-muted-foreground">
             <span>Management</span>

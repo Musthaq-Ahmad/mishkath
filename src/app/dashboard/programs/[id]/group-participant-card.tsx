@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { ToggleCheckbox } from "./toggle-checkbox";
+import { ToggleCheckbox } from "@/components/toggle-checkbox";
 import { DeleteButton } from "@/components/delete-button";
 import { toastResult } from "@/lib/toast";
 import {

@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { groupPlacements } from "@/lib/leaderboard";
-import { getUpcomingPrograms } from "@/lib/schedule";
+import { getCurrentAndNextProgram } from "@/lib/schedule";
 import type { Division, EventPlacementRow, Group, GroupLeaderboardRow, Program } from "@/lib/types";
 import { CelebrationLayout } from "./celebration-layout";
 import { ChampionshipSidebar } from "./championship-sidebar";
@@ -28,12 +28,10 @@ export default async function LeaderboardPage() {
       .order("published_at", { ascending: false })
       .order("rank", { ascending: true })
       .returns<EventPlacementRow[]>(),
-    supabase
-      .from("programs")
-      .select("*")
-      .not("scheduled_start", "is", null)
-      .order("scheduled_start", { ascending: true })
-      .returns<Program[]>(),
+    // Unfiltered — "next" is driven by status='scheduled' below, not by
+    // whether scheduled_start is set, so a program without a scheduled
+    // time shouldn't be excluded outright (it just sorts last).
+    supabase.from("programs").select("*").returns<Program[]>(),
     supabase.from("programs").select("published").returns<Pick<Program, "published">[]>(),
     supabase.from("groups").select("id, name").returns<Pick<Group, "id" | "name">[]>(),
     supabase.from("divisions").select("*").order("sort_order").returns<Division[]>(),
@@ -42,7 +40,9 @@ export default async function LeaderboardPage() {
   const divisionsList = divisions ?? [];
 
   const placements = groupPlacements(placementRows ?? []);
-  const nextProgram = getUpcomingPrograms(scheduledPrograms ?? [])[0] ?? null;
+  const { current: currentProgram, next: nextProgram } = getCurrentAndNextProgram(
+    scheduledPrograms ?? [],
+  );
   const totalProgramCount = allPrograms?.length ?? 0;
   const publishedProgramCount = (allPrograms ?? []).filter((p) => p.published).length;
   const groupNames: Record<string, string> = Object.fromEntries(
@@ -75,6 +75,7 @@ export default async function LeaderboardPage() {
           infoCards={
             <InfoCardsRow
               initialPlacements={placements}
+              initialCurrentProgram={currentProgram}
               initialNextProgram={nextProgram}
               divisions={divisionsList}
             />

@@ -187,16 +187,24 @@ export default async function ProgramDetailPage({
 
   const isGeneralDivision = divisionNameById.get(program.category) === "General";
 
+  // Individual programs: a student can only enter their own division
+  // (except General, open to everyone — see the badges/students work
+  // earlier). Group programs use matchesGenderOnly instead (below) — a
+  // team is drawn from anyone in the house regardless of their own
+  // division, since the house/group isn't itself scoped to one division.
   const matchesEligibility = (student: Student) =>
     (isGeneralDivision || student.division === program.category) &&
     (program.gender_category === "mixed" || student.category === program.gender_category);
+
+  const matchesGenderOnly = (student: Student) =>
+    program.gender_category === "mixed" || student.category === program.gender_category;
 
   const eligibleStudents = (students ?? []).filter(
     (s) => matchesEligibility(s) || participantStudentIds.has(s.id),
   );
 
   const eligibleGroupIds = new Set(
-    (students ?? []).filter(matchesEligibility).map((s) => s.group_id),
+    (students ?? []).filter(matchesGenderOnly).map((s) => s.group_id),
   );
   const eligibleGroups = (groups ?? []).filter(
     (g) => eligibleGroupIds.has(g.id) || groupParticipantIds.has(g.id),
@@ -212,7 +220,7 @@ export default async function ProgramDetailPage({
     return (students ?? []).filter(
       (s) =>
         s.group_id === entry.group_id &&
-        (matchesEligibility(s) || selectedHere.has(s.id)) &&
+        (matchesGenderOnly(s) || selectedHere.has(s.id)) &&
         (!usedElsewhereInGroup.has(s.id) || selectedHere.has(s.id)),
     );
   };

@@ -477,6 +477,7 @@ export async function addParticipant(
   }
 
   revalidatePath(`/dashboard/programs/${programId}`);
+  revalidatePath(`/dashboard/students/${studentId}`);
   return undefined;
 }
 
@@ -498,6 +499,7 @@ export async function removeParticipant(
   }
 
   revalidatePath(`/dashboard/programs/${programId}`);
+  revalidatePath(`/dashboard/students/${studentId}`);
   return undefined;
 }
 

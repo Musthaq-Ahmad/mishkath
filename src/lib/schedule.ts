@@ -1,21 +1,22 @@
 import type { Program } from "@/lib/types";
 
+// Driven by the admin-controlled status field (set via StatusControl / the
+// dashboard's "Enter Scores" flow), not scheduled_start — a program's
+// actual start/finish rarely matches its planned time exactly, so status
+// is the source of truth for "what's happening right now."
 export function getCurrentAndNextProgram(programs: Program[]) {
-  const now = Date.now();
-  let current: Program | null = null;
-  let next: Program | null = null;
+  const current = programs.find((p) => p.status === "running") ?? null;
 
-  for (const program of programs) {
-    const startTime = new Date(program.scheduled_start!).getTime();
-    if (startTime <= now) {
-      current = program;
-    } else if (!next) {
-      next = program;
-      break;
-    }
-  }
+  const next = programs
+    .filter((p) => p.status === "scheduled")
+    .sort((a, b) => {
+      if (!a.scheduled_start && !b.scheduled_start) return 0;
+      if (!a.scheduled_start) return 1;
+      if (!b.scheduled_start) return -1;
+      return new Date(a.scheduled_start).getTime() - new Date(b.scheduled_start).getTime();
+    })[0];
 
-  return { current, next };
+  return { current, next: next ?? null };
 }
 
 export function getUpcomingPrograms(programs: Program[]) {

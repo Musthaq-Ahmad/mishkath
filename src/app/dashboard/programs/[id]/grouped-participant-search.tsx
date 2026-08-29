@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ToggleCheckbox } from "./toggle-checkbox";
+import { ToggleCheckbox } from "@/components/toggle-checkbox";
 import { addParticipant, removeParticipant } from "../actions";
 import type { Group, Student } from "@/lib/types";
 

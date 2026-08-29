@@ -250,7 +250,8 @@ export function ProgramsTable({
                   </TableCell>
                   <TableCell>
                     <span className="rounded-md bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">
-                      {divisionNameById.get(program.category) ?? "—"}
+                      {divisionNameById.get(program.category) ?? "—"} ·{" "}
+                      {GENDER_CATEGORY_LABELS[program.gender_category]}
                     </span>
                   </TableCell>
                   <TableCell>
