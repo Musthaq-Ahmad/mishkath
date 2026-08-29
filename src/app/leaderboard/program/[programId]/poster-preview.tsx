@@ -92,7 +92,7 @@ export function PosterPreview({
         key={posterUrl}
         src={posterUrl}
         alt={`${programName} results poster`}
-        className="aspect-square w-full max-w-sm rounded-lg border border-border shadow-sm"
+        className="aspect-[3/4] w-full max-w-sm rounded-lg border border-border shadow-sm"
       />
     </div>
   );
