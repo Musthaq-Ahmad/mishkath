@@ -9,6 +9,7 @@ type StudentParticipant = {
 
 type GroupParticipant = {
   id: string;
+  groupId: string;
   code: string | null;
   name: string;
 };
@@ -55,12 +56,13 @@ export function ScoreEntryPanel(
               existingScore={scoresByParticipant[participant.id] as ScoreRow | undefined}
             />
           ))
-        : participants.map((participant) => (
+        : props.participants.map((participant) => (
             <ScoreEntryRow
               key={participant.id}
               kind="group"
               programId={programId}
-              groupId={participant.id}
+              groupId={participant.groupId}
+              participantId={participant.id}
               code={participant.code}
               name={participant.name}
               maxScore={maxScore}

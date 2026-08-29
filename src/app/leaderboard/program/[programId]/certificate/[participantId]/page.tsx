@@ -33,7 +33,7 @@ export async function generateMetadata({
         .from("public_group_program_results")
         .select("group_name")
         .eq("program_id", programId)
-        .eq("group_id", participantId)
+        .eq("participant_id", participantId)
         .maybeSingle<Pick<GroupProgramResult, "group_name">>()
     : await supabase
         .from("public_program_results")
@@ -81,7 +81,7 @@ export default async function CertificatePage({
         .from("public_group_program_results")
         .select("*")
         .eq("program_id", programId)
-        .eq("group_id", participantId)
+        .eq("participant_id", participantId)
         .maybeSingle<GroupProgramResult>()
     : await supabase
         .from("public_program_results")

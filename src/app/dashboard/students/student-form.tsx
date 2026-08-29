@@ -160,7 +160,13 @@ export function StudentForm({
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="name">Name</Label>
-            <Input id="name" name="name" defaultValue={student?.name} required />
+            <Input
+              id="name"
+              name="name"
+              defaultValue={student?.name}
+              required
+              aria-invalid={!!state?.errors?.name}
+            />
             {state?.errors?.name && (
               <p className="text-sm text-destructive">{state.errors.name[0]}</p>
             )}
@@ -175,7 +181,11 @@ export function StudentForm({
                 onValueChange={(value) => setSelectedGroupId(value ?? "")}
                 items={groups.map((group) => ({ value: group.id, label: group.name }))}
               >
-                <SelectTrigger id="group_id" className="w-full">
+                <SelectTrigger
+                  id="group_id"
+                  className="w-full"
+                  aria-invalid={!!state?.errors?.group_id}
+                >
                   <SelectValue placeholder="Select a group" />
                 </SelectTrigger>
                 <SelectContent>
@@ -202,7 +212,11 @@ export function StudentForm({
                   label: division.name,
                 }))}
               >
-                <SelectTrigger id="division" className="w-full">
+                <SelectTrigger
+                  id="division"
+                  className="w-full"
+                  aria-invalid={!!state?.errors?.division}
+                >
                   <SelectValue placeholder="Select a division" />
                 </SelectTrigger>
                 <SelectContent>
@@ -232,7 +246,7 @@ export function StudentForm({
                 name="class"
                 placeholder="Grade 5, Plus One..."
                 defaultValue={student?.class}
-                required
+                aria-invalid={!!state?.errors?.class}
               />
               {state?.errors?.class && (
                 <p className="text-sm text-destructive">{state.errors.class[0]}</p>
@@ -252,7 +266,11 @@ export function StudentForm({
                   label: STUDENT_CATEGORY_LABELS[category],
                 }))}
               >
-                <SelectTrigger id="category" className="w-full">
+                <SelectTrigger
+                  id="category"
+                  className="w-full"
+                  aria-invalid={!!state?.errors?.category}
+                >
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>

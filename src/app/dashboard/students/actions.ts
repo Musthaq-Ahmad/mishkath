@@ -13,10 +13,6 @@ function parseStudentForm(formData: FormData) {
     division: formData.get("division"),
     class: formData.get("class"),
     category: formData.get("category"),
-    guardian_name: formData.get("guardian_name"),
-    admission_number: formData.get("admission_number"),
-    date_of_birth: formData.get("date_of_birth"),
-    phone_number: formData.get("phone_number"),
     is_active: formData.get("is_active"),
     photo_url: formData.get("photo_url"),
   });
@@ -40,10 +36,6 @@ export async function createStudent(
     division,
     class: studentClass,
     category,
-    guardian_name,
-    admission_number,
-    date_of_birth,
-    phone_number,
     is_active,
     photo_url,
   } = validatedFields.data;
@@ -55,10 +47,6 @@ export async function createStudent(
     division,
     class: studentClass,
     category,
-    guardian_name: guardian_name || null,
-    admission_number: admission_number || null,
-    date_of_birth: date_of_birth || null,
-    phone_number: phone_number || null,
     is_active,
     photo_url: photo_url || null,
     // chest_number is left unset — a database trigger auto-assigns it based
@@ -71,9 +59,6 @@ export async function createStudent(
       return {
         message: "This group's chest-number block for this division is full. Contact an administrator.",
       };
-    }
-    if (error.message.includes("students_admission_number_key")) {
-      return { errors: { admission_number: ["This admission number is already in use."] } };
     }
     return { message: "Could not create student." };
   }
@@ -101,10 +86,6 @@ export async function updateStudent(
     division,
     class: studentClass,
     category,
-    guardian_name,
-    admission_number,
-    date_of_birth,
-    phone_number,
     is_active,
     photo_url,
   } = validatedFields.data;
@@ -118,19 +99,12 @@ export async function updateStudent(
       division,
       class: studentClass,
       category,
-      guardian_name: guardian_name || null,
-      admission_number: admission_number || null,
-      date_of_birth: date_of_birth || null,
-      phone_number: phone_number || null,
       is_active,
       photo_url: photo_url || null,
     })
     .eq("id", id);
 
   if (error) {
-    if (error.message.includes("students_admission_number_key")) {
-      return { errors: { admission_number: ["This admission number is already in use."] } };
-    }
     return { message: "Could not update student." };
   }
 
@@ -179,10 +153,6 @@ export type BulkImportRow = {
   category: string;
   class: string;
   group_name: string;
-  guardian_name?: string;
-  admission_number?: string;
-  date_of_birth?: string;
-  phone_number?: string;
 };
 
 export type BulkImportResult = {
@@ -243,10 +213,6 @@ export async function bulkImportStudents(rows: BulkImportRow[]): Promise<BulkImp
       division: divisionId,
       class: row.class,
       category,
-      guardian_name: row.guardian_name,
-      admission_number: row.admission_number,
-      date_of_birth: row.date_of_birth,
-      phone_number: row.phone_number,
       is_active: true,
     });
 
@@ -262,10 +228,6 @@ export async function bulkImportStudents(rows: BulkImportRow[]): Promise<BulkImp
       division: validDivision,
       class: studentClass,
       category: validCategory,
-      guardian_name,
-      admission_number,
-      date_of_birth,
-      phone_number,
     } = validatedFields.data;
 
     const { error } = await supabase.from("students").insert({
@@ -274,10 +236,6 @@ export async function bulkImportStudents(rows: BulkImportRow[]): Promise<BulkImp
       division: validDivision,
       class: studentClass,
       category: validCategory,
-      guardian_name: guardian_name || null,
-      admission_number: admission_number || null,
-      date_of_birth: date_of_birth || null,
-      phone_number: phone_number || null,
       is_active: true,
     });
 
@@ -287,8 +245,6 @@ export async function bulkImportStudents(rows: BulkImportRow[]): Promise<BulkImp
           row: rowNumber,
           message: "This group's chest-number block for this division is full.",
         });
-      } else if (error.message.includes("students_admission_number_key")) {
-        errors.push({ row: rowNumber, message: "Admission number already in use." });
       } else {
         errors.push({ row: rowNumber, message: "Could not create student." });
       }

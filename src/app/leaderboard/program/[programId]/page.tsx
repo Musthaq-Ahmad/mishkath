@@ -124,7 +124,7 @@ export default async function ProgramResultsPage({
                 ? (result as GroupProgramResult).group_name
                 : (result as ProgramResult).student_name;
               const key = isGroup
-                ? (result as GroupProgramResult).group_id
+                ? (result as GroupProgramResult).participant_id
                 : (result as ProgramResult).student_id;
               const photoUrl = isGroup ? null : (result as ProgramResult).photo_url;
               const category = isGroup ? null : (result as ProgramResult).student_category;
@@ -224,7 +224,7 @@ export default async function ProgramResultsPage({
                   ? (result as GroupProgramResult).group_name
                   : (result as ProgramResult).student_name;
                 const key = isGroup
-                  ? (result as GroupProgramResult).group_id
+                  ? (result as GroupProgramResult).participant_id
                   : (result as ProgramResult).student_id;
                 const groupId = isGroup
                   ? (result as GroupProgramResult).group_id

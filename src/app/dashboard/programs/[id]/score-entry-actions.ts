@@ -43,6 +43,7 @@ export async function adminSubmitScore(
 export async function adminSubmitGroupScore(
   programId: string,
   groupId: string,
+  participantId: string,
   _state: ScoreFormState,
   formData: FormData,
 ): Promise<ScoreFormState> {
@@ -57,14 +58,18 @@ export async function adminSubmitGroupScore(
   }
 
   const supabase = await createClient();
+  // A group can field more than one team in the same program (see
+  // supabase/migrations/0029_group_multiple_teams.sql) — the score belongs
+  // to the specific team entry (participant_id), not just the group.
   const { error } = await supabase.from("group_scores").upsert(
     {
       program_id: programId,
       group_id: groupId,
+      participant_id: participantId,
       total: validatedFields.data.total,
       updated_at: new Date().toISOString(),
     },
-    { onConflict: "program_id,group_id" },
+    { onConflict: "participant_id" },
   );
 
   if (error) {

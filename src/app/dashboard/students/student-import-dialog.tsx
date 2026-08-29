@@ -14,29 +14,9 @@ import {
 import { parseCsv, toCsv, downloadCsv } from "@/lib/csv";
 import { bulkImportStudents, type BulkImportRow, type BulkImportResult } from "./actions";
 
-const COLUMNS = [
-  "name",
-  "division",
-  "category",
-  "class",
-  "group_name",
-  "guardian_name",
-  "admission_number",
-  "date_of_birth",
-  "phone_number",
-] as const;
+const COLUMNS = ["name", "division", "category", "class", "group_name"] as const;
 
-const TEMPLATE_SAMPLE_ROW = [
-  "Ahmed Ali",
-  "senior",
-  "boy",
-  "10-A",
-  "Al-Falah Zone",
-  "Farida Ali",
-  "AD1023",
-  "2009-04-12",
-  "9876543210",
-];
+const TEMPLATE_SAMPLE_ROW = ["Ahmed Ali", "senior", "boy", "10-A", "Al-Falah Zone"];
 
 function rowsFromCsv(text: string): { rows: BulkImportRow[]; error?: string } {
   const parsed = parseCsv(text);
@@ -56,21 +36,12 @@ function rowsFromCsv(text: string): { rows: BulkImportRow[]; error?: string } {
     };
   }
 
-  const guardianIdx = header.indexOf("guardian_name");
-  const admissionIdx = header.indexOf("admission_number");
-  const dobIdx = header.indexOf("date_of_birth");
-  const phoneIdx = header.indexOf("phone_number");
-
   const rows: BulkImportRow[] = parsed.slice(1).map((cells) => ({
     name: cells[nameIdx]?.trim() ?? "",
     division: cells[divisionIdx]?.trim() ?? "",
     category: cells[categoryIdx]?.trim() ?? "",
     class: cells[classIdx]?.trim() ?? "",
     group_name: cells[groupIdx]?.trim() ?? "",
-    guardian_name: guardianIdx >= 0 ? cells[guardianIdx]?.trim() : undefined,
-    admission_number: admissionIdx >= 0 ? cells[admissionIdx]?.trim() : undefined,
-    date_of_birth: dobIdx >= 0 ? cells[dobIdx]?.trim() : undefined,
-    phone_number: phoneIdx >= 0 ? cells[phoneIdx]?.trim() : undefined,
   }));
 
   return { rows };
@@ -167,8 +138,7 @@ export function StudentImportDialog() {
               className="text-sm"
             />
             <p className="text-xs text-muted-foreground">
-              Required columns: name, division, category, class, group_name. Optional:
-              guardian_name, admission_number, date_of_birth, phone_number. Group names must
+              Required columns: name, division, category, class, group_name. Group names must
               match an existing group exactly (case-insensitive).
             </p>
           </div>

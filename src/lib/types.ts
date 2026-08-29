@@ -34,10 +34,6 @@ export type Student = {
   division: string;
   class: string;
   category: StudentCategory;
-  guardian_name: string | null;
-  admission_number: string | null;
-  date_of_birth: string | null;
-  phone_number: string | null;
   is_active: boolean;
   chest_number: string | null;
   photo_url: string | null;
@@ -93,6 +89,7 @@ export type ProgramGroupParticipantMember = {
   id: string;
   program_id: string;
   group_id: string;
+  participant_id: string;
   student_id: string;
   created_at: string;
 };
@@ -121,6 +118,7 @@ export type GroupScoreRow = {
   id: string;
   program_id: string;
   group_id: string;
+  participant_id: string;
   total: number;
   created_at: string;
   updated_at: string;
@@ -140,6 +138,7 @@ export type ProgramResult = {
 export type GroupProgramResult = {
   program_id: string;
   group_id: string;
+  participant_id: string;
   group_name: string;
   avg_total: number;
   rank: number;

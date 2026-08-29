@@ -368,6 +368,9 @@ export async function setProgramStatus(
   return undefined;
 }
 
+// Always inserts a new team entry — a group can have any number of teams
+// in the same program (see supabase/migrations/0029_group_multiple_teams.sql),
+// so this is "add another team," not a toggle.
 export async function addGroupParticipant(
   programId: string,
   groupId: string,
@@ -387,9 +390,13 @@ export async function addGroupParticipant(
   return undefined;
 }
 
+// A group can now field more than one team in the same program (see
+// supabase/migrations/0029_group_multiple_teams.sql), so a team entry can
+// only be removed by its own id — deleting by (program_id, group_id) would
+// remove every one of that group's teams at once.
 export async function removeGroupParticipant(
   programId: string,
-  groupId: string,
+  participantId: string,
 ): Promise<{ error?: string } | undefined> {
   await requireRole("admin");
 
@@ -397,11 +404,11 @@ export async function removeGroupParticipant(
   const { error } = await supabase
     .from("program_group_participants")
     .delete()
-    .eq("program_id", programId)
-    .eq("group_id", groupId);
+    .eq("id", participantId)
+    .eq("program_id", programId);
 
   if (error) {
-    return { error: "Could not remove group." };
+    return { error: "Could not remove team." };
   }
 
   revalidatePath(`/dashboard/programs/${programId}`);
@@ -411,14 +418,18 @@ export async function removeGroupParticipant(
 export async function addGroupParticipantMember(
   programId: string,
   groupId: string,
+  participantId: string,
   studentId: string,
 ): Promise<{ error?: string } | undefined> {
   await requireRole("admin");
 
   const supabase = await createClient();
-  const { error } = await supabase
-    .from("program_group_participant_members")
-    .insert({ program_id: programId, group_id: groupId, student_id: studentId });
+  const { error } = await supabase.from("program_group_participant_members").insert({
+    program_id: programId,
+    group_id: groupId,
+    participant_id: participantId,
+    student_id: studentId,
+  });
 
   if (error) {
     return { error: "Could not add participant." };
@@ -430,7 +441,7 @@ export async function addGroupParticipantMember(
 
 export async function removeGroupParticipantMember(
   programId: string,
-  groupId: string,
+  participantId: string,
   studentId: string,
 ): Promise<{ error?: string } | undefined> {
   await requireRole("admin");
@@ -439,8 +450,7 @@ export async function removeGroupParticipantMember(
   const { error } = await supabase
     .from("program_group_participant_members")
     .delete()
-    .eq("program_id", programId)
-    .eq("group_id", groupId)
+    .eq("participant_id", participantId)
     .eq("student_id", studentId);
 
   if (error) {

@@ -27,16 +27,21 @@ type Common = {
 export function ScoreEntryRow(
   props:
     | (Common & { kind: "student"; studentId: string; existingScore?: ScoreRow })
-    | (Common & { kind: "group"; groupId: string; existingScore?: GroupScoreRow }),
+    | (Common & {
+        kind: "group";
+        groupId: string;
+        participantId: string;
+        existingScore?: GroupScoreRow;
+      }),
 ) {
   const { programId, code, name, maxScore, existingScore } = props;
   const boundAction =
     props.kind === "student"
       ? adminSubmitScore.bind(null, programId, props.studentId)
-      : adminSubmitGroupScore.bind(null, programId, props.groupId);
+      : adminSubmitGroupScore.bind(null, programId, props.groupId, props.participantId);
 
   const [state, formAction, pending] = useActionState(boundAction, undefined);
-  const rowId = props.kind === "student" ? props.studentId : props.groupId;
+  const rowId = props.kind === "student" ? props.studentId : props.participantId;
 
   useEffect(() => {
     if (state?.success) {

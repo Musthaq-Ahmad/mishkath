@@ -185,8 +185,6 @@ export function StudentsTable({
                   "Chest Number",
                   "Status",
                   "Checked In",
-                  "Admission Number",
-                  "Phone",
                 ],
                 filteredStudents.map((s) => [
                   s.name,
@@ -196,8 +194,6 @@ export function StudentsTable({
                   s.chest_number ?? "",
                   s.is_active ? "Active" : "Inactive",
                   s.checked_in ? "Yes" : "No",
-                  s.admission_number ?? "",
-                  s.phone_number ?? "",
                 ]),
               ),
             )

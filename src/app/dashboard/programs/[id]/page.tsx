@@ -133,11 +133,43 @@ export default async function ProgramDetailPage({
   const groupParticipantIds = new Set(
     (groupParticipants ?? []).map((p) => p.group_id),
   );
-  const memberIdsByGroup = new Map<string, Set<string>>();
+
+  // A group can field more than one team in the same program (see
+  // supabase/migrations/0029_group_multiple_teams.sql) — group entries by
+  // group_id, ordered by creation, so a group with 2+ teams gets "A"/"B"
+  // suffixes and a group with just one keeps its plain name.
+  const entriesByGroup = new Map<string, ProgramGroupParticipant[]>();
+  for (const entry of groupParticipants ?? []) {
+    const list = entriesByGroup.get(entry.group_id) ?? [];
+    list.push(entry);
+    entriesByGroup.set(entry.group_id, list);
+  }
+  for (const list of entriesByGroup.values()) {
+    list.sort(
+      (a, b) => a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id),
+    );
+  }
+  const entryLabel = (entry: ProgramGroupParticipant) => {
+    const groupName = groupNameById.get(entry.group_id) ?? "—";
+    const siblings = entriesByGroup.get(entry.group_id) ?? [entry];
+    if (siblings.length <= 1) return groupName;
+    const index = siblings.findIndex((e) => e.id === entry.id);
+    return `${groupName} ${String.fromCharCode(65 + index)}`;
+  };
+  const entryNameById = new Map(
+    (groupParticipants ?? []).map((entry) => [entry.id, entryLabel(entry)]),
+  );
+
+  const memberIdsByParticipant = new Map<string, Set<string>>();
+  const memberIdsAnywhereInGroup = new Map<string, Set<string>>();
   for (const member of groupParticipantMembers ?? []) {
-    const set = memberIdsByGroup.get(member.group_id) ?? new Set<string>();
-    set.add(member.student_id);
-    memberIdsByGroup.set(member.group_id, set);
+    const byParticipant = memberIdsByParticipant.get(member.participant_id) ?? new Set<string>();
+    byParticipant.add(member.student_id);
+    memberIdsByParticipant.set(member.participant_id, byParticipant);
+
+    const byGroup = memberIdsAnywhereInGroup.get(member.group_id) ?? new Set<string>();
+    byGroup.add(member.student_id);
+    memberIdsAnywhereInGroup.set(member.group_id, byGroup);
   }
   const locked = (scores?.length ?? 0) > 0 || (groupScores?.length ?? 0) > 0;
 
@@ -146,9 +178,9 @@ export default async function ProgramDetailPage({
     scoresByStudent[score.student_id] = score;
   }
 
-  const groupScoresByGroup: Record<string, GroupScoreRow> = {};
+  const scoresByParticipant: Record<string, GroupScoreRow> = {};
   for (const score of groupScores ?? []) {
-    groupScoresByGroup[score.group_id] = score;
+    scoresByParticipant[score.participant_id] = score;
   }
 
   const studentNameById = new Map((students ?? []).map((s) => [s.id, s.name]));
@@ -170,10 +202,18 @@ export default async function ProgramDetailPage({
     (g) => eligibleGroupIds.has(g.id) || groupParticipantIds.has(g.id),
   );
 
-  const eligibleMembersForGroup = (groupId: string) => {
-    const selected = memberIdsByGroup.get(groupId) ?? new Set<string>();
+  // Excludes students already on a *different* team of the same group —
+  // the DB's unique(program_id, group_id, student_id) forbids a student
+  // being on two of their own house's teams in one program, so this keeps
+  // the checklist from offering a choice that would just fail on submit.
+  const eligibleStudentsForEntry = (entry: ProgramGroupParticipant) => {
+    const selectedHere = memberIdsByParticipant.get(entry.id) ?? new Set<string>();
+    const usedElsewhereInGroup = memberIdsAnywhereInGroup.get(entry.group_id) ?? new Set<string>();
     return (students ?? []).filter(
-      (s) => s.group_id === groupId && (matchesEligibility(s) || selected.has(s.id)),
+      (s) =>
+        s.group_id === entry.group_id &&
+        (matchesEligibility(s) || selectedHere.has(s.id)) &&
+        (!usedElsewhereInGroup.has(s.id) || selectedHere.has(s.id)),
     );
   };
 
@@ -266,9 +306,12 @@ export default async function ProgramDetailPage({
                       key={group.id}
                       programId={id}
                       group={group}
-                      checked={groupParticipantIds.has(group.id)}
-                      students={eligibleMembersForGroup(group.id)}
-                      selectedMemberIds={memberIdsByGroup.get(group.id) ?? new Set()}
+                      entries={(entriesByGroup.get(group.id) ?? []).map((entry) => ({
+                        id: entry.id,
+                        label: entryLabel(entry),
+                        students: eligibleStudentsForEntry(entry),
+                        selectedMemberIds: [...(memberIdsByParticipant.get(entry.id) ?? [])],
+                      }))}
                     />
                   ))}
                   {!eligibleGroups.length && (
@@ -322,7 +365,7 @@ export default async function ProgramDetailPage({
                   {program.program_type === "group"
                     ? (groupParticipants ?? []).map((p) => (
                         <TableRow key={p.id}>
-                          <TableCell>{groupNameById.get(p.group_id) ?? "—"}</TableCell>
+                          <TableCell>{entryLabel(p)}</TableCell>
                           <TableCell>
                             {p.code ?? (
                               <span className="text-muted-foreground">Not generated</span>
@@ -408,11 +451,12 @@ export default async function ProgramDetailPage({
                   programId={id}
                   maxScore={program.max_score}
                   participants={(groupParticipants ?? []).map((p) => ({
-                    id: p.group_id,
+                    id: p.id,
+                    groupId: p.group_id,
                     code: p.code,
-                    name: groupNameById.get(p.group_id) ?? "—",
+                    name: entryLabel(p),
                   }))}
-                  scoresByParticipant={groupScoresByGroup}
+                  scoresByParticipant={scoresByParticipant}
                 />
               ) : (
                 <ScoreEntryPanel
@@ -454,7 +498,7 @@ export default async function ProgramDetailPage({
                     {(auditLog ?? []).map((entry) => {
                       const name =
                         entry.participant_kind === "group"
-                          ? groupNameById.get(entry.participant_id) ?? "—"
+                          ? entryNameById.get(entry.participant_id) ?? "—"
                           : studentNameById.get(entry.participant_id) ?? "—";
                       return (
                         <TableRow key={entry.id}>
