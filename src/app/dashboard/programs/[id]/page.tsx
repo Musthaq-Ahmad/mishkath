@@ -305,6 +305,15 @@ export default async function ProgramDetailPage({
                   ? "Select which groups take part, then which of their students performed."
                   : "Select which students take part in this program."}
               </CardDescription>
+              <CardAction>
+                <Link
+                  href={`/dashboard/programs/${id}/roster`}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                >
+                  <span className="material-symbols-outlined text-[18px]">print</span>
+                  Print Participant List
+                </Link>
+              </CardAction>
             </CardHeader>
             <CardContent>
               {program.program_type === "group" ? (
