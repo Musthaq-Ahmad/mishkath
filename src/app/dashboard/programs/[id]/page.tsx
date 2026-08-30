@@ -134,10 +134,15 @@ export default async function ProgramDetailPage({
     (groupParticipants ?? []).map((p) => p.group_id),
   );
 
+  const studentNameById = new Map((students ?? []).map((s) => [s.id, s.name]));
+  const studentPartyById = new Map(
+    (students ?? []).map((s) => [s.id, groupNameById.get(s.group_id) ?? "—"]),
+  );
+
   // A group can field more than one team in the same program (see
   // supabase/migrations/0029_group_multiple_teams.sql) — group entries by
-  // group_id, ordered by creation, so a group with 2+ teams gets "A"/"B"
-  // suffixes and a group with just one keeps its plain name.
+  // group_id, ordered by creation, purely so the participants tab can list
+  // a group's teams together (see the GroupParticipantCard usage below).
   const entriesByGroup = new Map<string, ProgramGroupParticipant[]>();
   for (const entry of groupParticipants ?? []) {
     const list = entriesByGroup.get(entry.group_id) ?? [];
@@ -149,12 +154,25 @@ export default async function ProgramDetailPage({
       (a, b) => a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id),
     );
   }
+
+  // Teams are identified by "<first member alphabetically> & <party name>"
+  // rather than a group-name-plus-letter suffix — unambiguous even when a
+  // group fields several teams in the same program, and reads like an
+  // actual team name instead of an arbitrary label.
+  const memberNamesByParticipant = new Map<string, string[]>();
+  for (const member of groupParticipantMembers ?? []) {
+    const studentName = studentNameById.get(member.student_id);
+    if (!studentName) continue;
+    const names = memberNamesByParticipant.get(member.participant_id) ?? [];
+    names.push(studentName);
+    memberNamesByParticipant.set(member.participant_id, names);
+  }
   const entryLabel = (entry: ProgramGroupParticipant) => {
     const groupName = groupNameById.get(entry.group_id) ?? "—";
-    const siblings = entriesByGroup.get(entry.group_id) ?? [entry];
-    if (siblings.length <= 1) return groupName;
-    const index = siblings.findIndex((e) => e.id === entry.id);
-    return `${groupName} ${String.fromCharCode(65 + index)}`;
+    const memberNames = memberNamesByParticipant.get(entry.id) ?? [];
+    if (!memberNames.length) return groupName;
+    const firstMemberName = [...memberNames].sort((a, b) => a.localeCompare(b))[0];
+    return `${firstMemberName} & ${groupName}`;
   };
   const entryNameById = new Map(
     (groupParticipants ?? []).map((entry) => [entry.id, entryLabel(entry)]),
@@ -182,8 +200,6 @@ export default async function ProgramDetailPage({
   for (const score of groupScores ?? []) {
     scoresByParticipant[score.participant_id] = score;
   }
-
-  const studentNameById = new Map((students ?? []).map((s) => [s.id, s.name]));
 
   const isGeneralDivision = divisionNameById.get(program.category) === "General";
 
@@ -484,6 +500,7 @@ export default async function ProgramDetailPage({
                     id: p.student_id,
                     code: p.code,
                     name: studentNameById.get(p.student_id) ?? "—",
+                    party: studentPartyById.get(p.student_id) ?? "—",
                   }))}
                   scoresByParticipant={scoresByStudent}
                 />

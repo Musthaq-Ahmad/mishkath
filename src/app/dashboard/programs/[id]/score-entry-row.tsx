@@ -26,7 +26,7 @@ type Common = {
 
 export function ScoreEntryRow(
   props:
-    | (Common & { kind: "student"; studentId: string; existingScore?: ScoreRow })
+    | (Common & { kind: "student"; studentId: string; party: string; existingScore?: ScoreRow })
     | (Common & {
         kind: "group";
         groupId: string;
@@ -35,6 +35,7 @@ export function ScoreEntryRow(
       }),
 ) {
   const { programId, code, name, maxScore, existingScore } = props;
+  const party = props.kind === "student" ? props.party : null;
   const boundAction =
     props.kind === "student"
       ? adminSubmitScore.bind(null, programId, props.studentId)
@@ -67,7 +68,12 @@ export function ScoreEntryRow(
         <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-surface-container-low text-xs font-semibold text-primary">
           {initialsOf(name)}
         </div>
-        <span className="truncate font-heading font-semibold">{name}</span>
+        <div className="flex min-w-0 flex-col">
+          <span className="truncate font-heading font-semibold">{name}</span>
+          {party && (
+            <span className="truncate text-xs font-medium text-muted-foreground">{party}</span>
+          )}
+        </div>
       </div>
 
       <div className="flex items-end gap-3">

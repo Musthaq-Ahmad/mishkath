@@ -32,7 +32,8 @@ export async function generateMetadata({
   return { title: data ? `Participant List — ${data.name}` : "Participant List" };
 }
 
-type Row = { chestNumber: string | null; name: string; group: string };
+type IndividualRow = { chestNumber: string | null; name: string; group: string };
+type GroupRow = { name: string };
 
 export default async function ProgramRosterPage({
   params,
@@ -64,9 +65,15 @@ export default async function ProgramRosterPage({
   ]);
   const groupNameById = new Map((groups ?? []).map((g) => [g.id, g.name]));
 
-  let rows: Row[];
+  const isGroupProgram = program.program_type === "group";
+  let individualRows: IndividualRow[] = [];
+  let groupRows: GroupRow[] = [];
 
-  if (program.program_type === "group") {
+  if (isGroupProgram) {
+    // A group program's roster is its list of participating teams, not a
+    // per-member breakdown — one row per entry, named "<first member
+    // alphabetically> & <party name>" (same convention as the program
+    // detail page's entryLabel), not a group-name-plus-letter suffix.
     const [{ data: entries }, { data: members }] = await Promise.all([
       supabase
         .from("program_group_participants")
@@ -80,49 +87,35 @@ export default async function ProgramRosterPage({
         .returns<ProgramGroupParticipantMember[]>(),
     ]);
 
-    // A group can field more than one team in the same program (see
-    // supabase/migrations/0029_group_multiple_teams.sql), so a group with
-    // 2+ teams gets "A"/"B" suffixes — same labeling as the program detail
-    // page's participants/codes/history tabs.
-    const entriesByGroup = new Map<string, ProgramGroupParticipant[]>();
-    for (const entry of entries ?? []) {
-      const list = entriesByGroup.get(entry.group_id) ?? [];
-      list.push(entry);
-      entriesByGroup.set(entry.group_id, list);
-    }
-    for (const list of entriesByGroup.values()) {
-      list.sort((a, b) => a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id));
-    }
-    const entryLabelById = new Map(
-      (entries ?? []).map((entry) => {
-        const groupName = groupNameById.get(entry.group_id) ?? "—";
-        const siblings = entriesByGroup.get(entry.group_id) ?? [entry];
-        const label =
-          siblings.length <= 1
-            ? groupName
-            : `${groupName} ${String.fromCharCode(65 + siblings.findIndex((e) => e.id === entry.id))}`;
-        return [entry.id, label];
-      }),
-    );
-
     const studentIds = [...new Set((members ?? []).map((m) => m.student_id))];
-    const { data: students } = studentIds.length
+    const { data: memberStudents } = studentIds.length
       ? await supabase
           .from("students")
-          .select("id, name, chest_number")
+          .select("id, name")
           .in("id", studentIds)
-          .returns<Pick<Student, "id" | "name" | "chest_number">[]>()
-      : { data: [] as Pick<Student, "id" | "name" | "chest_number">[] };
-    const studentById = new Map((students ?? []).map((s) => [s.id, s]));
+          .returns<Pick<Student, "id" | "name">[]>()
+      : { data: [] as Pick<Student, "id" | "name">[] };
+    const memberStudentNameById = new Map((memberStudents ?? []).map((s) => [s.id, s.name]));
 
-    rows = (members ?? []).map((member) => {
-      const student = studentById.get(member.student_id);
-      return {
-        chestNumber: student?.chest_number ?? null,
-        name: student?.name ?? "—",
-        group: entryLabelById.get(member.participant_id) ?? "—",
-      };
-    });
+    const memberNamesByParticipant = new Map<string, string[]>();
+    for (const member of members ?? []) {
+      const studentName = memberStudentNameById.get(member.student_id);
+      if (!studentName) continue;
+      const names = memberNamesByParticipant.get(member.participant_id) ?? [];
+      names.push(studentName);
+      memberNamesByParticipant.set(member.participant_id, names);
+    }
+
+    groupRows = (entries ?? [])
+      .map((entry) => {
+        const groupName = groupNameById.get(entry.group_id) ?? "—";
+        const memberNames = memberNamesByParticipant.get(entry.id) ?? [];
+        const name = memberNames.length
+          ? `${[...memberNames].sort((a, b) => a.localeCompare(b))[0]} & ${groupName}`
+          : groupName;
+        return { name };
+      })
+      .sort((a, b) => a.name.localeCompare(b.name));
   } else {
     const { data: participants } = await supabase
       .from("program_participants")
@@ -139,16 +132,16 @@ export default async function ProgramRosterPage({
           .returns<Pick<Student, "id" | "name" | "chest_number" | "group_id">[]>()
       : { data: [] as Pick<Student, "id" | "name" | "chest_number" | "group_id">[] };
 
-    rows = (students ?? []).map((student) => ({
-      chestNumber: student.chest_number,
-      name: student.name,
-      group: groupNameById.get(student.group_id) ?? "—",
-    }));
+    individualRows = (students ?? [])
+      .map((student) => ({
+        chestNumber: student.chest_number,
+        name: student.name,
+        group: groupNameById.get(student.group_id) ?? "—",
+      }))
+      .sort((a, b) => (a.chestNumber ?? "").localeCompare(b.chestNumber ?? "", undefined, { numeric: true }));
   }
 
-  rows.sort((a, b) =>
-    (a.chestNumber ?? "").localeCompare(b.chestNumber ?? "", undefined, { numeric: true }),
-  );
+  const rowCount = isGroupProgram ? groupRows.length : individualRows.length;
 
   return (
     <div className="flex min-h-screen flex-col bg-background px-6 py-10 text-foreground [-webkit-print-color-adjust:exact] [print-color-adjust:exact] print:bg-white sm:px-10">
@@ -188,24 +181,36 @@ export default async function ProgramRosterPage({
         <table className="w-full border-collapse text-left">
           <thead>
             <tr className="border-b-2 border-foreground text-xs font-bold tracking-wide uppercase">
-              <th className="py-2">Chest No.</th>
-              <th className="py-2">Name</th>
-              <th className="py-2">Group</th>
+              {isGroupProgram ? (
+                <th className="py-2">Team</th>
+              ) : (
+                <>
+                  <th className="py-2">Chest No.</th>
+                  <th className="py-2">Name</th>
+                  <th className="py-2">Group</th>
+                </>
+              )}
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, index) => (
-              <tr key={index} className="border-b border-border" style={{ breakInside: "avoid" }}>
-                <td className="py-3 font-heading text-lg font-bold tabular-nums">
-                  {row.chestNumber ?? "—"}
-                </td>
-                <td className="py-3 font-medium">{row.name}</td>
-                <td className="py-3 text-muted-foreground">{row.group}</td>
-              </tr>
-            ))}
-            {!rows.length && (
+            {isGroupProgram
+              ? groupRows.map((row, index) => (
+                  <tr key={index} className="border-b border-border" style={{ breakInside: "avoid" }}>
+                    <td className="py-3 font-medium">{row.name}</td>
+                  </tr>
+                ))
+              : individualRows.map((row, index) => (
+                  <tr key={index} className="border-b border-border" style={{ breakInside: "avoid" }}>
+                    <td className="py-3 font-heading text-lg font-bold tabular-nums">
+                      {row.chestNumber ?? "—"}
+                    </td>
+                    <td className="py-3 font-medium">{row.name}</td>
+                    <td className="py-3 text-muted-foreground">{row.group}</td>
+                  </tr>
+                ))}
+            {!rowCount && (
               <tr>
-                <td colSpan={3} className="py-8 text-center text-muted-foreground">
+                <td colSpan={isGroupProgram ? 1 : 3} className="py-8 text-center text-muted-foreground">
                   No participants yet.
                 </td>
               </tr>
@@ -214,7 +219,8 @@ export default async function ProgramRosterPage({
         </table>
 
         <p className="text-xs text-muted-foreground print:hidden">
-          {rows.length} participant{rows.length === 1 ? "" : "s"}
+          {rowCount} {isGroupProgram ? "team" : "participant"}
+          {rowCount === 1 ? "" : "s"}
         </p>
       </div>
     </div>

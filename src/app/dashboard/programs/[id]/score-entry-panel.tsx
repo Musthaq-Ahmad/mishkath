@@ -5,6 +5,7 @@ type StudentParticipant = {
   id: string;
   code: string | null;
   name: string;
+  party: string;
 };
 
 type GroupParticipant = {
@@ -44,7 +45,7 @@ export function ScoreEntryPanel(
   return (
     <div className="flex flex-col gap-3">
       {props.kind === "student"
-        ? participants.map((participant) => (
+        ? props.participants.map((participant) => (
             <ScoreEntryRow
               key={participant.id}
               kind="student"
@@ -52,6 +53,7 @@ export function ScoreEntryPanel(
               studentId={participant.id}
               code={participant.code}
               name={participant.name}
+              party={participant.party}
               maxScore={maxScore}
               existingScore={scoresByParticipant[participant.id] as ScoreRow | undefined}
             />

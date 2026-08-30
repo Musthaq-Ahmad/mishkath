@@ -204,6 +204,9 @@ export function ProgramsTable({
           <Table>
             <TableHeader>
               <TableRow className="bg-primary hover:bg-primary">
+                <TableHead className="w-10 text-xs tracking-wider text-primary-foreground uppercase">
+                  #
+                </TableHead>
                 <TableHead className="text-xs tracking-wider text-primary-foreground uppercase">
                   Program Name
                 </TableHead>
@@ -225,11 +228,14 @@ export function ProgramsTable({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredPrograms.map((program) => (
+              {filteredPrograms.map((program, index) => (
                 <TableRow
                   key={program.id}
                   className="hover:bg-surface-container-low transition-colors"
                 >
+                  <TableCell className="text-sm font-medium text-muted-foreground tabular-nums">
+                    {index + 1}
+                  </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-surface-container-low text-primary">
@@ -295,7 +301,7 @@ export function ProgramsTable({
               ))}
               {!filteredPrograms.length && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground">
+                  <TableCell colSpan={7} className="text-center text-muted-foreground">
                     {programs.length ? "No programs match these filters." : "No programs yet."}
                   </TableCell>
                 </TableRow>
