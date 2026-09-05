@@ -30,7 +30,7 @@ export function LoginForm() {
             id="email"
             name="email"
             type="email"
-            placeholder="e.g. curator@mehfilemeem.org"
+            placeholder="you@example.com"
             required
             className="h-12 pl-11"
           />

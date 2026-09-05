@@ -1,11 +1,10 @@
-const CACHE_NAME = "mehfile-meem-shell-v2";
+const CACHE_NAME = "fiestify-shell-v1";
 const PRECACHE_URLS = [
   "/offline",
   "/icon-192.png",
   "/icon-512.png",
   "/apple-touch-icon.png",
-  "/mehfile-meem-icon.png",
-  "/mehfile-meem-logo-gold.png",
+  "/fiestify-mark.png",
 ];
 
 // Only ever cache same-origin static assets (images/fonts/CSS/JS) — never

@@ -1,4 +1,4 @@
-# Mehfile Meem Design System
+# Fiestify Design System
 
 A single reference for the app-wide visual redesign — admin dashboard, auth
 pages, and the public leaderboard now share one design language instead of
@@ -17,6 +17,32 @@ tables, score entry).
 **Hard constraint carried through every phase**: body text must always meet
 contrast against its surface. Shadows and color are for hierarchy and
 brand, never the only way to tell elements apart.
+
+## Two brand layers
+
+The product carries two brands at once, and they never mix:
+
+- **Fiestify — the platform.** The sidebar rail, the login page, the landing
+  page, the loading and offline screens, the PWA manifest and icons. It is the
+  same for every customer. Lives in `src/components/brand/fiestify-logo.tsx`
+  as `<FiestifyLogo />` / `<FiestifyMark />`.
+- **The festival — the tenant.** Whatever the organiser uploads at onboarding,
+  stored as `tenants.branding.logo_url` and shown on everything the festival
+  produces: public leaderboard, printed reports, certificates, posters,
+  rosters, scoresheets and badges. Lives in
+  `src/components/brand/festival-brand.tsx` as `<FestivalBrand />`.
+
+The rule of thumb: **chrome is Fiestify, output is the festival.** An admin
+should always know which product they are in; an audience member or a
+participant holding a certificate should only ever see the festival's own
+identity.
+
+`<FestivalBrand />` falls back to setting the festival's name as a wordmark
+when no logo has been uploaded, so every surface reads correctly from the
+moment a festival is created. Two decorative surfaces — the podium watermark
+and the badge scatter — use the logo as a CSS mask and are skipped entirely
+without one, because an unresolvable `url()` mask paints solid rectangles
+rather than nothing.
 
 ## Palette
 

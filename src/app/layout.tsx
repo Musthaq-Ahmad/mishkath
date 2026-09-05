@@ -22,15 +22,19 @@ const balooChettan = Baloo_Chettan_2({
 });
 
 export const metadata: Metadata = {
-  title: "Mehfile Meem — Festival Management",
-  description: "Festival management platform for groups, students, programs, judging and live results.",
+  title: {
+    default: "Fiestify",
+    template: "%s — Fiestify",
+  },
+  description:
+    "Run a festival end to end — groups, students, programs, judging and live results.",
   icons: {
     apple: "/apple-touch-icon.png",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#171310",
+  themeColor: "#4f46e5",
 };
 
 export default function RootLayout({

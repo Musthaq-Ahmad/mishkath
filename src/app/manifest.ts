@@ -2,14 +2,14 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Mehfile Meem — Festival Management",
-    short_name: "Mehfile Meem",
+    name: "Fiestify — Festival Management",
+    short_name: "Fiestify",
     description:
-      "Festival management platform for groups, students, programs, judging and live results.",
+      "Run a festival end to end — groups, students, programs, judging and live results.",
     start_url: "/dashboard",
     display: "standalone",
-    background_color: "#1c1a17",
-    theme_color: "#171310",
+    background_color: "#0b0f19",
+    theme_color: "#4f46e5",
     icons: [
       {
         src: "/icon-192.png",

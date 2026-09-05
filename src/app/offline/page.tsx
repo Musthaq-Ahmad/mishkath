@@ -1,15 +1,9 @@
-import Image from "next/image";
+import { FiestifyMark } from "@/components/brand/fiestify-logo";
 
 export default function OfflinePage() {
   return (
     <div className="flex min-h-full flex-1 flex-col items-center justify-center gap-6 bg-background px-6 py-16 text-center text-foreground">
-      <Image
-        src="/mehfile-meem-icon.png"
-        alt="Mehfile Meem"
-        width={96}
-        height={85}
-        className="h-auto w-20 opacity-80"
-      />
+      <FiestifyMark className="size-16 opacity-80" />
       <div className="flex flex-col gap-2">
         <h1 className="font-heading text-2xl font-bold tracking-tight">
           You&apos;re offline

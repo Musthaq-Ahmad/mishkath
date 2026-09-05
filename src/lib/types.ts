@@ -1,3 +1,48 @@
+// Multi-tenancy (see MULTI_TENANCY.md). `Role` below is the legacy global
+// role on `profiles`; it stays until Phase 4 drops that column in favour of
+// TenantRole, which is scoped to one tenant and lives on `tenant_members`.
+export type TenantRole = "owner" | "admin" | "scorer" | "viewer";
+export type TenantStatus = "active" | "suspended" | "trial";
+export type TenantLocale = "en" | "ml";
+
+export type TenantBranding = {
+  accent?: string;
+  /** Festival logo shown on light surfaces and in print. */
+  logo_url?: string;
+  /** Optional variant for dark surfaces; falls back to logo_url. */
+  logo_url_dark?: string;
+};
+
+export type Tenant = {
+  id: string;
+  slug: string;
+  name: string;
+  name_ml: string | null;
+  status: TenantStatus;
+  locale: TenantLocale;
+  public_leaderboard_enabled: boolean;
+  branding: TenantBranding;
+  created_at: string;
+};
+
+export type TenantMember = {
+  tenant_id: string;
+  user_id: string;
+  role: TenantRole;
+  created_at: string;
+};
+
+export type TenantInvite = {
+  id: string;
+  tenant_id: string;
+  email: string;
+  role: Exclude<TenantRole, "owner">;
+  invited_by: string | null;
+  expires_at: string;
+  accepted_at: string | null;
+  created_at: string;
+};
+
 export type Role = "admin" | "judge";
 
 export type Profile = {

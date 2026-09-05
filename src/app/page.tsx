@@ -1,7 +1,7 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { APP_DESCRIPTION, FiestifyLogo } from "@/components/brand/fiestify-logo";
 
 export default function Home() {
   return (
@@ -20,32 +20,15 @@ export default function Home() {
       <div className="relative z-10 flex flex-col items-center gap-10 text-center">
         <div className="flex flex-col items-center gap-5">
           <span className="text-[11px] font-bold tracking-[0.3em] text-gold uppercase">
-            Meelad Fest 2K26
+            Festival Management
           </span>
 
-          {/* theme-aware logo: indigo on light surfaces, gold on dark */}
-          <Image
-            src="/mehfile-meem-logo-indigo.png"
-            alt="Mehfile Meem"
-            width={260}
-            height={155}
-            className="h-auto w-[220px] dark:hidden"
-            priority
-          />
-          <Image
-            src="/mehfile-meem-logo-gold.png"
-            alt="Mehfile Meem"
-            width={260}
-            height={155}
-            className="hidden h-auto w-[220px] dark:block"
-            priority
-          />
+          <FiestifyLogo className="h-16 sm:h-20" />
 
           <span aria-hidden className="h-px w-16 bg-gold/50" />
 
           <p className="max-w-md text-sm leading-relaxed text-muted-foreground sm:text-base">
-            Festival management platform for groups, students, programs, judging
-            and live results.
+            {APP_DESCRIPTION}
           </p>
         </div>
 

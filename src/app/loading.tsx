@@ -1,5 +1,3 @@
-import Image from "next/image";
-
 export default function Loading() {
   return (
     <div
@@ -10,47 +8,29 @@ export default function Loading() {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: 12,
+        gap: 14,
         background: "var(--background)",
         padding: "64px 24px",
       }}
     >
-      {/* Explicit pixel width/height (not `fill` + Tailwind-sized parent) so
-          the logo has real dimensions from its own HTML attributes and
-          shows up even before any external stylesheet has loaded — the
-          scenario this screen exists for. */}
-      <div style={{ position: "relative", width: 224, height: 64 }}>
-        <Image
-          src="/mehfile-meem-logo-gold.png"
-          alt="Mehfile Meem"
-          width={224}
-          height={64}
-          style={{ width: "100%", height: "100%", objectFit: "contain" }}
-          priority
-        />
-        {/* Shine sweep — a moving highlight masked to the logo's own shape,
-            so it only glints across the lettering, not a plain rectangle. */}
-        <span
-          aria-hidden
-          style={{
-            position: "absolute",
-            inset: 0,
-            pointerEvents: "none",
-            backgroundImage:
-              "linear-gradient(100deg, transparent 35%, rgba(255,255,255,0.9) 50%, transparent 65%)",
-            backgroundSize: "250% 100%",
-            WebkitMaskImage: "url(/mehfile-meem-logo-gold.png)",
-            maskImage: "url(/mehfile-meem-logo-gold.png)",
-            WebkitMaskRepeat: "no-repeat",
-            maskRepeat: "no-repeat",
-            WebkitMaskSize: "contain",
-            maskSize: "contain",
-            WebkitMaskPosition: "center",
-            maskPosition: "center",
-            animation: "mm-shine-sweep 2.2s ease-in-out infinite",
-          }}
-        />
-      </div>
+      {/* The mark alone, not the full lockup: this screen renders before any
+          stylesheet has loaded — which is the whole reason it exists — so a
+          theme-driven swap is not available, and the near-black wordmark
+          would disappear against the dark background. The gold F reads on
+          either ground. Explicit width/height attributes for the same
+          reason. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/fiestify-mark.png"
+        alt="Fiestify"
+        width={72}
+        height={71}
+        style={{
+          width: 72,
+          height: "auto",
+          animation: "fiestify-pulse 1.6s ease-in-out infinite",
+        }}
+      />
       <p
         style={{
           fontSize: 12,
@@ -63,10 +43,9 @@ export default function Loading() {
         Loading
       </p>
       <style>{`
-        @keyframes mm-shine-sweep {
-          0% { background-position: -120% 0; }
-          55% { background-position: 220% 0; }
-          100% { background-position: 220% 0; }
+        @keyframes fiestify-pulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.72; transform: scale(0.94); }
         }
       `}</style>
     </div>
