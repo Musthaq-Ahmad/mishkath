@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Baloo_Chettan_2, Exo_2 } from "next/font/google";
 import "./globals.css";
+import { APP_DESCRIPTION, APP_NAME } from "@/components/brand/fiestify-logo";
 import { Providers } from "./providers";
 import { ServiceWorkerRegistration } from "./service-worker-registration";
 
@@ -22,19 +23,32 @@ const balooChettan = Baloo_Chettan_2({
 });
 
 export const metadata: Metadata = {
+  applicationName: APP_NAME,
   title: {
-    default: "Fiestify",
-    template: "%s — Fiestify",
+    default: APP_NAME,
+    template: `%s — ${APP_NAME}`,
   },
-  description:
-    "Run a festival end to end — groups, students, programs, judging and live results.",
+  description: APP_DESCRIPTION,
   icons: {
+    icon: "/icon-192.png",
     apple: "/apple-touch-icon.png",
   },
+  // Installed-PWA behaviour on iOS, which ignores the web manifest for these.
+  appleWebApp: {
+    capable: true,
+    title: APP_NAME,
+    statusBarStyle: "black-translucent",
+  },
+  formatDetection: { telephone: false },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#4f46e5",
+  // Matches the manifest's theme_color, and the two dark/light values keep
+  // the browser chrome in step with the active theme.
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#4f46e5" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b0f19" },
+  ],
 };
 
 export default function RootLayout({

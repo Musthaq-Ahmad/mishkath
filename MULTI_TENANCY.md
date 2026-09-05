@@ -1,7 +1,8 @@
 # Multi-Tenancy Spec
 
-Turning Mishkat/Mehfile Meem from a single-festival app into a platform where
-many institutions each run their own festival, isolated from each other.
+Turning Mishkat/Mehfile Meem from a single-festival app into Fiestify — a
+platform where many institutions each run their own festival, isolated from
+each other. The festival that existed before the split is now tenant #1.
 
 **Decisions already made** (locked before this spec was written):
 
@@ -710,10 +711,13 @@ Still open, and deliberately so — each depends on Phase 2's `tenant_id`:
   unscoped. Harmless while one tenant exists; it is the *whole* point of Phase 2
   and 3, and must land before a second tenant is created.
 - **Realtime subscriptions carry no tenant filter** (§8).
-- **The PWA manifest is still global.** `start_url: "/dashboard"` now resolves
-  through the back-compat redirect, so it works, but name/icons are not
-  per-tenant, and `public/sw.js` still precaches one tenant's logo under a
-  single cache name.
+- **The PWA manifest is intentionally global, and that is now correct.** It
+  describes Fiestify, the platform, not any one festival — name, icons and
+  `start_url` are the same for everyone, and `start_url: "/dashboard"`
+  resolves through the redirect to the right tenant, onboarding, or login.
+  `public/sw.js` no longer precaches festival artwork. A *per-tenant* manifest
+  would only be worth adding if organisers want to install a festival as its
+  own home-screen app; that is a product decision, not leftover work.
 - **WhatsApp credentials are still process-wide env vars** (§8).
 
 ---
