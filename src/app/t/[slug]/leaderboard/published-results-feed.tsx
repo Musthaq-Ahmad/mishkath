@@ -9,6 +9,7 @@ import type {
   Division,
   EventPlacementRow,
   ProgramPlacements,
+  ProgramType,
   StudentCategory,
 } from "@/lib/types";
 import { cn } from "@/lib/utils";
